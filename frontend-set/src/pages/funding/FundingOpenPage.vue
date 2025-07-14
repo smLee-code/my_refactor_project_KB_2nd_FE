@@ -1,5 +1,5 @@
 <template>
-  <h2>404 NOT FOUND 페이지</h2>
+  <h2>펀딩 개설 페이지</h2>
 </template>
 
 <script setup></script>
