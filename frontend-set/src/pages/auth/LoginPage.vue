@@ -1,11 +1,7 @@
 <template>
-    <h2>로그인 페이지</h2>
+  <h2>로그인 페이지</h2>
 </template>
 
-<script setup>
+<script setup></script>
 
-</script>
-
-<style scoped>
-
-</style>
+<style scoped></style>

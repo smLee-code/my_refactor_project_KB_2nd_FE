@@ -1,11 +1,7 @@
 <template>
-    <h2>프로젝트 상세보기 페이지</h2>
+  <h2>프로젝트 상세보기 페이지</h2>
 </template>
 
-<script setup>
+<script setup></script>
 
-</script>
-
-<style scoped>
-
-</style>
+<style scoped></style>
