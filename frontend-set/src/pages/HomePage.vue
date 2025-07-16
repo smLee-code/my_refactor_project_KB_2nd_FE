@@ -1,7 +1,9 @@
 <template>
-  <h2>홈 페이지</h2>
+  <HomeView />
 </template>
 
-<script setup></script>
+<script setup>
+import HomeView from '../tailwind_temp/views/HomeView.vue'
+</script>
 
 <style scoped></style>
