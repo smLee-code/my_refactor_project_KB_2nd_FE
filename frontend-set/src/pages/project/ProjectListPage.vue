@@ -1,213 +1,24 @@
 <!-- The exported code uses Tailwind CSS. Install Tailwind CSS in your dev environment to ensure all styles work. -->
 <template>
   <div class="min-h-screen bg-white w-full">
-    <!-- 헤더 -->
-    <header class="bg-white shadow-lg sticky top-0 z-50 w-full">
-      <div class="container mx-auto px-6 lg:px-20">
-        <div class="flex items-center justify-between h-16">
-          <!-- 로고 -->
-          <div class="flex items-center">
-            <h1 class="text-2xl font-bold text-gray-900 drop-shadow-sm">Fund:ing</h1>
-          </div>
-          <!-- 네비게이션 -->
-          <nav class="hidden md:flex items-center space-x-8">
-            <a
-              href="https://readdy.ai/home/cb2c7bc4-bc93-4247-9521-a5e098400181/138e6345-6724-468a-8f3b-edde69ac2786"
-              data-readdy="true"
-              class="text-gray-700 hover:text-gray-900 font-medium cursor-pointer transition-colors hover:border-b-2 hover:border-gray-900 pb-1"
-              >홈</a
-            >
-            <a
-              href="https://readdy.ai/home/cb2c7bc4-bc93-4247-9521-a5e098400181/bf3c3730-13fb-49ff-95a2-077909301a84"
-              data-readdy="true"
-              class="text-gray-700 hover:text-gray-900 font-medium cursor-pointer transition-colors hover:border-b-2 hover:border-gray-900 pb-1"
-              >펀딩</a
-            >
-            <a
-              href="#"
-              class="text-gray-900 font-bold border-b-2 border-gray-900 pb-1 cursor-pointer transition-colors"
-              >프로젝트</a
-            >
-          </nav>
-          <!-- 로그인/사용자 메뉴 -->
-          <div class="flex items-center space-x-4">
-            <button
-              class="bg-gray-900 text-white px-6 py-2 !rounded-button font-medium hover:bg-gray-800 cursor-pointer whitespace-nowrap shadow-lg hover:shadow-xl transition-all transform hover:-translate-y-0.5"
-            >
-              로그인
-            </button>
-          </div>
-        </div>
-      </div>
-    </header>
     <!-- 메인 콘텐츠 영역 -->
     <div class="container mx-auto px-6 lg:px-20 py-8">
-      <!-- 탭 네비게이션 -->
-      <div class="border-b border-gray-200 mb-8">
-        <div class="flex space-x-8 h-12">
-          <button
-            @click="activeTab = 'all'"
-            :class="{
-              'border-b-2 border-yellow-400 font-bold text-gray-900': activeTab === 'all',
-              'text-gray-500': activeTab !== 'all',
-            }"
-            class="pb-4 cursor-pointer transition-colors whitespace-nowrap text-base"
-          >
-            전체
-          </button>
-          <button
-            @click="activeTab = 'liked'"
-            :class="{
-              'border-b-2 border-yellow-400 font-bold text-gray-900': activeTab === 'liked',
-              'text-gray-500': activeTab !== 'liked',
-            }"
-            class="pb-4 cursor-pointer transition-colors whitespace-nowrap text-base"
-          >
-            좋아요한 프로젝트
-          </button>
-        </div>
-      </div>
-      <!-- 검색 및 필터 영역 -->
-      <div class="mb-8">
-        <div class="flex items-center justify-between space-x-4 mb-6">
-          <div class="flex items-center space-x-4">
-            <div class="relative w-80">
-              <input
-                v-model="searchQuery"
-                type="text"
-                placeholder="검색어를 입력해주세요"
-                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:border-transparent text-sm"
-              />
-              <button
-                class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 cursor-pointer"
-              >
-                <i class="fas fa-search text-sm"></i>
-              </button>
-            </div>
-            <div class="flex items-center space-x-2">
-              <input
-                v-model="includeEnded"
-                type="checkbox"
-                id="includeEnded"
-                class="w-4 h-4 text-yellow-400 bg-gray-100 border-gray-300 rounded focus:ring-yellow-400 focus:ring-2 cursor-pointer"
-              />
-              <label
-                for="includeEnded"
-                class="text-sm text-gray-700 cursor-pointer whitespace-nowrap"
-                >마감된 프로젝트 포함</label
-              >
-            </div>
-          </div>
-          <div class="relative">
-            <button
-              @click="showSortDropdown = !showSortDropdown"
-              class="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-400 text-sm cursor-pointer flex items-center space-x-2 whitespace-nowrap"
-            >
-              <span>{{ sortOptions[selectedSort] }}</span>
-              <i class="fas fa-chevron-down text-xs"></i>
-            </button>
-            <div
-              v-if="showSortDropdown"
-              class="absolute right-0 mt-1 w-32 bg-white border border-gray-300 rounded-lg shadow-lg z-10"
-            >
-              <button
-                v-for="(option, key) in sortOptions"
-                :key="key"
-                @click="
-                  selectedSort = key
-                  showSortDropdown = false
-                "
-                class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 cursor-pointer whitespace-nowrap"
-              >
-                {{ option }}
-              </button>
-            </div>
-          </div>
-        </div>
-        <!-- 필터링 버튼 영역 -->
-        <div class="flex flex-wrap gap-2 mb-6">
-          <button
-            v-for="category in ['전체', '적금형', '대출형', '기부형', '챌린지형']"
-            :key="category"
-            @click="toggleCategory(category)"
-            :class="{
-              'bg-yellow-400 text-gray-900': selectedCategories.includes(category),
-              'bg-gray-100 text-gray-600 hover:bg-gray-200': !selectedCategories.includes(category),
-            }"
-            class="px-4 py-2 rounded-full text-sm font-medium transition-colors cursor-pointer whitespace-nowrap"
-          >
-            {{ category }}
-          </button>
-        </div>
+      <!-- 공통 탭 메뉴 -->
+      <TabMenu :tabs="tabOptions" v-model="activeTab" />
+      <!-- 공통 카테고리 필터 -->
+      <CategoryFilter :categories="categoryList" v-model="selectedCategory" />
+      <!-- 공통 정렬 드롭다운 -->
+      <div class="flex justify-end mb-8">
+        <SortSelect :options="sortOptions" v-model="selectedSort" />
       </div>
       <!-- 프로젝트 카드 그리드 -->
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
-        <div
+        <ProjectCard
           v-for="project in filteredProjects"
           :key="project.id"
-          class="bg-white rounded-2xl border border-gray-200 p-5 hover:shadow-lg hover:transform hover:-translate-y-1 transition-all duration-200 cursor-pointer"
-        >
-          <!-- 썸네일 -->
-          <div class="w-full h-48 bg-gray-200 rounded-xl overflow-hidden mb-4">
-            <img
-              :src="project.image"
-              :alt="project.title"
-              class="w-full h-full object-cover object-top"
-            />
-          </div>
-          <!-- 카테고리 태그와 좋아요 -->
-          <div class="flex items-center justify-between mb-3">
-            <span class="bg-gray-100 text-gray-700 px-3 py-1 rounded-full text-xs font-medium">{{
-              project.category
-            }}</span>
-            <div class="flex items-center space-x-1 text-gray-500">
-              <button @click.stop="toggleLike(project.id)" class="cursor-pointer">
-                <i
-                  :class="{
-                    'fas text-red-500': project.isLiked,
-                    'far text-gray-400': !project.isLiked,
-                  }"
-                  class="fa-heart text-sm"
-                ></i>
-              </button>
-              <span class="text-sm">{{ project.likes }}</span>
-            </div>
-          </div>
-          <!-- 제목 -->
-          <h3 class="font-bold text-lg text-gray-900 mb-2 line-clamp-2">
-            {{ project.title }}
-          </h3>
-          <!-- 한 줄 요약 -->
-          <p class="text-sm text-gray-600 mb-4 line-clamp-2">
-            {{ project.description }}
-          </p>
-          <!-- 구분선 -->
-          <div class="border-t border-gray-100 pt-3">
-            <!-- 제안자 정보 -->
-            <div class="flex items-center justify-between text-xs text-gray-500">
-              <span>{{ project.proposer }}</span>
-              <span>{{ project.createdAt }}</span>
-            </div>
-          </div>
-          <!-- 상태 표시 -->
-          <div class="mt-3 flex items-center justify-between">
-            <span
-              :class="{
-                'bg-green-100 text-green-800': project.status === '진행중',
-                'bg-gray-100 text-gray-800': project.status === '완료',
-                'bg-red-100 text-red-800': project.status === '중단',
-              }"
-              class="px-2 py-1 rounded-full text-xs font-medium"
-            >
-              {{ project.status }}
-            </span>
-            <button
-              class="text-blue-600 text-sm font-medium hover:text-blue-800 cursor-pointer whitespace-nowrap"
-            >
-              자세히 보기
-            </button>
-          </div>
-        </div>
+          :project="project"
+          @toggle-like="toggleLike"
+        />
       </div>
       <!-- 새 프로젝트 등록 버튼 -->
       <div class="fixed bottom-8 right-8">
@@ -263,10 +74,7 @@
                     v-for="category in categories"
                     :key="category"
                     type="button"
-                    @click="
-                      newProject.category = category
-                      showCategoryDropdown = false
-                    "
+                    @click="((newProject.category = category), (showCategoryDropdown = false))"
                     class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 cursor-pointer"
                   >
                     {{ category }}
@@ -377,10 +185,7 @@
                     v-for="status in statusOptions"
                     :key="status"
                     type="button"
-                    @click="
-                      editingProject.status = status
-                      showStatusDropdown = false
-                    "
+                    @click="((editingProject.status = status), (showStatusDropdown = false))"
                     class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 cursor-pointer"
                   >
                     {{ status }}
@@ -443,16 +248,21 @@
 
 <script setup>
 import { ref, computed } from 'vue'
+import TabMenu from '@/components/common/TabMenu.vue'
+import CategoryFilter from '@/components/common/CategoryFilter.vue'
+import SortSelect from '@/components/common/SortSelect.vue'
+import ProjectCard from '@/components/project/ProjectCard.vue'
 
+const tabOptions = [
+  { value: 'all', label: '전체' },
+  { value: 'liked', label: '좋아요한 프로젝트' },
+]
 const activeTab = ref('all')
 const searchQuery = ref('')
 const includeEnded = ref(false)
 const selectedSort = ref('latest')
-const selectedCategories = ref(['전체'])
-
-const toggleCategory = (category) => {
-  selectedCategories.value = [category]
-}
+const categoryList = ['전체', '적금형', '대출형', '기부형', '챌린지형']
+const selectedCategory = ref('전체')
 
 const showSortDropdown = ref(false)
 const showCreateForm = ref(false)
@@ -490,7 +300,7 @@ const projects = ref([
     title: '혁신적인 모바일 결제 솔루션 개발',
     description:
       '사용자 친화적인 인터페이스와 강력한 보안 기능을 갖춘 차세대 모바일 결제 플랫폼을 개발하여 금융 서비스의 접근성을 높이고자 합니다.',
-    category: '핀테크',
+    category: '적금형',
     proposer: '김혁신',
     createdAt: '2024-01-15',
     status: '진행중',
@@ -504,7 +314,7 @@ const projects = ref([
     title: '블록체인 기반 투명한 기부 플랫폼',
     description:
       '블록체인 기술을 활용하여 기부금의 투명한 사용처를 추적할 수 있는 혁신적인 기부 플랫폼을 구축하여 신뢰성 있는 기부 문화를 조성하고자 합니다.',
-    category: '블록체인',
+    category: '기부형',
     proposer: '박블록',
     createdAt: '2024-01-20',
     status: '진행중',
@@ -518,7 +328,7 @@ const projects = ref([
     title: 'AI 기반 개인 맞춤형 투자 자문 서비스',
     description:
       '인공지능 알고리즘을 활용하여 개인의 투자 성향과 목표에 맞는 최적의 투자 포트폴리오를 제안하는 지능형 투자 자문 서비스를 개발합니다.',
-    category: '인공지능',
+    category: '대출형',
     proposer: '이에이아이',
     createdAt: '2024-01-25',
     status: '진행중',
@@ -532,7 +342,7 @@ const projects = ref([
     title: '디지털 헬스케어 통합 플랫폼',
     description:
       '개인의 건강 데이터를 통합 관리하고 AI 분석을 통해 맞춤형 건강 관리 솔루션을 제공하는 종합 헬스케어 플랫폼을 구축합니다.',
-    category: '헬스케어',
+    category: '챌린지형',
     proposer: '정헬스',
     createdAt: '2024-02-01',
     status: '진행중',
@@ -635,9 +445,9 @@ const filteredProjects = computed(() => {
     filtered = filtered.filter((p) => p.isLiked)
   }
 
-  // 카테고리 필터링
-  if (selectedCategories.value.length > 0 && !selectedCategories.value.includes('전체')) {
-    filtered = filtered.filter((p) => selectedCategories.value.includes(p.category))
+  // 카테고리 필터링 (단일 선택)
+  if (selectedCategory.value && selectedCategory.value !== '전체') {
+    filtered = filtered.filter((p) => p.category === selectedCategory.value)
   }
 
   // 마감된 프로젝트 필터링
