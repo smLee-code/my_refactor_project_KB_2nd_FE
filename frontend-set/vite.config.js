@@ -18,15 +18,19 @@ export default defineConfig({
   server: {
     proxy: {
       '/api': {
-        target: 'http://localhost:8080', // Spring 서버 주소
+        target: 'http://localhost:8080',
         changeOrigin: true,
-        rewrite: (path) => path.replace(/^\/api/, ''),
       },
-    },
-    '/chat-app': {
-      target: 'http://localhost:8080',
-      changeOrigin: true,
-      ws: true, // ✅ WebSocket proxy
+      '/chat': {
+        // 추가
+        target: 'http://localhost:8080',
+        changeOrigin: true,
+      },
+      '/chat-app': {
+        target: 'http://localhost:8080',
+        changeOrigin: true,
+        ws: true,
+      },
     },
   },
 })

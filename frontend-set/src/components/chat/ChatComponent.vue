@@ -10,8 +10,8 @@
 
 <script setup>
 import { ref, onMounted, watch } from 'vue'
-import SockJS from 'sockjs-client'
 import Stomp from 'stompjs'
+import api from '@/api'
 import axios from 'axios'
 
 const props = defineProps({
@@ -34,14 +34,18 @@ const stompClient = ref(null)
 
 const loadHistory = async () => {
   try {
-    const token = localStorage.getItem('jwt')
-    if (!token) throw new Error('JWT 토큰 없음')
+    // const token = localStorage.getItem('jwt')
+    // if (!token) throw new Error('JWT 토큰 없음')
 
-    const res = await axios.get(`/api/chat/history/${props.roomId}`, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    })
+    const res = await axios.get(
+      //   `/chat/history/${props.roomId}`
+      `http://localhost:8080/api/chat/history/${props.roomId}`,
+      // , {
+      //   headers: {
+      //     Authorization: `Bearer ${token}`,
+      //   },
+      // }
+    )
     messages.value = res.data
     console.log('불러온 메시지:', res.data)
   } catch (error) {
@@ -51,8 +55,10 @@ const loadHistory = async () => {
 
 const connectWebSocket = () => {
   console.log('🧪 WebSocket 연결 시도 중...') // 👈 여기도 로그 추가
-  const socket = new SockJS('http://localhost:8080/chat-app')
-  stompClient.value = Stomp.over(socket)
+
+  const wsUrl = 'ws://localhost:8080/chat-app'
+  stompClient.value = Stomp.client(wsUrl)
+
   stompClient.value.debug = (msg) => console.log('[STOMP]', msg)
 
   stompClient.value.connect(
@@ -108,9 +114,4 @@ watch(
   },
   { immediate: true },
 )
-
-// onMounted(() => {
-//   loadHistory()
-//   connectWebSocket()
-// })
 </script>

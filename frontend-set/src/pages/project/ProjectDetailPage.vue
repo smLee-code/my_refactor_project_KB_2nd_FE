@@ -6,6 +6,8 @@
 
     <!-- 채팅방 컴포넌트에 projectId 넘겨줌 -->
     <ChatComponent v-if="project.projectId" :roomId="project.projectId" />
+
+    <!-- jwt 토큰 사용하는 버전 -->
     <!-- <ChatComponent v-if="jwtToken && project.projectId" :roomId="project.projectId" /> -->
 
     <!-- <ChatComponent :roomId="project.projectId" /> -->
@@ -38,7 +40,7 @@ onMounted(async () => {
   const token = localStorage.getItem('jwt')
   const id = route.params.projectId
 
-  const { data } = await axios.get(`/api/project/list/detail/${id}`, {
+  const { data } = await axios.get(`/project/list/detail/${id}`, {
     headers: {
       Authorization: `Bearer ${token}`,
     },
