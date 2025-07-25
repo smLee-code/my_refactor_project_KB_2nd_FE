@@ -1,64 +1,6 @@
 <!-- The exported code uses Tailwind CSS. Install Tailwind CSS in your dev environment to ensure all styles work. -->
 <template>
   <div class="min-h-screen" style="background-color: var(--kb-ui-10)">
-    <!-- 헤더 -->
-    <header class="bg-white shadow-lg sticky top-0 z-50">
-      <div class="max-w-[1200px] mx-auto px-5">
-        <div class="flex items-center justify-between h-16">
-          <!-- 로고 -->
-          <div class="flex items-center space-x-8">
-            <h1 class="text-2xl font-bold text-gray-900 drop-shadow-sm">Fund:ing</h1>
-            <button
-              class="flex items-center text-gray-600 hover:text-gray-900 transition-colors cursor-pointer"
-            >
-              <i class="fas fa-arrow-left mr-2"></i>
-              <span class="font-medium">목록으로</span>
-            </button>
-          </div>
-          <!-- 네비게이션 -->
-          <nav class="hidden md:flex items-center space-x-8">
-            <a
-              href="https://readdy.ai/home/cb2c7bc4-bc93-4247-9521-a5e098400181/138e6345-6724-468a-8f3b-edde69ac2786"
-              data-readdy="true"
-              class="text-gray-700 hover:text-gray-900 font-medium cursor-pointer transition-colors hover:border-b-2 hover:border-gray-900 pb-1"
-              >홈</a
-            >
-            <a
-              href="#"
-              class="text-gray-700 hover:text-gray-900 font-medium cursor-pointer transition-colors hover:border-b-2 hover:border-gray-900 pb-1"
-              >펀딩</a
-            >
-            <a
-              href="#"
-              class="text-gray-900 font-bold border-b-2 border-gray-900 pb-1 cursor-pointer transition-colors"
-              >프로젝트</a
-            >
-          </nav>
-          <!-- 로그인/사용자 메뉴 -->
-          <div class="flex items-center space-x-4">
-            <template v-if="!isLoggedIn">
-              <button
-                class="bg-kb-ui-01 text-white px-6 py-2 !rounded-button font-medium hover:opacity-90 cursor-pointer whitespace-nowrap shadow-lg hover:shadow-xl transition-all transform hover:-translate-y-0.5"
-              >
-                로그인
-              </button>
-            </template>
-            <template v-else>
-              <button
-                class="p-2 text-gray-600 hover:text-gray-900 cursor-pointer transition-colors"
-              >
-                <i class="fas fa-bell text-lg"></i>
-              </button>
-              <button
-                class="p-2 text-gray-600 hover:text-gray-900 cursor-pointer transition-colors"
-              >
-                <i class="fas fa-user text-lg"></i>
-              </button>
-            </template>
-          </div>
-        </div>
-      </div>
-    </header>
     <!-- 메인 콘텐츠 -->
     <div class="max-w-[1200px] mx-auto px-5 py-8">
       <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">

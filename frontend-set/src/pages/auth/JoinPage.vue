@@ -1,6 +1,5 @@
 <!-- The exported code uses Tailwind CSS. Install Tailwind CSS in your dev environment to ensure all styles work. -->
 <template>
-  <AuthHeader />
   <div class="flex-1 flex items-center justify-center py-8">
     <div class="w-full max-w-3xl px-4">
       <div class="bg-white rounded-2xl shadow-2xl p-8 border border-gray-100">

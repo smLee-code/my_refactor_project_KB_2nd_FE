@@ -3,26 +3,33 @@
     <div class="max-w-[1200px] mx-auto px-5 lg:px-10">
       <div class="flex items-center justify-between h-16">
         <!-- 로고 -->
-        <div class="flex items-center" @click="navigateToHome">
-          <h1 class="text-title-md font-bold text-kb-ui-01 drop-shadow-sm">Fund:ing</h1>
+        <div class="flex items-center cursor-pointer" @click="navigateToHome">
+          <img src="/images/logo.png" alt="Fund:ing" class="h-10" />
+          <!-- <h1 class="text-title-md font-bold text-kb-ui-01 drop-shadow-sm">Fund:ing</h1> -->
         </div>
         <!-- 네비게이션 -->
         <nav class="hidden md:flex items-center space-x-8">
-          <a href="#" class="text-body-md text-kb-ui-01 font-bold border-b-2 border-kb-ui-01 pb-1">
-            홈
-          </a>
-          <a
-            href="#"
+          <router-link
+            to="/"
             class="text-body-md text-kb-ui-03 hover:text-kb-ui-01 font-medium transition-colors hover:border-b-2 hover:border-kb-ui-01 pb-1"
+            active-class="text-kb-ui-01 border-b-2 border-kb-ui-01"
+          >
+            홈
+          </router-link>
+          <router-link
+            to="/funding"
+            class="text-body-md text-kb-ui-03 hover:text-kb-ui-01 font-medium transition-colors hover:border-b-2 hover:border-kb-ui-01 pb-1"
+            active-class="text-kb-ui-01 border-b-2 border-kb-ui-01"
           >
             펀딩
-          </a>
-          <a
-            href="#"
+          </router-link>
+          <router-link
+            to="/project"
             class="text-body-md text-kb-ui-03 hover:text-kb-ui-01 font-medium transition-colors hover:border-b-2 hover:border-kb-ui-01 pb-1"
+            active-class="text-kb-ui-01 border-b-2 border-kb-ui-01"
           >
             프로젝트
-          </a>
+          </router-link>
         </nav>
         <!-- 로그인 버튼 -->
         <div class="flex items-center space-x-4">
