@@ -1,57 +1,6 @@
 <!-- The exported code uses Tailwind CSS. Install Tailwind CSS in your dev environment to ensure all styles work. -->
 <template>
   <div class="min-h-screen bg-gray-50 w-full">
-    <!-- 헤더 -->
-    <header class="bg-white shadow-lg sticky top-0 z-50 w-full">
-      <div class="container mx-auto px-4 sm:px-6 lg:px-32">
-        <div class="flex items-center justify-between h-16">
-          <!-- 로고 -->
-          <div class="flex items-center">
-            <a
-              href="https://readdy.ai/home/cb2c7bc4-bc93-4247-9521-a5e098400181/bf3c3730-13fb-49ff-95a2-077909301a84"
-              data-readdy="true"
-              class="text-xl sm:text-2xl font-bold text-gray-900 drop-shadow-sm no-underline"
-              >Fund:ing</a
-            >
-          </div>
-          <!-- 모바일 메뉴 버튼 -->
-          <button class="md:hidden text-gray-600 hover:text-gray-900 focus:outline-none">
-            <i class="fas fa-bars text-xl"></i>
-          </button>
-          <!-- 네비게이션 -->
-          <nav class="hidden md:flex items-center space-x-8">
-            <a
-              href="https://readdy.ai/home/cb2c7bc4-bc93-4247-9521-a5e098400181/138e6345-6724-468a-8f3b-edde69ac2786"
-              data-readdy="true"
-              class="text-gray-700 hover:text-gray-900 font-medium cursor-pointer transition-colors hover:border-b-2 hover:border-gray-900 pb-1"
-              >홈</a
-            >
-            <a
-              href="https://readdy.ai/home/cb2c7bc4-bc93-4247-9521-a5e098400181/bf3c3730-13fb-49ff-95a2-077909301a84"
-              data-readdy="true"
-              class="text-gray-900 font-bold border-b-2 border-gray-900 pb-1 cursor-pointer transition-colors"
-              >펀딩</a
-            >
-            <a
-              href="https://readdy.ai/home/cb2c7bc4-bc93-4247-9521-a5e098400181/667465ea-2228-4a0e-a50f-775409dad035"
-              data-readdy="true"
-              class="text-gray-700 hover:text-gray-900 font-medium cursor-pointer transition-colors hover:border-b-2 hover:border-gray-900 pb-1"
-              >프로젝트</a
-            >
-          </nav>
-          <!-- 로그인/사용자 메뉴 -->
-          <div class="flex items-center space-x-4">
-            <a
-              href="https://readdy.ai/home/cb2c7bc4-bc93-4247-9521-a5e098400181/ad8f1e51-76d5-4f7b-8fa8-c4f51b2043cb"
-              data-readdy="true"
-              class="bg-gray-900 text-white px-6 py-2 !rounded-button font-medium hover:bg-gray-800 cursor-pointer whitespace-nowrap shadow-lg hover:shadow-xl transition-all transform hover:-translate-y-0.5 inline-block no-underline"
-            >
-              로그인
-            </a>
-          </div>
-        </div>
-      </div>
-    </header>
     <!-- 메인 콘텐츠 영역 -->
     <div class="container mx-auto px-4 sm:px-6 lg:px-32 py-8">
       <!-- 프로젝트 메인 비주얼 -->

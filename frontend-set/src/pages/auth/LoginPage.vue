@@ -1,6 +1,5 @@
 <!-- The exported code uses Tailwind CSS. Install Tailwind CSS in your dev environment to ensure all styles work. -->
 <template>
-  <AuthHeader />
   <!-- 메인 로그인 영역 -->
   <div class="flex-1 flex items-center justify-center">
     <div class="w-full max-w-md px-4">
