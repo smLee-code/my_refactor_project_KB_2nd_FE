@@ -3,8 +3,9 @@
     <div class="max-w-[1200px] mx-auto px-5 lg:px-10">
       <div class="flex items-center justify-between h-16">
         <!-- 로고 -->
-        <div class="flex items-center" @click="navigateToHome">
-          <h1 class="text-title-md font-bold text-kb-ui-01 drop-shadow-sm">Fund:ing</h1>
+        <div class="flex items-center cursor-pointer" @click="navigateToHome">
+          <img src="/images/logo.png" alt="Fund:ing" class="h-10" />
+          <!-- <h1 class="text-title-md font-bold text-kb-ui-01 drop-shadow-sm">Fund:ing</h1> -->
         </div>
         <!-- 네비게이션 -->
         <nav class="hidden md:flex items-center space-x-8">
