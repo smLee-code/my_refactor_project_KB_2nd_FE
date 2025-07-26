@@ -67,11 +67,9 @@
               >
               <span class="text-gray-500 text-sm">기타</span>
             </div>
-            <h1 class="text-3xl font-bold text-gray-900 mb-4">지역 상권 활성화 프로젝트</h1>
+            <h1 class="text-3xl font-bold text-gray-900 mb-4">제목: {{ projectData?.title }}</h1>
             <p class="text-gray-600 text-lg leading-relaxed mb-6">
-              지역 소상공인들의 경쟁력 강화와 상권 활성화를 위한 통합 마케팅 및 결제 플랫폼 구축
-              프로젝트입니다. 전통적인 상권과 디지털 기술을 결합하여 지역 경제 생태계를 혁신하고,
-              소상공인들의 지속가능한 성장을 지원합니다.
+              {{ projectData?.promotion }}
             </p>
             <!-- 프로젝트 상세 내용 -->
             <div class="space-y-6">
@@ -322,7 +320,15 @@
 
 <script setup>
 import { ref, nextTick } from 'vue'
+import axios from 'axios'
+import { onMounted } from 'vue'
 
+import { useRoute } from 'vue-router'
+
+const route = useRoute()
+const projectId = route.params.id
+
+const projectData = ref(null)
 const isLoggedIn = ref(false)
 const isLiked = ref(false)
 const likeCount = ref(98)
@@ -439,6 +445,17 @@ const sendMessage = () => {
     })
   }
 }
+
+onMounted(async () => {
+  try {
+    const res = await axios.get(`/api/project/list/detail/${projectId}`)
+    projectData.value = res.data
+    console.log('✅ API 응답:', res.data)
+  } catch (e) {
+    console.error('❌ API 요청 실패:', e)
+    alert('프로젝트 정보를 불러올 수 없습니다.')
+  }
+})
 </script>
 
 <style scoped>
