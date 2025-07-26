@@ -38,8 +38,8 @@ const loadHistory = async () => {
     // if (!token) throw new Error('JWT 토큰 없음')
 
     const res = await axios.get(
-      //   `/chat/history/${props.roomId}`
-      `http://localhost:8080/api/chat/history/${props.roomId}`,
+      `/chat/history/${props.roomId}`,
+      //   `http://localhost:8080/api/chat/history/${props.roomId}`,
       // , {
       //   headers: {
       //     Authorization: `Bearer ${token}`,
