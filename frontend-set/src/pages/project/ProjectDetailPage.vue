@@ -62,52 +62,51 @@
           <!-- 프로젝트 정보 -->
           <div class="bg-white rounded-xl shadow-lg p-6">
             <div class="flex items-center space-x-3 mb-4">
-              <span class="bg-green-100 text-green-800 text-sm px-3 py-1 rounded-full font-medium"
-                >진행중</span
+              <span
+                class="bg-green-100 text-green-800 text-sm px-3 py-1 rounded-full font-medium"
+                >{{ getProgressLabel(projectData?.basicInfo.progress) }}</span
               >
-              <span class="text-gray-500 text-sm">기타</span>
+              <span class="text-gray-500 text-sm">{{
+                getTypeLabel(projectData?.basicInfo.projectType)
+              }}</span>
             </div>
-            <h1 class="text-3xl font-bold text-gray-900 mb-4">제목: {{ projectData?.title }}</h1>
+            <h1 class="text-3xl font-bold text-gray-900 mb-4">
+              {{ projectData?.basicInfo.title }}
+            </h1>
             <p class="text-gray-600 text-lg leading-relaxed mb-6">
-              {{ projectData?.promotion }}
+              {{ projectData?.basicInfo.promotion }}
             </p>
             <!-- 프로젝트 상세 내용 -->
             <div class="space-y-6">
               <div>
                 <h3 class="text-xl font-semibold text-gray-900 mb-3">프로젝트 배경</h3>
-                <p class="text-gray-600 leading-relaxed">
-                  코로나19 이후 급변하는 소비 패턴과 디지털 전환의 필요성이 대두되면서, 지역
-                  소상공인들은 새로운 도전에 직면하고 있습니다. 본 프로젝트는 이러한 문제를 해결하기
-                  위해 지역 상권의 디지털 혁신을 통한 경쟁력 강화를 목표로 합니다.
-                </p>
+                <p class="text-gray-600 leading-relaxed">배경 설명</p>
               </div>
               <div>
                 <h3 class="text-xl font-semibold text-gray-900 mb-3">핵심 내용</h3>
                 <ul class="space-y-2 text-gray-600">
                   <li class="flex items-start">
                     <i class="fas fa-check-circle text-green-500 mt-1 mr-2"></i>
-                    <span>통합 마케팅 플랫폼 구축으로 온라인 홍보 효과 극대화</span>
+                    <span>내용1</span>
                   </li>
                   <li class="flex items-start">
                     <i class="fas fa-check-circle text-green-500 mt-1 mr-2"></i>
-                    <span>간편 결제 시스템 도입으로 고객 편의성 향상</span>
+                    <span>내용2</span>
                   </li>
                   <li class="flex items-start">
                     <i class="fas fa-check-circle text-green-500 mt-1 mr-2"></i>
-                    <span>데이터 분석을 통한 맞춤형 비즈니스 솔루션 제공</span>
+                    <span>내용3</span>
                   </li>
                   <li class="flex items-start">
                     <i class="fas fa-check-circle text-green-500 mt-1 mr-2"></i>
-                    <span>지역 커뮤니티 네트워크 강화 및 상생 생태계 조성</span>
+                    <span>내용4</span>
                   </li>
                 </ul>
               </div>
               <div>
                 <h3 class="text-xl font-semibold text-gray-900 mb-3">참여 방법</h3>
                 <p class="text-gray-600 leading-relaxed">
-                  본 프로젝트는 지역 소상공인, 시민, 지방자치단체, 그리고 관련 기업들의 협력을 통해
-                  추진됩니다. 관심 있는 분들은 프로젝트 설명회 참석, 온라인 설문조사 참여, 그리고
-                  다양한 형태의 후원을 통해 함께할 수 있습니다.
+                  {{ projectData?.detailInfo.successCondition }}
                 </p>
               </div>
             </div>
@@ -344,6 +343,32 @@ const projectImages = ref([
 
 const currentImage = ref(projectImages.value[0])
 
+//진행 상태 한글 변환
+const getProgressLabel = (status) => {
+  switch (status) {
+    case 'Active':
+      return '진행중'
+    case 'Closed':
+      return '마감'
+    default:
+      return '알 수 없음'
+  }
+}
+
+//프로젝트 타입 한글 변환
+const getTypeLabel = (status) => {
+  switch (status) {
+    case 'Savings':
+      return '저축형'
+    case 'Loan':
+      return '대출형'
+    case 'Challenge':
+      return '챌린지형'
+    case 'Donation':
+      return '기부형'
+  }
+}
+
 const chatMessages = ref([
   {
     id: 1,
@@ -448,7 +473,7 @@ const sendMessage = () => {
 
 onMounted(async () => {
   try {
-    const res = await axios.get(`/api/project/list/detail/${projectId}`)
+    const res = await axios.get(`/api/project/list/detail/${projectId}/full`)
     projectData.value = res.data
     console.log('✅ API 응답:', res.data)
   } catch (e) {
