@@ -1,5 +1,5 @@
 <template>
-  <div class="chat-box">
+  <!-- <div class="chat-box">
     <div v-for="msg in messages" :key="msg.id">
       <b>{{ msg.sender }}:</b> {{ msg.content }} <small>({{ msg.timestamp }})</small>
     </div>
@@ -9,7 +9,7 @@
 
   <div>
     <input v-model="mySenderId" placeholder="임시 아이디 (번호)를 입력하세요" />
-  </div>
+  </div> -->
 
   <!-- 실시간 채팅 섹션 -->
   <div class="bg-white rounded-xl shadow-lg p-6">
