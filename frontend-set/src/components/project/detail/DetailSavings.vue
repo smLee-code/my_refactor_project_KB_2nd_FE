@@ -4,15 +4,15 @@
     <ul class="space-y-1">
       <li class="flex items-start">
         <i class="fas fa-check-circle text-green-500 mt-1 mr-2"></i>
-        <span>기부: {{ detail.recipient.toLocaleString() }}원</span>
+        <span>이자율: {{ detail.interestRate }}%</span>
       </li>
       <li class="flex items-start">
         <i class="fas fa-check-circle text-green-500 mt-1 mr-2"></i>
-        <span>기부금 사용 계획: {{ detail.usagePlan }}</span>
+        <span>예치 기간: {{ detail.periodDays }}일</span>
       </li>
       <li class="flex items-start">
         <i class="fas fa-check-circle text-green-500 mt-1 mr-2"></i>
-        <span>목표 모금 금액: {{ detail.targetAmount.toLocaleString() }}원</span>
+        <span>성공 조건: {{ detail.successCondition }}</span>
       </li>
     </ul>
   </div>

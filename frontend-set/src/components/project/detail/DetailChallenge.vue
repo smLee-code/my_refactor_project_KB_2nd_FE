@@ -4,15 +4,15 @@
     <ul class="space-y-1">
       <li class="flex items-start">
         <i class="fas fa-check-circle text-green-500 mt-1 mr-2"></i>
-        <span>기부: {{ detail.recipient.toLocaleString() }}원</span>
+        <span>챌린지 참여 기간: {{ detail.challengePeriodDays }}일</span>
       </li>
       <li class="flex items-start">
         <i class="fas fa-check-circle text-green-500 mt-1 mr-2"></i>
-        <span>기부금 사용 계획: {{ detail.usagePlan }}</span>
+        <span>성공 보상: {{ detail.reward }}일</span>
       </li>
       <li class="flex items-start">
         <i class="fas fa-check-circle text-green-500 mt-1 mr-2"></i>
-        <span>목표 모금 금액: {{ detail.targetAmount.toLocaleString() }}원</span>
+        <span>성공 조건: {{ detail.rewardCondition }}</span>
       </li>
     </ul>
   </div>

@@ -59,58 +59,10 @@
               </div>
             </div>
           </div>
+
           <!-- 프로젝트 정보 -->
-          <div class="bg-white rounded-xl shadow-lg p-6">
-            <div class="flex items-center space-x-3 mb-4">
-              <span
-                class="bg-green-100 text-green-800 text-sm px-3 py-1 rounded-full font-medium"
-                >{{ getProgressLabel(projectData?.basicInfo.progress) }}</span
-              >
-              <span class="text-gray-500 text-sm">{{
-                getTypeLabel(projectData?.basicInfo.projectType)
-              }}</span>
-            </div>
-            <h1 class="text-3xl font-bold text-gray-900 mb-4">
-              {{ projectData?.basicInfo.title }}
-            </h1>
-            <p class="text-gray-600 text-lg leading-relaxed mb-6">
-              {{ projectData?.basicInfo.promotion }}
-            </p>
-            <!-- 프로젝트 상세 내용 -->
-            <div class="space-y-6">
-              <div>
-                <h3 class="text-xl font-semibold text-gray-900 mb-3">프로젝트 배경</h3>
-                <p class="text-gray-600 leading-relaxed">배경 설명</p>
-              </div>
-              <div>
-                <h3 class="text-xl font-semibold text-gray-900 mb-3">핵심 내용</h3>
-                <ul class="space-y-2 text-gray-600">
-                  <li class="flex items-start">
-                    <i class="fas fa-check-circle text-green-500 mt-1 mr-2"></i>
-                    <span>내용1</span>
-                  </li>
-                  <li class="flex items-start">
-                    <i class="fas fa-check-circle text-green-500 mt-1 mr-2"></i>
-                    <span>내용2</span>
-                  </li>
-                  <li class="flex items-start">
-                    <i class="fas fa-check-circle text-green-500 mt-1 mr-2"></i>
-                    <span>내용3</span>
-                  </li>
-                  <li class="flex items-start">
-                    <i class="fas fa-check-circle text-green-500 mt-1 mr-2"></i>
-                    <span>내용4</span>
-                  </li>
-                </ul>
-              </div>
-              <div>
-                <h3 class="text-xl font-semibold text-gray-900 mb-3">참여 방법</h3>
-                <p class="text-gray-600 leading-relaxed">
-                  {{ projectData?.detailInfo.successCondition }}
-                </p>
-              </div>
-            </div>
-          </div>
+          <ProjectInfo :project="projectData" />
+
           <!-- 실시간 채팅 섹션 -->
           <div class="bg-white rounded-xl shadow-lg p-6">
             <h3 class="text-xl font-semibold text-gray-900 mb-4">실시간 채팅</h3>
@@ -166,63 +118,11 @@
         <!-- 우측 정보 영역 -->
         <div class="space-y-6">
           <!-- 기본 정보 -->
-          <div class="bg-white rounded-xl shadow-lg p-6">
-            <h3 class="text-lg font-semibold text-gray-900 mb-4">기본 정보</h3>
-            <div class="space-y-3">
-              <div class="flex justify-between">
-                <span class="text-gray-600">카테고리</span>
-                <span class="text-gray-900 font-medium">기타</span>
-              </div>
-              <div class="flex justify-between">
-                <span class="text-gray-600">지역</span>
-                <span class="text-gray-900 font-medium">서울</span>
-              </div>
-              <div class="flex justify-between">
-                <span class="text-gray-600">진행 상태</span>
-                <span class="text-green-600 font-medium">진행중</span>
-              </div>
-              <div class="flex justify-between">
-                <span class="text-gray-600">좋아요</span>
-                <span class="text-gray-900 font-medium">{{ likeCount }}개</span>
-              </div>
-              <div class="flex justify-between">
-                <span class="text-gray-600">조회수</span>
-                <span class="text-gray-900 font-medium">1,247회</span>
-              </div>
-            </div>
-          </div>
+          <summary-basic-info :detail="projectData"></summary-basic-info>
+
           <!-- 작성자 정보 -->
-          <div class="bg-white rounded-xl shadow-lg p-6">
-            <h3 class="text-lg font-semibold text-gray-900 mb-4">작성자 정보</h3>
-            <div class="flex items-center space-x-4 mb-4">
-              <div class="w-12 h-12 bg-gray-300 rounded-full flex items-center justify-center">
-                <i class="fas fa-user text-gray-600"></i>
-              </div>
-              <div>
-                <h4 class="font-medium text-gray-900">서울시 중구청</h4>
-                <p class="text-sm text-gray-600">공공기관</p>
-              </div>
-            </div>
-            <p class="text-gray-600 text-sm mb-4">
-              지역 발전과 소상공인 지원을 위한 다양한 프로젝트를 추진하고 있습니다.
-            </p>
-            <div class="space-y-2 text-sm">
-              <div class="flex items-center space-x-2">
-                <i class="fas fa-envelope text-gray-400"></i>
-                <span class="text-gray-600">contact@junggu.seoul.kr</span>
-              </div>
-              <div class="flex items-center space-x-2">
-                <i class="fas fa-phone text-gray-400"></i>
-                <span class="text-gray-600">02-3396-4000</span>
-              </div>
-              <div class="flex items-center space-x-2">
-                <i class="fas fa-globe text-gray-400"></i>
-                <a href="#" class="text-blue-600 hover:text-blue-800 cursor-pointer"
-                  >www.junggu.seoul.kr</a
-                >
-              </div>
-            </div>
-          </div>
+          <writer-info :detail="projectData"></writer-info>
+
           <!-- 좋아요 -->
           <div class="bg-white rounded-xl shadow-lg p-6">
             <h3 class="text-lg font-semibold text-gray-900 mb-4">좋아요</h3>
@@ -323,6 +223,9 @@ import axios from 'axios'
 import { onMounted } from 'vue'
 
 import { useRoute } from 'vue-router'
+import ProjectInfo from '@/components/project/detail/ProjectInfo.vue'
+import SummaryBasicInfo from '@/components/project/detail/SummaryBasicInfo.vue'
+import WriterInfo from '@/components/project/detail/WriterInfo.vue'
 
 const route = useRoute()
 const projectId = route.params.id
@@ -342,32 +245,6 @@ const projectImages = ref([
 ])
 
 const currentImage = ref(projectImages.value[0])
-
-//진행 상태 한글 변환
-const getProgressLabel = (status) => {
-  switch (status) {
-    case 'Active':
-      return '진행중'
-    case 'Closed':
-      return '마감'
-    default:
-      return '알 수 없음'
-  }
-}
-
-//프로젝트 타입 한글 변환
-const getTypeLabel = (status) => {
-  switch (status) {
-    case 'Savings':
-      return '저축형'
-    case 'Loan':
-      return '대출형'
-    case 'Challenge':
-      return '챌린지형'
-    case 'Donation':
-      return '기부형'
-  }
-}
 
 const chatMessages = ref([
   {
