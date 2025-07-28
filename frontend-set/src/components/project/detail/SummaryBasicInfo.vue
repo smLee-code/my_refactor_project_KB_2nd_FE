@@ -20,7 +20,7 @@
       </div>
       <div class="flex justify-between">
         <span class="text-gray-600">좋아요</span>
-        <span class="text-gray-900 font-medium">1개</span>
+        <span class="text-gray-900 font-medium">{{ detail.voteCount }}회</span>
       </div>
       <div class="flex justify-between">
         <span class="text-gray-600">조회수</span>

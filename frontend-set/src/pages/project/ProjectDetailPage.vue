@@ -17,19 +17,47 @@
                   class="w-full h-full object-cover object-top"
                 />
               </div>
-              <!-- 재생 버튼 -->
-              <button
-                class="absolute top-4 left-4 bg-white bg-opacity-90 rounded-full p-3 shadow-lg hover:shadow-xl transition-all cursor-pointer"
-              >
-                <i class="fas fa-play text-gray-700"></i>
-              </button>
+
               <!-- 공유/좋아요 버튼 -->
               <div class="absolute top-4 right-4 flex space-x-2">
-                <button
-                  class="bg-white bg-opacity-90 rounded-full p-3 shadow-lg hover:shadow-xl transition-all cursor-pointer"
-                >
-                  <i class="fas fa-share-alt text-gray-700"></i>
-                </button>
+                <!-- 공유 버튼 -->
+                <div class="relative">
+                  <button
+                    @click="toggleShare"
+                    class="bg-white bg-opacity-90 rounded-full p-3 shadow-lg hover:shadow-xl transition-all cursor-pointer"
+                  >
+                    <i class="fas fa-share-alt text-gray-700"></i>
+                  </button>
+
+                  <!-- 공유 박스 -->
+                  <div
+                    v-if="showShare"
+                    ref="shareBoxRef"
+                    class="absolute top-12 right-0 bg-white p-4 rounded-lg shadow-xl w-72 z-50"
+                    @click.stop
+                  >
+                    <p class="text-sm font-semibold text-gray-800 mb-2">공유 링크</p>
+                    <div class="flex items-center space-x-2">
+                      <input
+                        type="text"
+                        :value="currentUrl"
+                        readonly
+                        class="flex-1 px-3 py-2 border border-gray-300 rounded-md text-sm"
+                      />
+                      <button
+                        @click="copyToClipboard"
+                        class="px-3 py-2 text-sm bg-blue-500 text-white rounded-md hover:bg-blue-600"
+                      >
+                        복사
+                      </button>
+                    </div>
+                    <p v-if="copySuccess" class="text-xs text-green-500 mt-1">
+                      링크가 복사되었습니다!
+                    </p>
+                  </div>
+                </div>
+
+                <!-- 좋아요 버튼 -->
                 <button
                   class="bg-white bg-opacity-90 rounded-full p-3 shadow-lg hover:shadow-xl transition-all cursor-pointer"
                   @click="toggleLike"
@@ -115,6 +143,7 @@
             </div>
           </div>
         </div>
+
         <!-- 우측 정보 영역 -->
         <div class="space-y-6">
           <!-- 기본 정보 -->
@@ -124,21 +153,14 @@
           <writer-info :detail="projectData"></writer-info>
 
           <!-- 좋아요 -->
-          <div class="bg-white rounded-xl shadow-lg p-6">
-            <h3 class="text-lg font-semibold text-gray-900 mb-4">좋아요</h3>
-            <p class="text-gray-600 text-sm mb-4">
-              이 프로젝트가 마음에 드시나요? 좋아요를 눌러 관심을 표현해보세요.
-            </p>
-            <button
-              @click="toggleLike"
-              class="w-full bg-gray-100 text-gray-700 px-4 py-3 !rounded-button font-medium hover:bg-gray-200 cursor-pointer whitespace-nowrap transition-all border border-gray-300"
-            >
-              <i :class="isLiked ? 'fas fa-heart text-red-500' : 'far fa-heart'" class="mr-2"></i>
-              {{ isLiked ? '좋아요 취소' : '좋아요' }}
-            </button>
-          </div>
+          <project-vote
+            :detail="projectData"
+            :userId="loginId"
+            :projectId="projectId"
+          ></project-vote>
         </div>
       </div>
+
       <!-- 관련 프로젝트 추천 -->
       <div class="mt-16">
         <h3 class="text-2xl font-bold text-gray-900 mb-8">관련 프로젝트</h3>
@@ -218,14 +240,15 @@
 </template>
 
 <script setup>
-import { ref, nextTick } from 'vue'
 import axios from 'axios'
-import { onMounted } from 'vue'
+import { ref, computed, nextTick, onMounted, onBeforeUnmount } from 'vue'
 
 import { useRoute } from 'vue-router'
 import ProjectInfo from '@/components/project/detail/ProjectInfo.vue'
 import SummaryBasicInfo from '@/components/project/detail/SummaryBasicInfo.vue'
 import WriterInfo from '@/components/project/detail/WriterInfo.vue'
+import ProjectVote from '@/components/project/detail/ProjectVote.vue'
+import '@/assets/styles/projectDetail.css'
 
 const route = useRoute()
 const projectId = route.params.id
@@ -236,6 +259,60 @@ const isLiked = ref(false)
 const likeCount = ref(98)
 const currentImageIndex = ref(0)
 const newMessage = ref('')
+const loginId = ref(null) // 로그인된 사용자 ID
+const writerId = computed(() => projectData.value?.userId) // 작성자 ID
+
+// 공유 박스
+const showShare = ref(false)
+const copySuccess = ref(false)
+
+//초기 좋아요 상태 fetch
+const fetchLikeStatus = async () => {
+  try {
+    const res = await axios.get(`/api/votes/status`, {
+      params: {
+        userId: loginId.value,
+        projectId: props.projectId,
+      },
+    })
+    isLiked.value = res.data.liked // true or false
+  } catch (e) {
+    console.warn('좋아요 상태 불러오기 실패:', e)
+  }
+}
+
+// 공유 박스 토글
+const toggleShare = async () => {
+  showShare.value = !showShare.value
+  copySuccess.value = false
+
+  if (showShare.value) {
+    await nextTick() // DOM 렌더링 보장
+    document.addEventListener('click', handleClickOutside, true)
+  }
+}
+
+const currentUrl = window.location.href
+
+//클립보드에 링크 복사
+const copyToClipboard = async () => {
+  try {
+    await navigator.clipboard.writeText(currentUrl)
+    copySuccess.value = true
+  } catch (err) {
+    alert('복사에 실패했습니다.')
+  }
+}
+
+// 👇 공유 박스 영역 참조용
+const shareBoxRef = ref(null)
+
+const handleClickOutside = (event) => {
+  if (shareBoxRef.value && !shareBoxRef.value.contains(event.target)) {
+    showShare.value = false
+    document.removeEventListener('click', handleClickOutside)
+  }
+}
 
 const projectImages = ref([
   'https://readdy.ai/api/search-image?query=vibrant%20local%20marketplace%20street%20scene%20with%20traditional%20storefronts%2C%20small%20businesses%2C%20and%20modern%20urban%20development%2C%20clean%20architectural%20style%2C%20warm%20sunlight%2C%20professional%20photography%20perspective&width=800&height=600&seq=main1&orientation=landscape',
@@ -319,9 +396,29 @@ const setCurrentImage = (index) => {
   currentImage.value = projectImages.value[index]
 }
 
-const toggleLike = () => {
-  isLiked.value = !isLiked.value
-  likeCount.value += isLiked.value ? 1 : -1
+// const toggleLike = () => {
+//   isLiked.value = !isLiked.value
+//   likeCount.value += isLiked.value ? 1 : -1
+// }
+
+const toggleLike = async () => {
+  const payload = {
+    userId: loginId.value,
+    projectId: props.projectId,
+  }
+
+  try {
+    if (isLiked.value) {
+      await axios.delete('/api/votes', { data: payload })
+      likeCount.value--
+    } else {
+      await axios.post('/api/votes', payload) // 여기서 500 에러 발생
+      likeCount.value++
+    }
+    isLiked.value = !isLiked.value
+  } catch (error) {
+    console.error('좋아요 요청 실패:', error)
+  }
 }
 
 const sendMessage = () => {
@@ -352,93 +449,27 @@ onMounted(async () => {
   try {
     const res = await axios.get(`/api/project/list/detail/${projectId}/full`)
     projectData.value = res.data
-    console.log('✅ API 응답:', res.data)
+    console.log('✅ 프로젝트 API 응답:', res.data)
+
+    document.addEventListener('click', handleClickOutside)
   } catch (e) {
-    console.error('❌ API 요청 실패:', e)
+    console.error('❌ 프로젝트 정보 요청 실패:', e)
     alert('프로젝트 정보를 불러올 수 없습니다.')
+    return
+  }
+
+  // 사용자 정보는 별도 처리 (로그인 안 된 경우 대비)
+  try {
+    const userRes = await axios.get('/api/user/me')
+    loginId.value = userRes.data.id
+    console.log('✅ 사용자 API 응답:', loginId.value)
+  } catch (e) {
+    console.warn('⚠ 사용자 정보 요청 실패 (비로그인 상태일 수 있음):', e)
+    loginId.value = 2
   }
 })
+
+onBeforeUnmount(() => {
+  document.removeEventListener('click', handleClickOutside)
+})
 </script>
-
-<style scoped>
-:root {
-  --kb-yellow-positive: #ffbc00;
-  --kb-yellow: #ffd338;
-  --kb-yellow-native: #ffcc00;
-  --kb-gray-dark: #60584c;
-  --kb-gray-light: #918274;
-  --kb-ui-01: #000000;
-  --kb-ui-02: #26282c;
-  --kb-ui-03: #484b51;
-  --kb-ui-04: #696e76;
-  --kb-ui-05: #484b51;
-  --kb-ui-06: #aab0b8;
-  --kb-ui-07: #c6cbd0;
-  --kb-ui-08: #dde1e4;
-  --kb-ui-09: #ebeef0;
-  --kb-ui-10: #f7f7f8;
-  --kb-ui-11: #ffffff;
-  --kb-positive: #287eff;
-  --kb-error: #f23f3f;
-  --kb-error-input: #ff5858;
-  --kb-caution: #ffd338;
-}
-
-.\!rounded-button {
-  border-radius: 8px;
-}
-
-input[type='number']::-webkit-outer-spin-button,
-input[type='number']::-webkit-inner-spin-button {
-  -webkit-appearance: none;
-  margin: 0;
-}
-
-input[type='number'] {
-  -moz-appearance: textfield;
-}
-
-.line-clamp-2 {
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-}
-
-/* KB Color System Utility Classes */
-.bg-kb-yellow {
-  background-color: var(--kb-yellow);
-}
-
-.text-kb-yellow {
-  color: var(--kb-yellow);
-}
-
-.border-kb-yellow {
-  border-color: var(--kb-yellow);
-}
-
-.bg-kb-gray {
-  background-color: var(--kb-gray-dark);
-}
-
-.text-kb-gray {
-  color: var(--kb-gray-dark);
-}
-
-.bg-kb-positive {
-  background-color: var(--kb-positive);
-}
-
-.text-kb-positive {
-  color: var(--kb-positive);
-}
-
-.bg-kb-error {
-  background-color: var(--kb-error);
-}
-
-.text-kb-error {
-  color: var(--kb-error);
-}
-</style>
