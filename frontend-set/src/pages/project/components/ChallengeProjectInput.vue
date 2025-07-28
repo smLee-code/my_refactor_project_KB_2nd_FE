@@ -3,9 +3,34 @@
         <h3 class="text-lg font-semibold text-gray-800 border-b pb-2">챌린지형 프로젝트 정보</h3>
         <div>
             <label class="block text-sm font-medium text-gray-700 mb-2">
-                성공 조건 (챌린지 내용) <span class="text-red-500">*</span>
+                챌린지 기간 <span class="text-red-500">*</span>
             </label>
             <input
+                v-model="form.challengePeriodDays"
+                type="number"
+                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
+                placeholder="예: 매일 1만원씩 저금하기"
+                required
+            />
+        </div>
+        <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">
+                리워드 <span class="text-red-500">*</span>
+            </label>
+            <input
+                v-model="form.reward"
+                type="text"
+                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
+                placeholder="예: 매일 1만원씩 저금하기"
+                required
+            />
+        </div>
+        <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">
+                리워드 조건 <span class="text-red-500">*</span>
+            </label>
+            <input
+                v-model="form.rewardCondition"
                 type="text"
                 class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
                 placeholder="예: 매일 1만원씩 저금하기"
@@ -16,5 +41,11 @@
 </template>
 
 <script setup>
-// Props나 이벤트를 추가할 수 있습니다.
+import { ref, computed } from 'vue'
+
+const form = ref({
+    challengePeriodDays: 0,
+    reward: '',
+    rewardCondition: '',
+})
 </script>

@@ -33,6 +33,24 @@
                             />
                         </div>
 
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">
+                                프로젝트 타입 <span class="text-red-500">*</span>
+                            </label>
+                            <select
+                                v-model="form.category"
+                                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
+                            >
+                                <option v-for="category in categories" :value="category.value">
+                                    {{ category.label }}
+                                </option>
+                            </select>
+                        </div>
+
+                        <div v-if="form.category">
+                            <component :is="selectedCategory.component" :form="form"></component>
+                        </div>
+
                         <!-- Project Description -->
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-2">
@@ -187,6 +205,11 @@
 <script setup>
 import { ref, computed } from 'vue'
 
+import SavingsProjectInput from './components/SavingsProjectInput.vue'
+import LoanProjectInput from './components/LoanProjectInput.vue'
+import DonationProjectInput from './components/DonationProjectInput.vue'
+import ChallengeProjectInput from './components/ChallengeProjectInput.vue'
+
 const form = ref({
     name: '',
     description: '',
@@ -229,30 +252,45 @@ const isLoading = ref(false)
 
 const categories = [
     {
+        value: '',
+        label: '카테고리를 선택하세요',
+        description: '',
+        icon: '',
+        component: null,
+    },
+    {
         value: 'savings',
         label: '저축형',
         description: '목표 금액을 설정하여 저축하는 프로젝트',
         icon: 'fas fa-piggy-bank text-green-600',
+        component: SavingsProjectInput,
     },
     {
         value: 'loan',
         label: '대출형',
         description: '대출 상환 계획을 관리하는 프로젝트',
         icon: 'fas fa-hand-holding-usd text-orange-600',
+        component: LoanProjectInput,
     },
     {
         value: 'donation',
         label: '기부형',
         description: '기부 목표를 설정하고 관리하는 프로젝트',
         icon: 'fas fa-heart text-red-600',
+        component: DonationProjectInput,
     },
     {
         value: 'challenge',
         label: '챌린지형',
         description: '금융 관련 도전 과제를 수행하는 프로젝트',
         icon: 'fas fa-trophy text-yellow-600',
+        component: ChallengeProjectInput,
     },
 ]
+
+const selectedCategory = computed(() => {
+    return categories.find((category) => category.value === form.value.category)
+})
 
 const isFormValid = computed(() => {
     return (
