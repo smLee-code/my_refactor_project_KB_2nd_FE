@@ -2,7 +2,7 @@
 <template>
     <div class="min-h-screen bg-gray-50">
         <!-- Main Content -->
-        <main class="min-h-screen pb-32">
+        <main class="min-h-screen">
             <div class="max-w-[1200px] mx-auto px-5">
                 <!-- Header -->
                 <header class="py-8 border-b border-gray-200">
@@ -16,17 +16,16 @@
                         <h1 class="text-3xl font-bold text-gray-800">새 프로젝트 만들기</h1>
                     </div>
                 </header>
-
                 <!-- Form Section -->
                 <section class="py-8">
                     <form @submit.prevent="createProject" class="space-y-8">
-                        <!-- Title -->
+                        <!-- Project Name -->
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-2">
                                 프로젝트명 <span class="text-red-500">*</span>
                             </label>
                             <input
-                                v-model="form.title"
+                                v-model="form.name"
                                 type="text"
                                 class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
                                 placeholder="프로젝트명을 입력하세요"
@@ -34,62 +33,20 @@
                             />
                         </div>
 
-                        <!-- Funding Type -->
+                        <!-- Project Description -->
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-2">
-                                프로젝트 타입 <span class="text-red-500">*</span>
-                            </label>
-                            <div class="flex items-center space-x-4">
-                                <div
-                                    v-if="selectedType && selectedType.icon"
-                                    class="w-10 h-10 flex items-center justify-center text-2xl"
-                                >
-                                    <i :class="selectedType.icon"></i>
-                                </div>
-                                <select
-                                    v-model="form.fundingType"
-                                    class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
-                                >
-                                    <option
-                                        v-for="type in fundingTypes"
-                                        :key="type.value"
-                                        :value="type.value"
-                                    >
-                                        {{ type.label }}
-                                    </option>
-                                </select>
-                            </div>
-                        </div>
-
-                        <!-- Category -->
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">
-                                카테고리 <span class="text-red-500">*</span>
-                            </label>
-                            <input
-                                v-model="form.category"
-                                type="text"
-                                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
-                                placeholder="카테고리를 입력하세요 (예: 기술, 환경)"
-                                required
-                            />
-                        </div>
-
-                        <!-- Promotion -->
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">
-                                프로젝트 설명 (홍보글) <span class="text-red-500">*</span>
+                                프로젝트 설명 <span class="text-red-500">*</span>
                             </label>
                             <textarea
-                                v-model="form.promotion"
+                                v-model="form.description"
                                 rows="4"
                                 class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm resize-none"
                                 placeholder="프로젝트에 대한 설명을 입력하세요"
                                 required
                             ></textarea>
                         </div>
-
-                        <!-- Image -->
+                        <!-- Project Image -->
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-2">
                                 프로젝트 이미지 <span class="text-red-500">*</span>
@@ -133,14 +90,34 @@
                                 </div>
                             </div>
                         </div>
+
+                        <!-- Date Range -->
+                        <div class="grid grid-cols-2 gap-6">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">
+                                    시작일 <span class="text-red-500">*</span>
+                                </label>
+                                <input
+                                    v-model="form.startDate"
+                                    type="date"
+                                    class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
+                                    required
+                                />
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">
+                                    종료일 <span class="text-red-500">*</span>
+                                </label>
+                                <input
+                                    v-model="form.endDate"
+                                    type="date"
+                                    class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
+                                    required
+                                />
+                            </div>
+                        </div>
                     </form>
-
-                    <!-- Dynamic Component Area -->
-                    <div v-if="currentComponent" class="p-4 border-2 border-dashed rounded-lg mt-8">
-                        <component :is="currentComponent" :key="form.fundingType" />
-                    </div>
                 </section>
-
                 <!-- Bottom Buttons -->
                 <div class="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 p-6">
                     <div class="max-w-[1200px] mx-auto px-5">
@@ -208,17 +185,14 @@
 </template>
 
 <script setup>
-import { ref, computed, shallowRef } from 'vue'
-import SavingsProjectInput from './components/SavingsProjectInput.vue'
-import LoanProjectInput from './components/LoanProjectInput.vue'
-import DonationProjectInput from './components/DonationProjectInput.vue'
-import ChallengeProjectInput from './components/ChallengeProjectInput.vue'
+import { ref, computed } from 'vue'
 
 const form = ref({
-    title: '',
-    fundingType: '',
-    promotion: '',
+    name: '',
+    description: '',
     category: '',
+    startDate: '',
+    endDate: '',
     image: null,
 })
 
@@ -253,61 +227,52 @@ const removeImage = () => {
 const showWarningModal = ref(false)
 const isLoading = ref(false)
 
-const fundingTypes = [
-    { value: '', label: '프로젝트 타입을 선택하세요', icon: '', component: null },
+const categories = [
     {
         value: 'savings',
         label: '저축형',
         description: '목표 금액을 설정하여 저축하는 프로젝트',
         icon: 'fas fa-piggy-bank text-green-600',
-        component: SavingsProjectInput,
     },
     {
         value: 'loan',
         label: '대출형',
         description: '대출 상환 계획을 관리하는 프로젝트',
         icon: 'fas fa-hand-holding-usd text-orange-600',
-        component: LoanProjectInput,
     },
     {
         value: 'donation',
         label: '기부형',
         description: '기부 목표를 설정하고 관리하는 프로젝트',
         icon: 'fas fa-heart text-red-600',
-        component: DonationProjectInput,
     },
     {
         value: 'challenge',
         label: '챌린지형',
         description: '금융 관련 도전 과제를 수행하는 프로젝트',
         icon: 'fas fa-trophy text-yellow-600',
-        component: ChallengeProjectInput,
     },
 ]
 
-const selectedType = computed(() => {
-    return fundingTypes.find((type) => type.value === form.value.fundingType)
-})
-
-const currentComponent = computed(() => {
-    return selectedType.value ? selectedType.value.component : null
-})
-
 const isFormValid = computed(() => {
     return (
-        form.value.title.trim() !== '' &&
-        form.value.fundingType.trim() !== '' &&
-        form.value.promotion.trim() !== '' &&
-        form.value.category.trim() !== '' &&
+        form.value.name.trim() !== '' &&
+        form.value.description.trim() !== '' &&
+        form.value.category !== '' &&
+        form.value.startDate !== '' &&
+        form.value.endDate !== '' &&
         form.value.image !== null
     )
 })
 
 const hasFormData = computed(() => {
     return (
-        form.value.title.trim() !== '' ||
-        form.value.promotion.trim() !== '' ||
-        form.value.category.trim() !== ''
+        form.value.name.trim() !== '' ||
+        form.value.description.trim() !== '' ||
+        form.value.category !== '' ||
+        form.value.startDate !== '' ||
+        form.value.endDate !== '' ||
+        form.value.colorTag !== ''
     )
 })
 
@@ -315,6 +280,7 @@ const handleBackClick = () => {
     if (hasFormData.value) {
         showWarningModal.value = true
     } else {
+        // Navigate back
         window.history.back()
     }
 }
@@ -323,36 +289,37 @@ const handleCancelClick = () => {
     if (hasFormData.value) {
         showWarningModal.value = true
     } else {
+        // Navigate back
         window.history.back()
     }
 }
 
 const confirmCancel = () => {
     showWarningModal.value = false
+    // Navigate back
     window.history.back()
 }
 
 const createProject = async () => {
-    if (!isFormValid.value) {
-        alert('모든 필수 항목을 입력해주세요.')
-        return
-    }
+    if (!isFormValid.value) return
 
     isLoading.value = true
     try {
         // Simulate API call
         await new Promise((resolve) => setTimeout(resolve, 2000))
+
+        // Success - navigate to project list or project detail
         console.log('프로젝트 생성 완료:', form.value)
 
         // Reset form
         form.value = {
-            title: '',
-            fundingType: '',
-            promotion: '',
+            name: '',
+            description: '',
             category: '',
-            image: null,
+            startDate: '',
+            endDate: '',
+            colorTag: '',
         }
-        imagePreview.value = null
     } catch (error) {
         console.error('프로젝트 생성 실패:', error)
     } finally {
