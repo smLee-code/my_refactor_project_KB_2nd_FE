@@ -7,6 +7,10 @@
     <button @click="sendMessage">전송</button>
   </div>
 
+  <div>
+    <input v-model="mySenderId" placeholder="임시 아이디 (번호)를 입력하세요" />
+  </div>
+
   <!-- 실시간 채팅 섹션 -->
   <div class="bg-white rounded-xl shadow-lg p-6">
     <h3 class="text-xl font-semibold text-gray-900 mb-4">실시간 채팅</h3>
@@ -36,7 +40,7 @@
               msg.isSelf ? 'bg-blue-500 text-white' : 'bg-white border border-gray-200',
             ]"
           >
-            {{ msg.content }} <small>({{ msg.timestamp }})</small>
+            {{ msg.content }}
           </div>
         </div>
       </div>
@@ -70,6 +74,8 @@ const props = defineProps({
   roomId: Number,
 })
 
+const mySenderId = ref('')
+
 const inputMessage = ref('')
 const messages = ref([])
 const stompClient = ref(null)
@@ -86,20 +92,20 @@ const stompClient = ref(null)
 
 const loadHistory = async () => {
   try {
-    // const token = localStorage.getItem('jwt')
-    // if (!token) throw new Error('JWT 토큰 없음')
-
-    const res = await axios.get(
-      `/chat/history/${props.roomId}`,
-      //   `http://localhost:8080/api/chat/history/${props.roomId}`,
-      // , {
-      //   headers: {
-      //     Authorization: `Bearer ${token}`,
-      //   },
-      // }
-    )
-    messages.value = res.data
-    console.log('불러온 메시지:', res.data)
+    const res = await axios.get(`/chat/history/${props.roomId}`)
+    messages.value = res.data.map((msg) => {
+      const now = new Date(msg.timestamp) // Assuming msg.timestamp is available from backend
+      const hours = String(now.getHours()).padStart(2, '0')
+      const minutes = String(now.getMinutes()).padStart(2, '0')
+      const currentTime = `${hours}:${minutes}`
+      return {
+        ...msg,
+        isSelf: msg.sender === mySenderId.value,
+        author: msg.sender, // UI 표시용
+        time: currentTime, // UI 표시용
+      }
+    })
+    console.log('불러온 메시지:', messages.value)
   } catch (error) {
     console.error('채팅 내역 불러오기 실패:', error)
   }
@@ -119,7 +125,18 @@ const connectWebSocket = () => {
       console.log('✅ 연결 성공')
       stompClient.value.subscribe(`/topic/chat/${props.roomId}`, (msg) => {
         const chatMessage = JSON.parse(msg.body)
-        messages.value.push(chatMessage)
+        const now = new Date()
+        const hours = String(now.getHours()).padStart(2, '0')
+        const minutes = String(now.getMinutes()).padStart(2, '0')
+        const currentTime = `${hours}:${minutes}`
+
+        const processedMessage = {
+          ...chatMessage,
+          isSelf: chatMessage.sender === mySenderId.value,
+          author: chatMessage.sender, // UI 표시용
+          time: currentTime, // UI 표시용
+        }
+        messages.value.push(processedMessage)
       })
     },
     (error) => {
@@ -147,7 +164,8 @@ const sendMessage = () => {
 
   if (inputMessage.value.trim() !== '') {
     const chatMessage = {
-      sender: localStorage.getItem('username') || '사용자',
+      //   sender: localStorage.getItem('username') || '사용자',
+      sender: mySenderId.value,
       content: inputMessage.value,
     }
     stompClient.value.send(`/app/chat/${props.roomId}`, {}, JSON.stringify(chatMessage))
@@ -166,4 +184,11 @@ watch(
   },
   { immediate: true },
 )
+
+watch(mySenderId, (newId) => {
+  messages.value = messages.value.map((msg) => ({
+    ...msg,
+    isSelf: msg.sender === newId,
+  }))
+})
 </script>
