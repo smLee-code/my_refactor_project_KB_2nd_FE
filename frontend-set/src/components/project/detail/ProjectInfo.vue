@@ -3,19 +3,19 @@
     <!-- 프로젝트 진행상황, 타입 -->
     <div class="flex items-center space-x-3 mb-4">
       <span class="bg-green-100 text-green-800 text-sm px-3 py-1 rounded-full font-medium">
-        {{ getProgressLabel(project?.basicInfo?.progress) }}
+        {{ getProgressLabel(projectData?.basicInfo?.progress) }}
       </span>
       <span class="text-gray-500 text-sm">
-        {{ getTypeLabel(project?.basicInfo?.projectType) }}
+        {{ getTypeLabel(projectData?.basicInfo?.projectType) }}
       </span>
     </div>
     <!-- 프로젝트 기본 설명 -->
 
     <h1 class="text-3xl font-bold text-gray-900 mb-4">
-      {{ project?.basicInfo?.title }}
+      {{ projectData?.basicInfo?.title }}
     </h1>
     <p class="text-gray-600 text-lg leading-relaxed mb-6">
-      {{ project?.basicInfo?.promotion }}
+      {{ projectData?.basicInfo?.promotion }}
     </p>
 
     <div class="space-y-6">
@@ -25,10 +25,10 @@
       </div>
 
       <!-- 타입별 상세 정보 -->
-      <div v-if="project">
+      <div v-if="projectData">
         <component
-          :is="getDetailComponent(project.basicInfo.projectType)"
-          :detail="project.detailInfo"
+          :is="getDetailComponent(projectData.basicInfo.projectType)"
+          :detail="projectData.detailInfo"
         />
       </div>
     </div>
@@ -36,14 +36,22 @@
 </template>
 
 <script setup>
+import { ref, onMounted } from 'vue'
+import { useRoute } from 'vue-router'
+import axios from 'axios'
+
 import DetailChallenge from './DetailChallenge.vue'
 import DetailDonation from './DetailDonation.vue'
 import DetailLoan from './DetailLoan.vue'
 import DetailSavings from './DetailSavings.vue'
 
-const props = defineProps({
-  project: Object,
-})
+// const props = defineProps({
+//   project: Object,
+// })
+
+const route = useRoute()
+const projectId = route.params.id
+const projectData = ref(null)
 
 const getDetailComponent = (type) => {
   switch (type) {
@@ -85,4 +93,14 @@ const getTypeLabel = (type) => {
       return '기타'
   }
 }
+
+onMounted(async () => {
+  try {
+    const res = await axios.get(`/project/list/detail/${projectId}/full`)
+    projectData.value = res.data
+    console.log('✅ 프로젝트 정보 로드:', res.data)
+  } catch (e) {
+    console.error('❌ 프로젝트 정보 불러오기 실패:', e)
+  }
+})
 </script>
