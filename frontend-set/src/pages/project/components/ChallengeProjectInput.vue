@@ -41,11 +41,31 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, watch } from 'vue'
 
 const form = ref({
     challengePeriodDays: 0,
     reward: '',
     rewardCondition: '',
 })
+
+const isFormValid = computed(() => {
+    return (
+        form.value.periodDays > 0 &&
+        form.value.interestRate > 0.0 &&
+        form.value.successCondition.trim() !== ''
+    )
+})
+
+watch(isFormValid, (newVal) => {
+    emit('update:is-form-valid', newVal)
+})
+
+const emit = defineEmits(['update:is-form-valid'])
+
+const getFormData = () => {
+    return { ...form.value }
+}
+
+defineExpose({ getFormData })
 </script>

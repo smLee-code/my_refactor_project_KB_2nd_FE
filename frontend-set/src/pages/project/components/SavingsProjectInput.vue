@@ -42,17 +42,31 @@
 </template>
 
 <script setup>
-import { ref, computed, defineEmits } from 'vue'
-
-const emit = defineEmits(['update-data'])
-
-const sendValue = () => {
-    emit('update-data', '자식에서 보낸 데이터')
-}
+import { ref, computed, watch } from 'vue'
 
 const form = ref({
     periodDays: 0,
     interestRate: 0.0,
     successCondition: '',
 })
+
+const isFormValid = computed(() => {
+    return (
+        form.value.periodDays > 0 &&
+        form.value.interestRate > 0.0 &&
+        form.value.successCondition.trim() !== ''
+    )
+})
+
+watch(isFormValid, (newVal) => {
+    emit('update:is-form-valid', newVal)
+})
+
+const emit = defineEmits(['update:is-form-valid'])
+
+const getFormData = () => {
+    return { ...form.value }
+}
+
+defineExpose({ getFormData })
 </script>

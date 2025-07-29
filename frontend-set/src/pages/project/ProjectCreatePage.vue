@@ -17,7 +17,7 @@
                     </div>
                 </header>
                 <!-- Form Section -->
-                <section class="py-8">
+                <section class="py-8 pb-40">
                     <form @submit.prevent="createProject" class="space-y-8">
                         <!-- Project Name -->
                         <div>
@@ -25,7 +25,7 @@
                                 프로젝트명 <span class="text-red-500">*</span>
                             </label>
                             <input
-                                v-model="form.name"
+                                v-model="form.title"
                                 type="text"
                                 class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
                                 placeholder="프로젝트명을 입력하세요"
@@ -38,17 +38,25 @@
                                 프로젝트 타입 <span class="text-red-500">*</span>
                             </label>
                             <select
-                                v-model="form.category"
+                                v-model="form.projectType"
                                 class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
                             >
-                                <option v-for="category in categories" :value="category.value">
+                                <option
+                                    v-for="category in projectTypeInfos"
+                                    :value="category.value"
+                                >
                                     {{ category.label }}
                                 </option>
                             </select>
                         </div>
 
-                        <div v-if="form.category">
-                            <component :is="selectedCategory.component" :form="form"></component>
+                        <div v-if="form.projectType">
+                            <component
+                                :is="selectedCategory.component"
+                                :form="form"
+                                ref="childRef"
+                                @update:is-form-valid="isChildFormValid = $event"
+                            ></component>
                         </div>
 
                         <!-- Project Description -->
@@ -57,7 +65,7 @@
                                 프로젝트 설명 <span class="text-red-500">*</span>
                             </label>
                             <textarea
-                                v-model="form.description"
+                                v-model="form.promotion"
                                 rows="4"
                                 class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm resize-none"
                                 placeholder="프로젝트에 대한 설명을 입력하세요"
@@ -109,30 +117,16 @@
                             </div>
                         </div>
 
-                        <!-- Date Range -->
-                        <div class="grid grid-cols-2 gap-6">
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-2">
-                                    시작일 <span class="text-red-500">*</span>
-                                </label>
-                                <input
-                                    v-model="form.startDate"
-                                    type="date"
-                                    class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
-                                    required
-                                />
-                            </div>
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-2">
-                                    종료일 <span class="text-red-500">*</span>
-                                </label>
-                                <input
-                                    v-model="form.endDate"
-                                    type="date"
-                                    class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
-                                    required
-                                />
-                            </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">
+                                프로젝트 마감일 <span class="text-red-500">*</span>
+                            </label>
+                            <input
+                                v-model="form.deadline"
+                                type="date"
+                                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
+                                required
+                            />
                         </div>
                     </form>
                 </section>
@@ -203,20 +197,30 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, watch } from 'vue'
+import axios from 'axios'
 
 import SavingsProjectInput from './components/SavingsProjectInput.vue'
 import LoanProjectInput from './components/LoanProjectInput.vue'
 import DonationProjectInput from './components/DonationProjectInput.vue'
 import ChallengeProjectInput from './components/ChallengeProjectInput.vue'
 
+const userId = ref(1)
+
+const childRef = ref(null)
+
+const childForm = ref({})
+const isChildFormValid = ref(false)
+
+const totalForm = ref({})
+
 const form = ref({
-    name: '',
-    description: '',
-    category: '',
-    startDate: '',
-    endDate: '',
-    image: null,
+    userId: userId.value,
+    title: '',
+    promotion: '',
+    projectType: '',
+    deadline: '',
+    // image: null,
 })
 
 const imagePreview = ref(null)
@@ -250,37 +254,37 @@ const removeImage = () => {
 const showWarningModal = ref(false)
 const isLoading = ref(false)
 
-const categories = [
+const projectTypeInfos = [
     {
         value: '',
-        label: '카테고리를 선택하세요',
+        label: '프로젝트 타입을 선택하세요',
         description: '',
         icon: '',
         component: null,
     },
     {
-        value: 'savings',
+        value: 'Savings',
         label: '저축형',
         description: '목표 금액을 설정하여 저축하는 프로젝트',
         icon: 'fas fa-piggy-bank text-green-600',
         component: SavingsProjectInput,
     },
     {
-        value: 'loan',
+        value: 'Loan',
         label: '대출형',
         description: '대출 상환 계획을 관리하는 프로젝트',
         icon: 'fas fa-hand-holding-usd text-orange-600',
         component: LoanProjectInput,
     },
     {
-        value: 'donation',
+        value: 'Donation',
         label: '기부형',
         description: '기부 목표를 설정하고 관리하는 프로젝트',
         icon: 'fas fa-heart text-red-600',
         component: DonationProjectInput,
     },
     {
-        value: 'challenge',
+        value: 'Challenge',
         label: '챌린지형',
         description: '금융 관련 도전 과제를 수행하는 프로젝트',
         icon: 'fas fa-trophy text-yellow-600',
@@ -289,29 +293,36 @@ const categories = [
 ]
 
 const selectedCategory = computed(() => {
-    return categories.find((category) => category.value === form.value.category)
+    return projectTypeInfos.find((category) => category.value === form.value.projectType)
 })
 
 const isFormValid = computed(() => {
     return (
-        form.value.name.trim() !== '' &&
-        form.value.description.trim() !== '' &&
-        form.value.category !== '' &&
-        form.value.startDate !== '' &&
-        form.value.endDate !== '' &&
-        form.value.image !== null
+        form.value.title.trim() !== '' &&
+        form.value.promotion.trim() !== '' &&
+        form.value.projectType !== '' &&
+        form.value.deadline !== '' &&
+        // form.value.image !== null &&
+        isChildFormValid.value
     )
 })
 
 const hasFormData = computed(() => {
     return (
-        form.value.name.trim() !== '' ||
-        form.value.description.trim() !== '' ||
-        form.value.category !== '' ||
-        form.value.startDate !== '' ||
-        form.value.endDate !== '' ||
-        form.value.colorTag !== ''
+        form.value.title.trim() !== '' ||
+        form.value.promotion.trim() !== '' ||
+        form.value.projectType !== '' ||
+        form.value.deadline !== '' // ||
+        // form.value.image !== null
     )
+})
+
+watch(selectedCategory, (newVal, oldVal) => {
+    if (newVal !== oldVal) {
+        console.log(`프로젝트 타입 변경: ${oldVal} -> ${newVal}. 자식 폼 데이터를 초기화합니다.`)
+        childForm.value = {}
+        isChildFormValid.value = false
+    }
 })
 
 const handleBackClick = () => {
@@ -341,27 +352,43 @@ const confirmCancel = () => {
 const createProject = async () => {
     if (!isFormValid.value) return
 
+    getChildForm()
+    totalForm.value = { ...form.value, ...childForm.value }
+    console.log('totalForm: ', totalForm.value)
+
     isLoading.value = true
     try {
-        // Simulate API call
-        await new Promise((resolve) => setTimeout(resolve, 2000))
+        const response = await axios.post('/api/project', totalForm.value, {
+            headers: {
+                'Content-Type': 'application/json',
+            },
+        })
 
-        // Success - navigate to project list or project detail
-        console.log('프로젝트 생성 완료:', form.value)
+        console.log('서버 응답: ', response.data)
 
         // Reset form
         form.value = {
-            name: '',
-            description: '',
-            category: '',
-            startDate: '',
-            endDate: '',
-            colorTag: '',
+            userId: userId.value,
+            title: '',
+            promotion: '',
+            projectType: '',
+            deadline: '',
+            // image: null,
         }
     } catch (error) {
         console.error('프로젝트 생성 실패:', error)
     } finally {
         isLoading.value = false
+    }
+}
+
+const getChildForm = () => {
+    const data = childRef.value?.getFormData()
+
+    console.log(data)
+
+    if (data) {
+        childForm.value = { ...data }
     }
 }
 </script>
