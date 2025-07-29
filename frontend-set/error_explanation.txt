@@ -1,0 +1,10 @@
+[vite] connecting...
+client:912 [vite] connected.
+ProjectDetailPage.vue:49 🔥 프로젝트 응답 데이터: Object
+ProjectDetailPage.vue:51 project.projectId: 2
+ChatComponent.vue:109 📌 roomId 감지됨: 2
+ChatComponent.vue:57 🧪 WebSocket 연결 시도 중...
+ChatComponent.vue:62 [STOMP] Opening Web Socket...
+ChatComponent.vue:50 불러온 메시지: Array(0)
+ChatComponent.vue:62 [STOMP] Whoops! Lost connection to http://localhost:8080/chat-app
+ChatComponent.vue:74 ❌연결 실패 Whoops! Lost connection to http://localhost:8080/chat-app
