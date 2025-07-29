@@ -51,9 +51,9 @@ const form = ref({
 
 const isFormValid = computed(() => {
     return (
-        form.value.periodDays > 0 &&
-        form.value.interestRate > 0.0 &&
-        form.value.successCondition.trim() !== ''
+        form.value.challengePeriodDays > 0 &&
+        form.value.reward.trim() !== '' &&
+        form.value.rewardCondition.trim() !== ''
     )
 })
 

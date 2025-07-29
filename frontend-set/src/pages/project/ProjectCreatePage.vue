@@ -358,7 +358,7 @@ const createProject = async () => {
 
     isLoading.value = true
     try {
-        const response = await axios.post('/api/project', totalForm.value, {
+        const response = await axios.post('/project', totalForm.value, {
             headers: {
                 'Content-Type': 'application/json',
             },
