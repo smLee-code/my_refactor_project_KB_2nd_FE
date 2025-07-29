@@ -1,28 +1,25 @@
 <template>
-  <div class="relative border-b border-gray-200 overflow-x-auto">
-    <div class="flex space-x-8 h-12 relative">
-      <button
-        v-for="tab in tabs"
-        :key="tab.key"
-        @click="$emit('update:modelValue', tab.key)"
-        :class="[
-          'pb-4 transition-colors whitespace-nowrap text-base',
-          modelValue === tab.key
-            ? 'border-b-2 border-kb-yellow font-bold text-kb-ui-02'
-            : 'text-kb-ui-05',
-        ]"
-      >
-        {{ tab.label }}
-      </button>
-    </div>
+  <div class="flex space-x-8 h-12 border-b border-gray-200 mb-8">
+    <button
+      v-for="tab in tabs"
+      :key="tab.value"
+      @click="$emit('update:modelValue', tab.value)"
+      :class="[
+        'pb-4 cursor-pointer transition-colors whitespace-nowrap text-base',
+        modelValue === tab.value
+          ? 'border-b-2 border-yellow-400 font-bold text-gray-900'
+          : 'text-gray-500',
+      ]"
+    >
+      {{ tab.label }}
+    </button>
   </div>
 </template>
-
 <script setup>
+// tabs: [{ value, label }] 형태의 탭 목록
+// modelValue: 현재 선택된 탭 값 (v-model)
 defineProps({
-  tabs: Array,
+  tabs: { type: Array, default: () => [] },
   modelValue: String,
 })
-
-defineEmits(['update:modelValue'])
 </script>

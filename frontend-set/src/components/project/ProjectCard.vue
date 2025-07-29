@@ -17,7 +17,7 @@
         {{ project.category }}
       </span>
       <div class="flex items-center space-x-1 text-kb-ui-05">
-        <button @click.stop="toggleLike(project.id)" class="cursor-pointer">
+        <button @click.stop="$emit('toggle-like', project.id)" class="cursor-pointer">
           <i
             class="fa-heart text-sm"
             :class="project.isLiked ? 'fas text-status-error' : 'far text-kb-ui-06'"
@@ -66,15 +66,8 @@
 </template>
 
 <script setup>
+// project: 프로젝트 객체 (필수)
 defineProps({
-  project: {
-    type: Object,
-    required: true,
-  },
+  project: { type: Object, required: true },
 })
-const emit = defineEmits(['toggle-like'])
-
-function toggleLike(id) {
-  emit('toggle-like', id)
-}
 </script>

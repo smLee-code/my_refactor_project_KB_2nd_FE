@@ -5,12 +5,12 @@ export default [
     component: () => import('../pages/project/ProjectCreatePage.vue'),
   },
   {
-    path: '/project/list/detail/:projectId',
+    path: '/project/detail',
     name: 'projectDetail',
     component: () => import('../pages/project/ProjectDetailPage.vue'),
   },
   {
-    path: '/project/list',
+    path: '/project',
     name: 'projectList',
     component: () => import('../pages/project/ProjectListPage.vue'),
   },

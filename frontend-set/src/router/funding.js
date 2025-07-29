@@ -15,7 +15,7 @@ export default [
     component: () => import('../pages/funding/FundingDetailPage.vue'),
   },
   {
-    path: '/funding/list',
+    path: '/funding',
     name: 'fundingList',
     component: () => import('../pages/funding/FundingListPage.vue'),
   },

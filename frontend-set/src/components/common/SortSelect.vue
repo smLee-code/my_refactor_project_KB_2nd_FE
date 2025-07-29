@@ -1,22 +1,34 @@
 <template>
-  <div class="flex items-center">
-    <select
-      :value="modelValue"
-      @change="$emit('update:modelValue', $event.target.value)"
-      class="px-4 py-2 border border-kb-ui-08 rounded-lg focus:outline-none text-sm text-kb-ui-02 cursor-pointer"
+  <div class="relative">
+    <button
+      @click="show = !show"
+      class="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-0 text-sm cursor-pointer flex items-center space-x-2 whitespace-nowrap"
     >
-      <option value="latest">최신순</option>
-      <option value="likes">좋아요순</option>
-      <option value="deadline">마감임박순</option>
-      // 필요 시 정렬 기준 추가
-    </select>
+      <span>{{ options[modelValue] }}</span>
+      <i class="fas fa-chevron-down text-xs"></i>
+    </button>
+    <div
+      v-if="show"
+      class="absolute right-0 mt-1 w-32 bg-white border border-gray-300 rounded-lg shadow-lg z-10"
+    >
+      <button
+        v-for="(label, key) in options"
+        :key="key"
+        @click="($emit('update:modelValue', key), (show = false))"
+        class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 cursor-pointer whitespace-nowrap"
+      >
+        {{ label }}
+      </button>
+    </div>
   </div>
 </template>
-
 <script setup>
-defineProps({
+import { ref } from 'vue'
+// options: { [key]: label } 형태의 옵션 목록
+// modelValue: 현재 선택된 옵션 key (v-model)
+const props = defineProps({
+  options: { type: Object, default: () => ({}) },
   modelValue: String,
 })
-
-defineEmits(['update:modelValue'])
+const show = ref(false)
 </script>
