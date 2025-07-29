@@ -5,9 +5,10 @@ export default [
     component: () => import('../pages/project/ProjectCreatePage.vue'),
   },
   {
-    path: '/project/detail',
+    path: '/project/detail/:id',
     name: 'projectDetail',
     component: () => import('../pages/project/ProjectDetailPage.vue'),
+    props: true,
   },
   {
     path: '/project',

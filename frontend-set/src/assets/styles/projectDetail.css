@@ -1,0 +1,79 @@
+:root {
+  --kb-yellow-positive: #ffbc00;
+  --kb-yellow: #ffd338;
+  --kb-yellow-native: #ffcc00;
+  --kb-gray-dark: #60584c;
+  --kb-gray-light: #918274;
+  --kb-ui-01: #000000;
+  --kb-ui-02: #26282c;
+  --kb-ui-03: #484b51;
+  --kb-ui-04: #696e76;
+  --kb-ui-05: #484b51;
+  --kb-ui-06: #aab0b8;
+  --kb-ui-07: #c6cbd0;
+  --kb-ui-08: #dde1e4;
+  --kb-ui-09: #ebeef0;
+  --kb-ui-10: #f7f7f8;
+  --kb-ui-11: #ffffff;
+  --kb-positive: #287eff;
+  --kb-error: #f23f3f;
+  --kb-error-input: #ff5858;
+  --kb-caution: #ffd338;
+}
+
+.!rounded-button {
+  border-radius: 8px;
+}
+
+input[type='number']::-webkit-outer-spin-button,
+input[type='number']::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+input[type='number'] {
+  -moz-appearance: textfield;
+}
+
+.line-clamp-2 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.bg-kb-yellow {
+  background-color: var(--kb-yellow);
+}
+
+.text-kb-yellow {
+  color: var(--kb-yellow);
+}
+
+.border-kb-yellow {
+  border-color: var(--kb-yellow);
+}
+
+.bg-kb-gray {
+  background-color: var(--kb-gray-dark);
+}
+
+.text-kb-gray {
+  color: var(--kb-gray-dark);
+}
+
+.bg-kb-positive {
+  background-color: var(--kb-positive);
+}
+
+.text-kb-positive {
+  color: var(--kb-positive);
+}
+
+.bg-kb-error {
+  background-color: var(--kb-error);
+}
+
+.text-kb-error {
+  color: var(--kb-error);
+}
