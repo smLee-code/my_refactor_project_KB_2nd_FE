@@ -8,7 +8,7 @@
       </li>
       <li class="flex items-start">
         <i class="fas fa-check-circle text-green-500 mt-1 mr-2"></i>
-        <span>희망 금리: {{ detail.desiredInterstRate }}일</span>
+        <span>희망 금리: {{ detail.desiredInterestRate }}%</span>
       </li>
       <li class="flex items-start">
         <i class="fas fa-check-circle text-green-500 mt-1 mr-2"></i>

@@ -6,9 +6,9 @@
     </p>
     <button
       @click="toggleLike"
-      class="w-full bg-gray-100 text-gray-700 px-4 py-3 !rounded-button font-medium hover:bg-gray-200 cursor-pointer whitespace-nowrap transition-all border border-gray-300"
+      class="w-full bg-gray-100 text-gray-700 px-4 py-3 rounded-button font-medium hover:bg-gray-200 cursor-pointer whitespace-nowrap transition-all border border-gray-300"
     >
-      <i :class="isLiked ? 'fas fa-heart text-red-500' : 'far fa-heart'" class="mr-2"></i>
+      <i :class="[isLiked ? 'fas fa-heart text-red-500' : 'far fa-heart', 'mr-2']"></i>
       {{ isLiked ? '좋아요 취소' : '좋아요' }}
     </button>
   </div>
@@ -17,40 +17,31 @@
 <script setup>
 import { ref } from 'vue'
 import axios from 'axios'
-const likeCount = ref(0)
-const isLiked = ref(false)
-
-// const toggleLike = () => {
-//   isLiked.value = !isLiked.value
-//   likeCount.value += isLiked.value ? 1 : -1
-// }
-
-const toggleLike = async () => {
-  console.log('👍 userId:', props.userId)
-  console.log('📁 projectId:', props.projectId)
-
-  const payload = {
-    userId: props.userId,
-    projectId: props.projectId,
-  }
-
-  try {
-    if (isLiked.value) {
-      await axios.delete('/api/votes', { data: payload })
-      likeCount.value--
-    } else {
-      await axios.post('/api/votes', payload)
-      likeCount.value++
-    }
-
-    isLiked.value = !isLiked.value
-  } catch (error) {
-    console.error('좋아요 요청 실패:', error)
-  }
-}
 
 const props = defineProps({
   projectId: Number,
   userId: Number,
+  isLiked: Boolean, // 부모에서 내려오는 좋아요 상태
 })
+
+const emit = defineEmits(['update-like'])
+
+const toggleLike = async () => {
+  try {
+    const payload = {
+      userId: props.userId,
+      projectId: props.projectId,
+    }
+
+    if (props.isLiked) {
+      await axios.delete('/api/votes', { data: payload })
+    } else {
+      await axios.post('/api/votes', payload)
+    }
+
+    emit('update-like', !props.isLiked)
+  } catch (error) {
+    console.error('좋아요 요청 실패:', error)
+  }
+}
 </script>
