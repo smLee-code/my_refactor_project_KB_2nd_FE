@@ -240,6 +240,7 @@
 </template>
 
 <script setup>
+
 import axios from 'axios'
 import { ref, computed, nextTick, onMounted, onBeforeUnmount } from 'vue'
 
@@ -249,6 +250,7 @@ import SummaryBasicInfo from '@/components/project/detail/SummaryBasicInfo.vue'
 import WriterInfo from '@/components/project/detail/WriterInfo.vue'
 import ProjectVote from '@/components/project/detail/ProjectVote.vue'
 import '@/assets/styles/projectDetail.css'
+
 
 const route = useRoute()
 const projectId = route.params.id
