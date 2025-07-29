@@ -1,16 +1,4 @@
 <template>
-  <!-- <div class="chat-box">
-    <div v-for="msg in messages" :key="msg.id">
-      <b>{{ msg.sender }}:</b> {{ msg.content }} <small>({{ msg.timestamp }})</small>
-    </div>
-    <input v-model="inputMessage" @keyup.enter="sendMessage" placeholder="메시지를 입력하세요" />
-    <button @click="sendMessage">전송</button>
-  </div>
-
-  <div>
-    <input v-model="mySenderId" placeholder="임시 아이디 (번호)를 입력하세요" />
-  </div> -->
-
   <!-- 실시간 채팅 섹션 -->
   <div class="bg-white rounded-xl shadow-lg p-6">
     <h3 class="text-xl font-semibold text-gray-900 mb-4">실시간 채팅</h3>
@@ -58,7 +46,7 @@
         @click="sendMessage"
         class="absolute right-2 top-1/2 transform -translate-y-1/2 bg-blue-600 text-white px-4 py-1.5 !rounded-button font-medium hover:bg-blue-700 cursor-pointer whitespace-nowrap transition-all"
       >
-        <i class="fas fa-paper-plane">전송</i>
+        <i class="fas fa-paper-plane"></i><span>전송</span>
       </button>
     </div>
   </div>
@@ -136,7 +124,7 @@ const connectWebSocket = () => {
           author: chatMessage.sender, // UI 표시용
           time: currentTime, // UI 표시용
         }
-        messages.value.push(processedMessage)
+        // messages.value.push(processedMessage)
       })
     },
     (error) => {
@@ -156,6 +144,23 @@ const connectWebSocket = () => {
 //   }
 // }
 
+// const sendMessage = () => {
+//   if (!stompClient.value || !stompClient.value.connected) {
+//     console.warn('❗ WebSocket 연결이 아직 완료되지 않았습니다.')
+//     return
+//   }
+
+// if (inputMessage.value.trim() !== '') {
+//   const chatMessage = {
+//     // sender: localStorage.getItem('username') || '사용자',
+//     sender: mySenderId.value,
+//     content: inputMessage.value,
+//   }
+//   stompClient.value.send(`/app/chat/${props.roomId}`, {}, JSON.stringify(chatMessage))
+//   inputMessage.value = ''
+// }
+// }
+
 const sendMessage = () => {
   if (!stompClient.value || !stompClient.value.connected) {
     console.warn('❗ WebSocket 연결이 아직 완료되지 않았습니다.')
@@ -163,20 +168,36 @@ const sendMessage = () => {
   }
 
   if (inputMessage.value.trim() !== '') {
+    const now = new Date()
+    const hours = String(now.getHours()).padStart(2, '0')
+    const minutes = String(now.getMinutes()).padStart(2, '0')
+    const currentTime = `${hours}:${minutes}`
+
     const chatMessage = {
-      //   sender: localStorage.getItem('username') || '사용자',
       sender: mySenderId.value,
-      content: inputMessage.value,
+      content: inputMessage.value.trim(),
     }
+
+    // 1. 메시지 전송
     stompClient.value.send(`/app/chat/${props.roomId}`, {}, JSON.stringify(chatMessage))
+
+    // 2. 메시지 화면에 반영
+    messages.value.push({
+      ...chatMessage,
+      isSelf: true,
+      author: mySenderId.value,
+      time: currentTime,
+    })
+
+    // 3. 입력창 비우기
     inputMessage.value = ''
   }
 }
 
 watch(
   () => props.roomId,
-  (newVal) => {
-    console.log('📌 roomId 감지됨:', newVal)
+  (newVal, oldVal) => {
+    console.log('📌 roomId 감지됨:', newVal, oldVal)
     if (newVal) {
       loadHistory()
       connectWebSocket()
