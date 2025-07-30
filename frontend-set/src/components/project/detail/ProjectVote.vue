@@ -14,36 +14,6 @@
   </div>
 </template>
 
-<!-- <script setup>
-import { ref } from 'vue'
-import axios from 'axios'
-
-const props = defineProps({
-  projectId: Number,
-  userId: Number,
-  isLiked: Boolean, // 부모에서 내려오는 좋아요 상태
-})
-
-const emit = defineEmits(['update-like'])
-
-const toggleLike = async (projectId) => {
-  const project = projects.value.find((p) => p.id === projectId)
-  if (!project) return
-
-  try {
-    if (project.isLiked) {
-      await axios.post('/votes', { userId: 1, projectId })
-      project.likes--
-    } else {
-      await axios.post('/votes', { userId: 1, projectId })
-      project.likes++
-    }
-    project.isLiked = !project.isLiked
-  } catch (err) {
-    console.error('❌ 좋아요 토글 실패:', err)
-  }
-}
-</script> -->
 <script setup>
 import { ref, watch } from 'vue'
 import axios from 'axios'
@@ -54,11 +24,11 @@ const props = defineProps({
   isLiked: Boolean, // 부모에서 내려오는 좋아요 상태
 })
 
-const emit = defineEmits(['update-like'])
+const emit = defineEmits(['toggle-like'])
 
 const localIsLiked = ref(props.isLiked)
 
-// props 변경 시 로컬 값도 반영
+// 부모에서 isLiked가 바뀌면 로컬 상태 반영
 watch(
   () => props.isLiked,
   (newVal) => {
@@ -67,15 +37,17 @@ watch(
 )
 
 const toggleLike = async () => {
+  const newState = !localIsLiked.value
   try {
-    if (localIsLiked.value) {
-      await axios.delete('/votes', { loginId: 1, projectId: props.projectId })
+    if (newState) {
+      // 좋아요 취소 (DELETE 시 data 속성 필요)
+      await axios.post('/votes', { userId: props.userId, projectId: props.projectId })
     } else {
-      // await axios.post('/votes', { userId: props.loginId, projectId: props.projectId })
-      await axios.post('/votes', { loginId: 1, projectId: props.projectId })
+      // 좋아요 추가
+      await axios.post('/votes', { userId: props.userId, projectId: props.projectId })
     }
-    localIsLiked.value = !localIsLiked.value
-    emit('update-like', localIsLiked.value) // 부모에게 변경 사항 전달
+
+    emit('update-like', newState)
   } catch (err) {
     console.error('❌ 좋아요 토글 실패:', err)
   }

@@ -53,6 +53,7 @@ import '@/assets/styles/projectList.css'
 
 const projects = ref([])
 const router = useRouter()
+const userId = ref(1)
 
 //라우터
 const goToCreatePage = () => {
@@ -142,10 +143,10 @@ const toggleLike = async (projectId) => {
 
   try {
     if (project.isLiked) {
-      await axios.post('/votes', { userId: 1, projectId })
+      await axios.post('/votes', { userId: userId.value, projectId })
       project.likes--
     } else {
-      await axios.post('/votes', { userId: 1, projectId })
+      await axios.post('/votes', { userId: userId.value, projectId })
       project.likes++
     }
     project.isLiked = !project.isLiked
@@ -177,6 +178,21 @@ onMounted(async () => {
     )
   } catch (err) {
     console.error('❌ 프로젝트 불러오기 실패:', err)
+  }
+
+  for (const project of projects.value) {
+    try {
+      const res = await axios.get(`/votes?userId=${userId.value}&projectId=${project.id}`)
+      project.isLiked = res.data
+      console.log('✅ 투표 여부 API 응답:', res.data)
+      // 좋아요 개수
+      const voteCountRes = await axios.get('/votes/count', {
+        params: { projectId: project.id },
+      })
+      project.likes = voteCountRes.data
+    } catch (err) {
+      console.error(`❌ 프로젝트 ${project.id} 좋아요 데이터 조회 실패:`, err)
+    }
   }
 })
 
