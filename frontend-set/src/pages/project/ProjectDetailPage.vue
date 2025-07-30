@@ -80,14 +80,14 @@ onMounted(async () => {
     return
   }
 
-  // 사용자 정보는 별도 처리 (로그인 안 된 경우 대비)
-  try {
-    const userRes = await axios.get('/user/me')
-    loginId.value = userRes.data.id
-    console.log('✅ 사용자 API 응답:', loginId.value)
-  } catch (e) {
-    console.warn('⚠ 사용자 정보 요청 실패 (비로그인 상태일 수 있음):', e)
-    // loginId.value = 2
-  }
+  // // 사용자 정보는 별도 처리 (로그인 안 된 경우 대비)
+  // try {
+  //   const userRes = await axios.get('/user/me')
+  //   loginId.value = userRes.data.id
+  //   console.log('✅ 사용자 API 응답:', loginId.value)
+  // } catch (e) {
+  //   console.warn('⚠ 사용자 정보 요청 실패 (비로그인 상태일 수 있음):', e)
+  //   // loginId.value = 2
+  // }
 })
 </script>

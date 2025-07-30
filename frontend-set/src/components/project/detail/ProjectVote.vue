@@ -14,7 +14,7 @@
   </div>
 </template>
 
-<script setup>
+<!-- <script setup>
 import { ref } from 'vue'
 import axios from 'axios'
 
@@ -26,22 +26,58 @@ const props = defineProps({
 
 const emit = defineEmits(['update-like'])
 
+const toggleLike = async (projectId) => {
+  const project = projects.value.find((p) => p.id === projectId)
+  if (!project) return
+
+  try {
+    if (project.isLiked) {
+      await axios.post('/votes', { userId: 1, projectId })
+      project.likes--
+    } else {
+      await axios.post('/votes', { userId: 1, projectId })
+      project.likes++
+    }
+    project.isLiked = !project.isLiked
+  } catch (err) {
+    console.error('❌ 좋아요 토글 실패:', err)
+  }
+}
+</script> -->
+<script setup>
+import { ref, watch } from 'vue'
+import axios from 'axios'
+
+const props = defineProps({
+  projectId: Number,
+  userId: Number,
+  isLiked: Boolean, // 부모에서 내려오는 좋아요 상태
+})
+
+const emit = defineEmits(['update-like'])
+
+const localIsLiked = ref(props.isLiked)
+
+// props 변경 시 로컬 값도 반영
+watch(
+  () => props.isLiked,
+  (newVal) => {
+    localIsLiked.value = newVal
+  },
+)
+
 const toggleLike = async () => {
   try {
-    const payload = {
-      userId: props.userId,
-      projectId: props.projectId,
-    }
-
-    if (props.isLiked) {
-      await axios.delete('/api/votes', { data: payload })
+    if (localIsLiked.value) {
+      await axios.delete('/votes', { loginId: 1, projectId: props.projectId })
     } else {
-      await axios.post('/api/votes', payload)
+      // await axios.post('/votes', { userId: props.loginId, projectId: props.projectId })
+      await axios.post('/votes', { loginId: 1, projectId: props.projectId })
     }
-
-    emit('update-like', !props.isLiked)
-  } catch (error) {
-    console.error('좋아요 요청 실패:', error)
+    localIsLiked.value = !localIsLiked.value
+    emit('update-like', localIsLiked.value) // 부모에게 변경 사항 전달
+  } catch (err) {
+    console.error('❌ 좋아요 토글 실패:', err)
   }
 }
 </script>
