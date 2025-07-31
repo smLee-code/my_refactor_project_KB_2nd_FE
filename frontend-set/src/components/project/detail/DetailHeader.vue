@@ -14,7 +14,6 @@
 </template>
 
 <script setup>
-import MainImage from '../MainImage.vue'
 import shareBox from './shareBox.vue'
 import Thumbnail from '../Thumbnail.vue'
 </script>

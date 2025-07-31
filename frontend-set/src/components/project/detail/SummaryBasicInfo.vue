@@ -20,7 +20,7 @@
       </div>
       <div class="flex justify-between">
         <span class="text-gray-600">좋아요</span>
-        <span class="text-gray-900 font-medium">{{ detail.voteCount }}회</span>
+        <span class="text-gray-900 font-medium">{{ voteCount }}회</span>
       </div>
       <div class="flex justify-between">
         <span class="text-gray-600">조회수</span>
@@ -56,7 +56,8 @@ const getProgressLabel = (status) => {
       return '알 수 없음'
   }
 }
-defineProps({
+const props = defineProps({
   detail: Object,
+  voteCount: Number,
 })
 </script>

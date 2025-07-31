@@ -15,7 +15,7 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, watch } from 'vue'
 import axios from 'axios'
 
 const props = defineProps({
@@ -24,24 +24,32 @@ const props = defineProps({
   isLiked: Boolean, // 부모에서 내려오는 좋아요 상태
 })
 
-const emit = defineEmits(['update-like'])
+const emit = defineEmits(['toggle-like'])
+
+const localIsLiked = ref(props.isLiked)
+
+// 부모에서 isLiked가 바뀌면 로컬 상태 반영
+watch(
+  () => props.isLiked,
+  (newVal) => {
+    localIsLiked.value = newVal
+  },
+)
 
 const toggleLike = async () => {
+  const newState = !localIsLiked.value
   try {
-    const payload = {
-      userId: props.userId,
-      projectId: props.projectId,
-    }
-
-    if (props.isLiked) {
-      await axios.delete('/api/votes', { data: payload })
+    if (newState) {
+      // 좋아요 취소 (DELETE 시 data 속성 필요)
+      await axios.post('/votes', { userId: props.userId, projectId: props.projectId })
     } else {
-      await axios.post('/api/votes', payload)
+      // 좋아요 추가
+      await axios.post('/votes', { userId: props.userId, projectId: props.projectId })
     }
 
-    emit('update-like', !props.isLiked)
-  } catch (error) {
-    console.error('좋아요 요청 실패:', error)
+    emit('update-like', newState)
+  } catch (err) {
+    console.error('❌ 좋아요 토글 실패:', err)
   }
 }
 </script>

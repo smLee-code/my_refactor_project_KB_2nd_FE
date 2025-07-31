@@ -17,14 +17,17 @@
                 <!-- 우측 정보 영역 -->
                 <div class="space-y-6">
                     <!-- 기본 정보 -->
-                    <summary-basic-info :detail="projectData"></summary-basic-info>
+                    <summary-basic-info
+                        :detail="projectData"
+                        :voteCount="voteCount"
+                    ></summary-basic-info>
 
                     <!-- 작성자 정보 -->
                     <writer-info :detail="projectData"></writer-info>
 
                     <!-- 좋아요 -->
                     <project-vote
-                        :userId="loginId"
+                        :userId="userId"
                         :projectId="projectId"
                         :isLiked="isLiked"
                         @update-like="handleUpdateLike"
@@ -42,7 +45,7 @@
 
 <script setup>
 import axios from 'axios'
-import { ref, nextTick, onMounted } from 'vue'
+import { ref, nextTick, onMounted, watch } from 'vue'
 
 import { useRoute } from 'vue-router'
 import ProjectInfo from '@/components/project/detail/ProjectInfo.vue'
@@ -55,14 +58,15 @@ import Footer from '@/components/layout/Footer.vue'
 import RecommendRelated from '@/components/project/detail/RecommendRelated.vue'
 import DetailHeader from '@/components/project/detail/DetailHeader.vue'
 
+const userId = ref(1)
 const route = useRoute()
 const projectId = route.params.id
 
 const projectData = ref(null)
 const isLoggedIn = ref(false)
 const isLiked = ref(false)
-const likeCount = ref(98)
-const loginId = ref(null) // 로그인된 사용자 ID
+const likeCount = ref()
+const voteCount = ref(0)
 
 const handleUpdateLike = (newState) => {
     isLiked.value = newState
@@ -80,14 +84,46 @@ onMounted(async () => {
         return
     }
 
-    // 사용자 정보는 별도 처리 (로그인 안 된 경우 대비)
     try {
-        const userRes = await axios.get('/user/me')
-        loginId.value = userRes.data.id
-        console.log('✅ 사용자 API 응답:', loginId.value)
-    } catch (e) {
-        console.warn('⚠ 사용자 정보 요청 실패 (비로그인 상태일 수 있음):', e)
-        // loginId.value = 2
+        const res = await axios.get(`/votes?userId=${userId.value}&projectId=${projectId}`)
+        isLiked.value = res.data
+        console.log('✅ 투표 여부 API 응답:', res.data)
+        // 좋아요 개수
+        voteCount.value = await axios.get('/votes/count', {
+            params: { projectId },
+        })
+    } catch (err) {
+        console.error(`❌ 프로젝트 ${projectId} 좋아요 데이터 조회 실패:`, err)
     }
+
+    try {
+        const res = await axios.get(`/votes/count?projectId=${projectId}`)
+        voteCount.value = res.data
+        console.log('✅ 프로젝트 좋아요 수 API 응답:', res.data)
+    } catch (err) {
+        console.error(`❌ 프로젝트 좋아요 수 데이터 조회 실패:`, err)
+    }
+    // // 사용자 정보는 별도 처리 (로그인 안 된 경우 대비)
+    // try {
+    //   const userRes = await axios.get('/user/me')
+    //   userId.value = userRes.data.id
+    //   console.log('✅ 사용자 API 응답:', userId.value)
+    // } catch (e) {
+    //   console.warn('⚠ 사용자 정보 요청 실패 (비로그인 상태일 수 있음):', e)
+    //   // userId.value = 2
+    // }
 })
+
+watch(
+    () => isLiked.value,
+    async () => {
+        try {
+            const res = await axios.get(`/votes/count?projectId=${projectId}`)
+            voteCount.value = res.data
+            console.log('✅ 프로젝트 좋아요 수 API 응답:', res.data)
+        } catch (err) {
+            console.error(`❌ 프로젝트 좋아요 수 데이터 조회 실패:`, err)
+        }
+    },
+)
 </script>
