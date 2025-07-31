@@ -13,6 +13,17 @@
       >
       <span>원</span>
     </div>
+    
+    <!-- 익명 여부 체크박스 (기부 상품에만 해당) -->
+    <div class="anonymous-option">
+      <label>
+        <input 
+          v-model="isAnonymous" 
+          type="checkbox"
+        >
+        익명으로 기부하기
+      </label>
+    </div>
     <div class="payment-methods">
       <button @click="requestKakaoPay" class="kakao-btn">카카오페이 결제</button>
       <button @click="requestSettlePay" class="settle-btn">헥토파이낸셜 결제</button>
@@ -28,7 +39,8 @@ export default {
   name: "Payment",
   data() {
     return {
-      amount: 1000 // 기본 금액
+      amount: 1000, // 기본 금액
+      isAnonymous: false // 익명 기부 여부
     }
   },
   mounted() {
@@ -39,6 +51,9 @@ export default {
         this.initIMP()
       }, 100)
     })
+    
+    // 펀딩 타입 확인 (나중에 구현)
+    // this.fetchFundingInfo()
   },
   methods: {
     initIMP() {
@@ -215,10 +230,15 @@ export default {
       }
       
       try {
-        const response = await api.post('/payments/create', {
+        const requestData = {
           fundId: this.$route.params.id,
           amount: this.amount
-        })
+        }
+        
+        // metadata 추가 (익명 여부)
+        requestData.metadata = { anonymous: this.isAnonymous }
+        
+        const response = await api.post('/payments/create', requestData)
         
         return response.data // { merchant_uid, amount }
       } catch (error) {
@@ -244,6 +264,17 @@ export default {
         alert('결제 검증 중 오류가 발생했습니다.')
       }
     }
+    
+    // 나중에 펀딩 타입 확인 기능 추가 예정
+    // async fetchFundingInfo() {
+    //   try {
+    //     const fundId = this.$route.params.id
+    //     const response = await api.get(`/fundings/${fundId}`)
+    //     this.fundingType = response.data.fundingType
+    //   } catch (error) {
+    //     console.error('펀딩 정보 조회 오류:', error)
+    //   }
+    // }
   }
 }
 </script>
@@ -271,6 +302,21 @@ export default {
 }
 .amount-input span {
   margin-left: 0.5rem;
+}
+.anonymous-option {
+  margin-bottom: 1.5rem;
+  font-size: 1rem;
+}
+.anonymous-option label {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+}
+.anonymous-option input[type="checkbox"] {
+  margin-right: 0.5rem;
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
 }
 .payment-methods {
   display: flex;
