@@ -12,7 +12,7 @@ import '@fortawesome/fontawesome-free/css/all.min.css'
 const app = createApp(App)
 
 axios.defaults.withCredentials = true
-axios.defaults.baseURL = import.meta.env.VITE_API_URL || '/api' // 환경변수 또는 기본값
+axios.defaults.baseURL = '/api' // 기본값
 
 app.use(createPinia())
 app.use(router)

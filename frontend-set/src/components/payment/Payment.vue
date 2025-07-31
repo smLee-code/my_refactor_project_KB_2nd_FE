@@ -22,6 +22,8 @@
 </template>
 
 <script>
+import api from '@/api'
+
 export default {
   name: "Payment",
   data() {
@@ -213,23 +215,12 @@ export default {
       }
       
       try {
-        const response = await fetch('/api/payments/create', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            fundId: this.$route.params.id,
-            amount: this.amount
-          })
+        const response = await api.post('/payments/create', {
+          fundId: this.$route.params.id,
+          amount: this.amount
         })
         
-        if (!response.ok) {
-          throw new Error('주문 생성 실패')
-        }
-        
-        const data = await response.json()
-        return data // { merchant_uid, amount }
+        return response.data // { merchant_uid, amount }
       } catch (error) {
         console.error('주문 생성 오류:', error)
         alert('주문 생성 중 오류가 발생했습니다.')
@@ -239,22 +230,14 @@ export default {
     
     async sendPaymentToBackend(paymentData) {
       try {
-        const response = await fetch('/api/payments/verify', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(paymentData)
-        })
+        const response = await api.post('/payments/complete', paymentData)
         
-        const result = await response.json()
-        
-        if (result.success) {
+        if (response.data.success) {
           alert('결제가 완료되었습니다!')
           // 결제 완료 후 페이지 이동 등 처리
           // this.$router.push('/orders')
         } else {
-          alert('결제 검증 실패: ' + result.message)
+          alert('결제 검증 실패: ' + response.data.message)
         }
       } catch (error) {
         console.error('결제 검증 오류:', error)

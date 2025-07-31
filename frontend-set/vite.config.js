@@ -4,39 +4,39 @@ import vue from '@vitejs/plugin-vue'
 import vueDevTools from 'vite-plugin-vue-devtools'
 
 // https://vite.dev/config/
-export default defineConfig(({ mode }) => {
-  const env = process.env;
-  const target = env.VITE_PROXY_TARGET || 'http://localhost:8080';
-  
-  return {
+export default defineConfig({
     plugins: [vue(), vueDevTools()],
-  resolve: {
-    alias: {
-      '@': fileURLToPath(new URL('./src', import.meta.url)),
+    resolve: {
+        alias: {
+            '@': fileURLToPath(new URL('./src', import.meta.url)),
+        },
     },
-  },
 
-  define: {
-    global: {}, // ✅ global을 빈 객체로 define해서 sockjs-client global 참조 에러 방지
-  },
-    server: {
-      proxy: {
-        '/api': {
-          target: target,
-          changeOrigin: true,
-          secure: false,
-        },
-        '/chat': {
-          // 추가
-          target: target,
-          changeOrigin: true,
-        },
-        '/chat-app': {
-          target: target,
-          changeOrigin: true,
-          ws: true,
-        },
-      },
+    define: {
+        global: {}, // ✅ global을 빈 객체로 define해서 sockjs-client global 참조 에러 방지
     },
-  }
+    server: {
+        proxy: {
+            '/api': {
+                target: 'http://localhost:8080',
+                changeOrigin: true,
+                secure: false,
+                configure: (proxy, options) => {
+                    proxy.on('proxyReq', (proxyReq, req, res) => {
+                        console.log('Proxying:', req.url, '->', options.target + req.url);
+                    });
+                }
+            },
+            '/chat': {
+                // 추가
+                target: 'http://localhost:8080',
+                changeOrigin: true,
+            },
+            '/chat-app': {
+                target: 'http://localhost:8080',
+                changeOrigin: true,
+                ws: true,
+            },
+        },
+    },
 })
