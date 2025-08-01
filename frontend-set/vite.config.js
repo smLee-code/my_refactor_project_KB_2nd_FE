@@ -21,6 +21,11 @@ export default defineConfig({
                 target: 'http://localhost:8080',
                 changeOrigin: true,
                 secure: false,
+                configure: (proxy, options) => {
+                    proxy.on('proxyReq', (proxyReq, req, res) => {
+                        console.log('Proxying:', req.url, '->', options.target + req.url);
+                    });
+                }
             },
             '/chat': {
                 // 추가
