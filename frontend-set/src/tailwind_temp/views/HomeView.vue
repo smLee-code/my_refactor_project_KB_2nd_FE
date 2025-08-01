@@ -52,6 +52,7 @@
                             :voteCount="project.voteCount"
                             :promotion="project.promotion"
                             :projectType="project.projectType"
+                            @click="goToProject(project.projectId)"
                         />
                     </div>
                 </div>
@@ -102,27 +103,7 @@
             </div>
         </section>
         <!-- 푸터 -->
-        <footer class="bg-gradient-to-r from-gray-100 to-gray-200 py-8 shadow-inner">
-            <div class="max-w-7xl mx-auto px-6">
-                <div class="flex justify-center space-x-8">
-                    <a
-                        href="#"
-                        class="text-gray-600 hover:text-gray-900 cursor-pointer transition-colors hover:drop-shadow-sm"
-                        >Terms and Conditions</a
-                    >
-                    <a
-                        href="#"
-                        class="text-gray-600 hover:text-gray-900 cursor-pointer transition-colors hover:drop-shadow-sm"
-                        >Privacy Policy</a
-                    >
-                    <a
-                        href="#"
-                        class="text-gray-600 hover:text-gray-900 cursor-pointer transition-colors hover:drop-shadow-sm"
-                        >Contact Us</a
-                    >
-                </div>
-            </div>
-        </footer>
+        <Footer></Footer>
     </div>
 </template>
 
@@ -135,9 +116,14 @@ import ProjectRankingCard from '@/components/project/ProjectRankingCard.vue'
 import ProjectCard from '@/components/project/list/ProjectCard.vue'
 import FundingUrgentCard from '@/components/funding/FundingUrgentCard.vue'
 import axios from 'axios'
+import Footer from '../components/Footer.vue'
 
 const router = useRouter()
 const topProjects = ref([])
+
+const goToProject = (id) => {
+    router.push(`project/detail/${id}`)
+}
 
 onMounted(async () => {
     try {
