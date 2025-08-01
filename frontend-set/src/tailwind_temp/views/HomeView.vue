@@ -122,7 +122,7 @@ import { ref } from 'vue'
 import MainBannerSlider from '../components/MainBannerSlider.vue'
 import FundingCard from '@/components/funding/FundingCard.vue'
 import ProjectRankingCard from '@/components/project/ProjectRankingCard.vue'
-import ProjectCard from '@/components/project/ProjectCard.vue'
+import ProjectCard from '@/components/project/list/ProjectCard.vue'
 import FundingUrgentCard from '@/components/funding/FundingUrgentCard.vue'
 
 const mainBanners = [

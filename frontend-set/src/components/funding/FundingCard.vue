@@ -30,7 +30,6 @@
           </div>
           <ProgressBar :percent="progress" />
         </div>
-        <slot />
       </div>
     </div>
   </div>
