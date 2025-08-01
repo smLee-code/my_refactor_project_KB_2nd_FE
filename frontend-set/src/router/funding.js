@@ -19,4 +19,10 @@ export default [
     name: 'fundingList',
     component: () => import('../pages/funding/FundingListPage.vue'),
   },
+  {
+    path: '/funding/join/:id/payment',
+    name: 'fundingPayment',
+    component: () => import('@/components/payment/Payment.vue'),
+    props: true,
+  }
 ]
