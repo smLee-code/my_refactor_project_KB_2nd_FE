@@ -44,13 +44,14 @@
                     <div class="space-y-4 h-[680px] flex flex-col justify-between">
                         <ProjectRankingCard
                             v-for="(project, index) in topProjects"
-                            :key="project.id"
+                            :key="project.projectId"
                             :rank="index + 1"
                             :title="project.title"
-                            :description="project.description"
                             :likes="project.likes"
-                            :participants="project.participants"
                             :image="project.image"
+                            :voteCount="project.voteCount"
+                            :promotion="project.promotion"
+                            :projectType="project.projectType"
                         />
                     </div>
                 </div>
@@ -127,14 +128,26 @@
 
 <script setup>
 import { useRouter } from 'vue-router'
-import { ref } from 'vue'
+import { onMounted, ref } from 'vue'
 import MainBannerSlider from '../components/MainBannerSlider.vue'
 import FundingCard from '@/components/funding/FundingCard.vue'
 import ProjectRankingCard from '@/components/project/ProjectRankingCard.vue'
 import ProjectCard from '@/components/project/list/ProjectCard.vue'
 import FundingUrgentCard from '@/components/funding/FundingUrgentCard.vue'
+import axios from 'axios'
 
 const router = useRouter()
+const topProjects = ref([])
+
+onMounted(async () => {
+    try {
+        const res = await axios.get('/project/top')
+        topProjects.value = res.data
+        console.log(`프로젝트 인기목록:`, res.data)
+    } catch (err) {
+        console.error(`❌ 프로젝트 인기목록 실패:`, err)
+    }
+})
 
 const goToProjectList = () => {
     router.push('/project')
@@ -192,54 +205,7 @@ const popularFundings = [
         link: '#',
     },
 ]
-const topProjects = [
-    // ProjectCard용 mock data
-    {
-        id: 1,
-        title: '인기 프로젝트 1',
-        description: '프로젝트 설명1',
-        likes: 200,
-        participants: 50,
-        image: '',
-        category: '적금형',
-    },
-    {
-        id: 2,
-        title: '인기 프로젝트 2',
-        description: '프로젝트 설명2',
-        likes: 180,
-        participants: 40,
-        image: '',
-        category: '기부형',
-    },
-    {
-        id: 3,
-        title: '인기 프로젝트 3',
-        description: '프로젝트 설명3',
-        likes: 160,
-        participants: 30,
-        image: '',
-        category: '대출형',
-    },
-    {
-        id: 4,
-        title: '인기 프로젝트 4',
-        description: '프로젝트 설명4',
-        likes: 140,
-        participants: 25,
-        image: '',
-        category: '기부형',
-    },
-    {
-        id: 5,
-        title: '인기 프로젝트 5',
-        description: '프로젝트 설명5',
-        likes: 120,
-        participants: 20,
-        image: '',
-        category: '챌린지형',
-    },
-]
+
 const recommendedProjects = [
     // ProjectCard용 mock data
     {
