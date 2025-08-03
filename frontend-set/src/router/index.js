@@ -1,7 +1,7 @@
 import { createRouter, createWebHistory } from 'vue-router'
 
-import HomePage from '../pages/HomePage.vue'
-import NotFountPage from '../pages/NotFountPage.vue'
+import HomePage from '@/pages/HomePage.vue'
+import NotFoundPage from '@/pages/NotFoundPage.vue'
 import authRoutes from './auth'
 import projectRoutes from './project'
 import fundingRoutes from './funding'
@@ -24,7 +24,7 @@ const router = createRouter({
         {
             path: '/:pathMatch(.*)*',
             name: 'notfound',
-            component: NotFountPage,
+            component: NotFoundPage,
         },
     ],
     scrollBehavior() {
