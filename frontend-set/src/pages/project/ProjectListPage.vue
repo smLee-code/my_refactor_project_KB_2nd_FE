@@ -92,7 +92,7 @@ const sortOptions = {
 
 const categoriesFromProjects = computed(() => {
     const base = ['전체']
-    const uniqueTypes = [...new Set(projects.value.map((p) => p.category))]
+    const uniqueTypes = [...new Set(projects.value.map((p) => p.type))]
     // 한글 변환 + 중복 제거
     const translated = uniqueTypes.map((type) => categoryMap[type] || type)
     return base.concat(translated)
@@ -172,7 +172,7 @@ onMounted(async () => {
         projects.value = res.data.map((item) => ({
             id: item.projectId,
             title: item.title,
-            category: item.projectType || '기타',
+            type: item.projectType || '기타',
             image: item.imageUrl || '/default-thumbnail.png',
             description: item.promotion || '설명이 없습니다.',
             proposer: `작성자 ${item.userId}`,
