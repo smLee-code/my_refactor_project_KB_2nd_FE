@@ -1,12 +1,15 @@
+import MyPage from '@/pages/mypage/MyPage.vue'
+import DashBoardPage from '@/pages/mypage/DashBoardPage.vue'
+
 export default [
-  {
-    path: '/mypage/interest',
-    name: 'interest',
-    component: () => import('../pages/mypage/InterestPage.vue'),
-  },
-  {
+    {
+        path: '/mypage',
+        name: 'mypage',
+        component: MyPage,
+    },
+    {
         path: '/dashboard',
         name: 'dashboard',
         component: DashBoardPage,
-  },
+    },
 ]
