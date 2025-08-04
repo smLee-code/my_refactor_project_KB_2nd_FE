@@ -233,53 +233,54 @@ import DonationProjectInput from './components/DonationProjectInput.vue'
 import ChallengeProjectInput from './components/ChallengeProjectInput.vue'
 
 const categories = ref([])
-const categoryAndKeywords = ref([
-    {
-        category: { id: 1, name: '라이프스타일' },
-        keywords: [
-            { id: 8, name: '운동' },
-            { id: 9, name: '식습관' },
-            { id: 10, name: '수면' },
-            { id: 11, name: '루틴 설정' },
-            { id: 12, name: '청소' },
-        ],
-    },
-    {
-        category: { id: 2, name: '자기계발' },
-        keywords: [
-            { id: 13, name: '독서' },
-            { id: 14, name: '학습' },
-            { id: 15, name: '글쓰기' },
-            { id: 16, name: '취미 활동' },
-            { id: 17, name: '명상' },
-        ],
-    },
-    {
-        category: { id: 3, name: '환경' },
-        keywords: [
-            { id: 18, name: '환경 보호' },
-            { id: 19, name: '동물 보호' },
-            { id: 20, name: '봉사' },
-            { id: 21, name: '기후' },
-        ],
-    },
-    {
-        category: { id: 4, name: '경제습관' },
-        keywords: [
-            { id: 22, name: '저축' },
-            { id: 23, name: '소비 절약' },
-            { id: 24, name: '투자 학습' },
-        ],
-    },
-    {
-        category: { id: 5, name: '웰빙' },
-        keywords: [
-            { id: 25, name: '마음 건강' },
-            { id: 26, name: '건강관리' },
-            { id: 27, name: '디지털 디톡스' },
-        ],
-    },
-])
+const categoryAndKeywords = ref([])
+// const categoryAndKeywords = ref([
+//     {
+//         category: { id: 1, name: '라이프스타일' },
+//         keywords: [
+//             { id: 8, name: '운동' },
+//             { id: 9, name: '식습관' },
+//             { id: 10, name: '수면' },
+//             { id: 11, name: '루틴 설정' },
+//             { id: 12, name: '청소' },
+//         ],
+//     },
+//     {
+//         category: { id: 2, name: '자기계발' },
+//         keywords: [
+//             { id: 13, name: '독서' },
+//             { id: 14, name: '학습' },
+//             { id: 15, name: '글쓰기' },
+//             { id: 16, name: '취미 활동' },
+//             { id: 17, name: '명상' },
+//         ],
+//     },
+//     {
+//         category: { id: 3, name: '환경' },
+//         keywords: [
+//             { id: 18, name: '환경 보호' },
+//             { id: 19, name: '동물 보호' },
+//             { id: 20, name: '봉사' },
+//             { id: 21, name: '기후' },
+//         ],
+//     },
+//     {
+//         category: { id: 4, name: '경제습관' },
+//         keywords: [
+//             { id: 22, name: '저축' },
+//             { id: 23, name: '소비 절약' },
+//             { id: 24, name: '투자 학습' },
+//         ],
+//     },
+//     {
+//         category: { id: 5, name: '웰빙' },
+//         keywords: [
+//             { id: 25, name: '마음 건강' },
+//             { id: 26, name: '건강관리' },
+//             { id: 27, name: '디지털 디톡스' },
+//         ],
+//     },
+// ])
 
 const selectedKeywordIds = ref([])
 
@@ -405,10 +406,10 @@ watch(selectedCategory, (newVal, oldVal) => {
 
 const fetchCategories = async () => {
     try {
-        const response = await axios.get('/category') // getAllCategories()
-        console.log('모든 카테고리 : ', response)
+        const response = await axios.get('/category/all')
+        categoryAndKeywords.value = response.data
 
-        categories.value = response.data
+        console.log('모든 카테고리 및 키워드 목록: ', categoryAndKeywords.value)
     } catch (err) {
         console.error('프로젝트 생성 실패:', err)
     }
