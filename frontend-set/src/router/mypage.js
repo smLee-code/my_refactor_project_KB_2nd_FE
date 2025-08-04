@@ -5,8 +5,8 @@ export default [
     component: () => import('../pages/mypage/InterestPage.vue'),
   },
   {
-    path: '/mypage/setting',
-    name: 'setting',
-    component: () => import('../pages/mypage/SettingPage.vue'),
+        path: '/dashboard',
+        name: 'dashboard',
+        component: DashBoardPage,
   },
 ]
