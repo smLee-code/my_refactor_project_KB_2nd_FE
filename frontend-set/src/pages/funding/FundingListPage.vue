@@ -45,7 +45,8 @@
                     :category="project.category"
                     :likes="project.likes"
                     :progress="project.progress"
-                    :link="project.link"
+                    :link="getProjectLink(project)"
+                    @click="goToProject(project)"
                 />
             </div>
             <!-- 페이지네이션 -->
@@ -77,6 +78,7 @@
 </template>
 <script setup>
 import { ref, computed } from 'vue'
+import { useRouter } from 'vue-router'
 import FundingUrgentCard from '@/components/funding/FundingUrgentCard.vue'
 import FundingCard from '@/components/funding/FundingCard.vue'
 import TabMenu from '@/components/common/TabMenu.vue'
@@ -84,6 +86,8 @@ import SearchBox from '@/components/common/SearchBox.vue'
 import SortSelect from '@/components/common/SortSelect.vue'
 import CategoryFilter from '@/components/common/CategoryFilter.vue'
 import Pagination from '@/components/common/Pagination.vue'
+
+const router = useRouter()
 
 const tabOptions = [
     { value: 'ongoing', label: '진행중인 펀딩' },
@@ -210,6 +214,24 @@ const displayedProjects = computed(() => {
 
 function handleSearch() {
     currentPage.value = 1
+}
+
+// 프로젝트 타입에 따른 링크 생성
+function getProjectLink(project) {
+    if (project.category === '챌린지형' || project.category === '기부형') {
+        return `/funding/join-payment/${project.id}`
+    } else {
+        return `/funding/join-apply/${project.id}`
+    }
+}
+
+// 프로젝트 클릭 시 라우팅
+function goToProject(project) {
+    if (project.category === '챌린지형' || project.category === '기부형') {
+        router.push(`/funding/join-payment/${project.id}`)
+    } else {
+        router.push(`/funding/join-apply/${project.id}`)
+    }
 }
 </script>
 

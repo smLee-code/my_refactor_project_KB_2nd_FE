@@ -10,9 +10,19 @@ export default [
         component: () => import('../pages/funding/FundingDetailPage.vue'),
     },
     {
-        path: '/funding/join',
+        path: '/funding/join/:id',
         name: 'fundingJoin',
         component: () => import('../pages/funding/FundingJoinPage.vue'),
+    },
+    {
+        path: '/funding/join-payment/:id',
+        name: 'fundingJoinWithPayment',
+        component: () => import('../pages/funding/FundingJoinWithPaymentPage.vue'),
+    },
+    {
+        path: '/funding/join-apply/:id',
+        name: 'fundingJoinWithoutPayment',
+        component: () => import('../pages/funding/FundingJoinWithoutPaymentPage.vue'),
     },
     {
         path: '/funding',
