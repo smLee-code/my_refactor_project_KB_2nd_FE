@@ -119,7 +119,7 @@ const filteredProjects = computed(() => {
 
     // 카테고리 필터링 (단일 선택)
     if (selectedCategory.value && selectedCategory.value !== '전체') {
-        filtered = filtered.filter((p) => categoryMap[p.category] === selectedCategory.value)
+        filtered = filtered.filter((p) => categoryMap[p.type] === selectedCategory.value)
     }
 
     // 마감된 프로젝트 필터링

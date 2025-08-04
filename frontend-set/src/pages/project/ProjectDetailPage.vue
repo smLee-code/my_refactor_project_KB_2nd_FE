@@ -46,6 +46,7 @@
 <script setup>
 import axios from 'axios'
 import { ref, nextTick, onMounted, watch } from 'vue'
+import { watchEffect } from 'vue'
 
 import { useRoute } from 'vue-router'
 import ProjectInfo from '@/components/project/detail/ProjectInfo.vue'
@@ -68,10 +69,35 @@ const isLiked = ref(false)
 const likeCount = ref()
 const voteCount = ref(0)
 const relatedProjects = ref([])
+const loading = ref(false)
 
 const handleUpdateLike = (newState) => {
     isLiked.value = newState
     likeCount.value += newState ? 1 : -1
+}
+
+const fetchProjectData = async (id) => {
+    if (!id) return
+    loading.value = true
+    projectData.value = null // 기존 데이터 제거
+
+    try {
+        const res = await axios.get(`/project/list/detail/${id}/full`)
+        projectData.value = res.data
+
+        const relatedRes = await axios.get(`/project/related/${id}`)
+        relatedProjects.value = relatedRes.data
+
+        const likeRes = await axios.get(`/votes?userId=${userId.value}&projectId=${id}`)
+        isLiked.value = likeRes.data
+
+        const countRes = await axios.get('/votes/count', { params: { projectId: id } })
+        voteCount.value = countRes.data
+    } catch (e) {
+        console.error('❌ 프로젝트 데이터 갱신 실패:', e)
+    } finally {
+        loading.value = false
+    }
 }
 
 onMounted(async () => {
@@ -101,40 +127,15 @@ watch(
 )
 
 // 라우트 id 변화 감시 (프로젝트 데이터 다시 로드)
+
+// URL 변경 감시
 watch(
-    () => route.params.id,
-    async (newId) => {
-        if (!newId) return
-        projectId.value = newId
-        await fetchProjectData(newId)
+    () => route.params.id, // 여기서 id만 감시
+    (newId, oldId) => {
+        if (newId && newId !== oldId) {
+            projectId.value = newId
+            fetchProjectData(newId)
+        }
     },
 )
-
-const fetchProjectData = async (id) => {
-    try {
-        // 프로젝트 정보
-        const res = await axios.get(`/project/list/detail/${id}/full`)
-        projectData.value = res.data
-        console.log('✅ 프로젝트 API 응답:', res.data)
-
-        // 연관 프로젝트
-        const relatedRes = await axios.get(`/project/related/${id}`)
-        relatedProjects.value = relatedRes.data
-        console.log('✅ 관련 프로젝트 API 응답:', relatedRes.data)
-
-        // 좋아요 여부
-        const likeRes = await axios.get(`/votes?userId=${userId.value}&projectId=${id}`)
-        isLiked.value = likeRes.data
-        console.log('✅ 투표 여부 API 응답:', likeRes.data)
-
-        // 좋아요 개수
-        const countRes = await axios.get('/votes/count', {
-            params: { projectId: id },
-        })
-        voteCount.value = countRes.data
-        console.log('✅ 프로젝트 좋아요 수 API 응답:', countRes.data)
-    } catch (e) {
-        console.error('❌ 프로젝트 데이터 갱신 실패:', e)
-    }
-}
 </script>
