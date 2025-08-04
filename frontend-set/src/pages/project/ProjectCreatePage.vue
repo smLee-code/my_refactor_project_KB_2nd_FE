@@ -232,7 +232,6 @@ import LoanProjectInput from './components/LoanProjectInput.vue'
 import DonationProjectInput from './components/DonationProjectInput.vue'
 import ChallengeProjectInput from './components/ChallengeProjectInput.vue'
 
-const categories = ref([])
 const categoryAndKeywords = ref([])
 // const categoryAndKeywords = ref([
 //     {
@@ -299,6 +298,8 @@ const form = ref({
     promotion: '',
     projectType: '',
     deadline: '',
+    keywordIds: [],
+
     // image: null,
 })
 
@@ -442,6 +443,8 @@ const confirmCancel = () => {
 const createProject = async () => {
     if (!isFormValid.value) return
 
+    form.value.keywordIds = selectedKeywordIds.value
+
     getChildForm()
     totalForm.value = { ...form.value, ...childForm.value }
     console.log('totalForm: ', totalForm.value)
@@ -463,8 +466,11 @@ const createProject = async () => {
             promotion: '',
             projectType: '',
             deadline: '',
+            keywordIds: [],
             // image: null,
         }
+
+        selectedKeywordIds.value = []
     } catch (error) {
         console.error('프로젝트 생성 실패:', error)
     } finally {
