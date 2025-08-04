@@ -36,7 +36,7 @@
             </div>
 
             <!-- 관련 프로젝트 추천 -->
-            <RecommendRelated></RecommendRelated>
+            <!-- <RecommendRelated :projects="relatedProjects"></RecommendRelated> -->
         </div>
         <!-- 푸터 -->
         <Footer></Footer>
@@ -58,7 +58,7 @@ import Footer from '@/components/layout/Footer.vue'
 import RecommendRelated from '@/components/project/detail/RecommendRelated.vue'
 import DetailHeader from '@/components/project/detail/DetailHeader.vue'
 
-const userId = ref(1)
+const userId = ref(5)
 const route = useRoute()
 const projectId = route.params.id
 
@@ -78,6 +78,12 @@ onMounted(async () => {
         const res = await axios.get(`/project/list/detail/${projectId}/full`)
         projectData.value = res.data
         console.log('✅ 프로젝트 API 응답:', res.data)
+
+        // 연관 프로젝트 API 호출 (예: 같은 카테고리 기반)
+        // const relatedRes = await axios.get(`/project/related`, {
+        //     params: { projectId },
+        // })
+        // relatedProjects.value = relatedRes.data
     } catch (e) {
         console.error('❌ 프로젝트 정보 요청 실패:', e)
         alert('프로젝트 정보를 불러올 수 없습니다.')
