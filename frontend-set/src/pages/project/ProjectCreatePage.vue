@@ -128,6 +128,33 @@
                                 required
                             />
                         </div>
+
+                        <div>
+                            <div v-for="ck in categoryAndKeywords">
+                                <label
+                                    class="block text-sm font-medium text-gray-700 mb-2"
+                                    :key="ck.category.id"
+                                >
+                                    {{ ck.category.name }}
+                                </label>
+                                <div class="w-2/5 flex flex-wrap justify-between gap-2 mb-6">
+                                    <button
+                                        v-for="keyword in ck.keywords"
+                                        :key="keyword.id"
+                                        @click="toggleKeywordSelection(keyword.id)"
+                                        :class="[
+                                            'px-4 py-2 rounded-full text-sm font-medium transition-colors cursor-pointer whitespace-nowrap',
+                                            isKeywordSelected(keyword.id)
+                                                ? 'bg-yellow-400 text-gray-900'
+                                                : 'bg-gray-100 text-gray-600 hover:bg-gray-200',
+                                        ]"
+                                        type="button"
+                                    >
+                                        {{ keyword.name }}
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
                     </form>
                 </section>
                 <!-- Bottom Buttons -->
@@ -197,13 +224,64 @@
 </template>
 
 <script setup>
-import { ref, computed, watch } from 'vue'
+import { ref, computed, watch, onMounted } from 'vue'
 import axios from 'axios'
 
 import SavingsProjectInput from './components/SavingsProjectInput.vue'
 import LoanProjectInput from './components/LoanProjectInput.vue'
 import DonationProjectInput from './components/DonationProjectInput.vue'
 import ChallengeProjectInput from './components/ChallengeProjectInput.vue'
+
+const categoryAndKeywords = ref([])
+// const categoryAndKeywords = ref([
+//     {
+//         category: { id: 1, name: '라이프스타일' },
+//         keywords: [
+//             { id: 8, name: '운동' },
+//             { id: 9, name: '식습관' },
+//             { id: 10, name: '수면' },
+//             { id: 11, name: '루틴 설정' },
+//             { id: 12, name: '청소' },
+//         ],
+//     },
+//     {
+//         category: { id: 2, name: '자기계발' },
+//         keywords: [
+//             { id: 13, name: '독서' },
+//             { id: 14, name: '학습' },
+//             { id: 15, name: '글쓰기' },
+//             { id: 16, name: '취미 활동' },
+//             { id: 17, name: '명상' },
+//         ],
+//     },
+//     {
+//         category: { id: 3, name: '환경' },
+//         keywords: [
+//             { id: 18, name: '환경 보호' },
+//             { id: 19, name: '동물 보호' },
+//             { id: 20, name: '봉사' },
+//             { id: 21, name: '기후' },
+//         ],
+//     },
+//     {
+//         category: { id: 4, name: '경제습관' },
+//         keywords: [
+//             { id: 22, name: '저축' },
+//             { id: 23, name: '소비 절약' },
+//             { id: 24, name: '투자 학습' },
+//         ],
+//     },
+//     {
+//         category: { id: 5, name: '웰빙' },
+//         keywords: [
+//             { id: 25, name: '마음 건강' },
+//             { id: 26, name: '건강관리' },
+//             { id: 27, name: '디지털 디톡스' },
+//         ],
+//     },
+// ])
+
+const selectedKeywordIds = ref([])
 
 const userId = ref(1)
 
@@ -220,6 +298,8 @@ const form = ref({
     promotion: '',
     projectType: '',
     deadline: '',
+    keywordIds: [],
+
     // image: null,
 })
 
@@ -325,6 +405,17 @@ watch(selectedCategory, (newVal, oldVal) => {
     }
 })
 
+const fetchCategories = async () => {
+    try {
+        const response = await axios.get('/category/all')
+        categoryAndKeywords.value = response.data
+
+        console.log('모든 카테고리 및 키워드 목록: ', categoryAndKeywords.value)
+    } catch (err) {
+        console.error('프로젝트 생성 실패:', err)
+    }
+}
+
 const handleBackClick = () => {
     if (hasFormData.value) {
         showWarningModal.value = true
@@ -352,6 +443,8 @@ const confirmCancel = () => {
 const createProject = async () => {
     if (!isFormValid.value) return
 
+    form.value.keywordIds = selectedKeywordIds.value
+
     getChildForm()
     totalForm.value = { ...form.value, ...childForm.value }
     console.log('totalForm: ', totalForm.value)
@@ -373,8 +466,11 @@ const createProject = async () => {
             promotion: '',
             projectType: '',
             deadline: '',
+            keywordIds: [],
             // image: null,
         }
+
+        selectedKeywordIds.value = []
     } catch (error) {
         console.error('프로젝트 생성 실패:', error)
     } finally {
@@ -391,6 +487,31 @@ const getChildForm = () => {
         childForm.value = { ...data }
     }
 }
+
+const isKeywordSelected = (keywordId) => {
+    return selectedKeywordIds.value.includes(keywordId)
+}
+
+const toggleKeywordSelection = (keywordId) => {
+    if (isKeywordSelected(keywordId)) {
+        console.log(keywordId, '선택 해제')
+        selectedKeywordIds.value = selectedKeywordIds.value.filter((id) => id !== keywordId)
+    } else {
+        console.log('배열 길이 : ', selectedKeywordIds.value.length)
+        if (selectedKeywordIds.value.length == 3) {
+            console.log('키워드는 3개까지 선택 가능')
+            return
+        }
+        console.log(keywordId, '선택')
+        selectedKeywordIds.value.push(keywordId)
+    }
+
+    console.log('선택된 키워드 : ', selectedKeywordIds.value)
+}
+
+onMounted(() => {
+    fetchCategories()
+})
 </script>
 
 <style scoped>
