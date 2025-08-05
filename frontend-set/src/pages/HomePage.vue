@@ -43,7 +43,7 @@
                     </h3>
                     <div class="space-y-4 flex flex-col justify-between">
                         <ProjectRankingCard
-                            v-for="(project, index) in topProjects"
+                            v-for="(project, index) in topProjects.slice(0, 5)"
                             :key="project.projectId"
                             :rank="index + 1"
                             :title="project.title"

@@ -6,7 +6,11 @@
 
             <!-- 범례 -->
             <ul class="flex flex-col space-y-2 w-1/3 pl-4">
-                <li v-for="item in chartData" :key="item.label" class="flex items-center text-sm">
+                <li
+                    v-for="item in distribution"
+                    :key="item.label"
+                    class="flex items-center text-sm"
+                >
                     <span
                         class="w-3 h-3 rounded-full mr-2"
                         :style="{ backgroundColor: item.color }"
@@ -21,7 +25,11 @@
 
 <script setup>
 import { ref, onMounted } from 'vue'
+import { nextTick } from 'vue'
 import Card from './Card.vue'
+import axios from 'axios'
+
+const distribution = ref([])
 
 const props = defineProps({
     title: {
@@ -36,49 +44,43 @@ const props = defineProps({
         type: String,
         default: '#000',
     },
-    chartType: {
-        type: String, // 'line' 또는 'pie'
-        required: true,
-    },
-    chartData: {
-        type: Array,
-        default: () => [],
-    },
 })
 
 const chartCanvas = ref(null)
 
-onMounted(() => {
+onMounted(async () => {
+    try {
+        const res = await axios.get('/project/distribution/type')
+        distribution.value = res.data
+        console.log(`프로젝트 유형별 점유율:`, res.data)
+        // DOM 업데이트 이후 차트 그리기
+        await nextTick()
+        drawChart()
+    } catch (e) {}
+})
+
+function drawChart() {
     if (!chartCanvas.value) return
     const ctx = chartCanvas.value.getContext('2d')
     if (!ctx) return
 
-    if (props.chartType === 'line') {
-        ctx.strokeStyle = '#3B82F6'
-        ctx.lineWidth = 2
+    // 반지름은 캔버스 크기에 맞게 조정
+    const radius = Math.min(chartCanvas.value.width, chartCanvas.value.height) / 2 - 10
+    const centerX = chartCanvas.value.width / 2
+    const centerY = chartCanvas.value.height / 2
+    let currentAngle = 0
+
+    distribution.value.forEach((item) => {
+        const sliceAngle = (item.value / 100) * 2 * Math.PI
         ctx.beginPath()
-        ctx.moveTo(10, 30)
-        ctx.lineTo(30, 20)
-        ctx.lineTo(50, 35)
-        ctx.lineTo(70, 15)
-        ctx.lineTo(90, 25)
-        ctx.stroke()
-    } else if (props.chartType === 'pie') {
-        const centerX = chartCanvas.value.width / 2
-        const centerY = chartCanvas.value.height / 2
-        const radius = 60
-        let currentAngle = 0
-        props.chartData.forEach((item) => {
-            const sliceAngle = (item.value / 100) * 2 * Math.PI
-            ctx.beginPath()
-            ctx.arc(centerX, centerY, radius, currentAngle, currentAngle + sliceAngle)
-            ctx.lineTo(centerX, centerY)
-            ctx.fillStyle = item.color
-            ctx.fill()
-            currentAngle += sliceAngle
-        })
-    }
-})
+        ctx.moveTo(centerX, centerY)
+        ctx.arc(centerX, centerY, radius, currentAngle, currentAngle + sliceAngle)
+        ctx.closePath()
+        ctx.fillStyle = item.color || '#ccc' // 0%도 표시
+        ctx.fill()
+        currentAngle += sliceAngle
+    })
+}
 </script>
 
 <style>

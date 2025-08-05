@@ -1,7 +1,6 @@
 <template>
-    <div class="mt-8 bg-white rounded-xl shadow-sm p-6 max-w-7xl mx-auto">
-        <h3 class="text-lg font-semibold text-gray-800 mb-4">최근 펀딩 현황</h3>
-        <div class="overflow-x-auto">
+    <Card>
+        <div class="mt-1 bg-white rounded-xl shadow-sm max-w-7xl mx-auto">
             <table class="w-full">
                 <thead>
                     <tr class="bg-gray-50">
@@ -41,7 +40,10 @@
                         <td class="py-3 px-4">
                             <span
                                 class="text-xs px-2 py-1 rounded-full"
-                                :style="{ backgroundColor: item.statusBg, color: item.statusColor }"
+                                :style="{
+                                    backgroundColor: item.statusBg,
+                                    color: item.statusColor,
+                                }"
                                 >{{ item.status }}</span
                             >
                         </td>
@@ -49,28 +51,21 @@
                             <button
                                 class="text-[#287EFF] hover:text-[#1B5FBF] text-sm cursor-pointer !rounded-button whitespace-nowrap px-2 py-1"
                             >
-                                관리
+                                바로가기
                             </button>
                         </td>
                     </tr>
                 </tbody>
             </table>
         </div>
-    </div>
+    </Card>
 </template>
 
-<script setup lang="ts">
-defineProps<{
-    headers: string[]
-    data: {
-        name: string
-        type: string
-        progressColor: string
-        participants: number
-        deadline: string
-        status: string
-        statusBg: string
-        statusColor: string
-    }[]
-}>()
+<script setup>
+import Card from './Card.vue'
+
+defineProps({
+    headers: { type: Array, required: true },
+    data: { type: Array, required: true },
+})
 </script>
