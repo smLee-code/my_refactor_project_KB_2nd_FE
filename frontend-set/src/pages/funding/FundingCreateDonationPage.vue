@@ -9,17 +9,17 @@
             <button class="p-2 hover:bg-gray-100 rounded-lg cursor-pointer">
               <i class="fas fa-arrow-left text-gray-600"></i>
             </button>
-            <h1 class="text-2xl font-bold text-gray-900">기부 펀딩 프로젝트 생성</h1>
+            <h1 class="text-2xl font-bold text-gray-900">기부 펀딩 생성</h1>
           </div>
         </div>
         <!-- 프로그레스 바 -->
         <div class="pb-4">
           <div class="flex items-center justify-between mb-2">
-            <span class="text-sm font-medium text-blue-600">1단계</span>
-            <span class="text-sm text-gray-500">기본 정보 입력</span>
+            <span class="text-sm font-medium text-blue-600">진행률</span>
+            <span class="text-sm text-gray-500">{{ progressPercentage }}% 완료</span>
           </div>
           <div class="w-full bg-gray-200 rounded-full h-2">
-            <div class="bg-blue-600 h-2 rounded-full" style="width: 33%"></div>
+            <div class="bg-blue-600 h-2 rounded-full transition-all duration-300" :style="{ width: progressPercentage + '%' }"></div>
           </div>
         </div>
       </div>
@@ -262,11 +262,14 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
-import { useRouter } from 'vue-router'
+import { ref, onMounted, computed } from 'vue'
+import { useRouter, useRoute } from 'vue-router'
+import axios from 'axios'
 import { createDonationFunding } from '@/api/fundingApi'
 
 const router = useRouter()
+const route = useRoute()
+const projectId = route.query.projectId
 
 // 기부 펀딩 폼 데이터
 const formData = ref({
@@ -279,7 +282,7 @@ const formData = ref({
   minDonationAmount: '',
   maxDonationAmount: '',
   targetAmount: '',
-  projectId: 1, // 임시값 - 실제로는 프로젝트 선택에서 가져와야 함
+  projectId: projectId || null, // 프로젝트 선택에서 가져옴
   progress: 'Launch',
   launchDate: '',
   endDate: '',
@@ -290,6 +293,27 @@ const formData = ref({
 const uploadedImages = ref([])
 const uploadedFiles = ref([])
 const fileInput = ref(null)
+
+// 진행률 계산
+const progressPercentage = computed(() => {
+  let filledFields = 0
+  const totalFields = 11 // 기부형 필수 필드 수
+  
+  // 각 필드 검사
+  if (formData.value.name) filledFields++
+  if (formData.value.targetAmount) filledFields++
+  if (formData.value.launchDate) filledFields++
+  if (formData.value.endDate) filledFields++
+  if (uploadedImages.value.length > 0) filledFields++
+  if (formData.value.recipient) filledFields++
+  if (formData.value.usagePlan) filledFields++
+  if (formData.value.minDonationAmount) filledFields++
+  if (formData.value.maxDonationAmount) filledFields++
+  if (formData.value.joinCondition) filledFields++
+  if (formData.value.detail) filledFields++
+  
+  return Math.round((filledFields / totalFields) * 100)
+})
 
 // 금액 포맷팅 함수
 const formatNumber = (value) => {
@@ -403,6 +427,32 @@ const submitFunding = async () => {
     alert('기부 펀딩 프로젝트 생성에 실패했습니다. 다시 시도해주세요.')
   }
 }
+
+// 프로젝트 정보 자동 채우기
+onMounted(async () => {
+  if (projectId) {
+    try {
+      const response = await axios.get(`/api/projects/${projectId}`)
+      const project = response.data
+      
+      // 기본 정보 매핑
+      formData.value.name = project.title || ''
+      formData.value.detail = project.promotion || ''
+      
+      // 기부형 특성에 맞는 필드 매핑
+      if (project.type === 'donation') {
+        formData.value.targetAmount = project.targetAmount ? project.targetAmount.toLocaleString() : ''
+        formData.value.recipient = project.recipient || ''
+        formData.value.usagePlan = project.usagePlan || ''
+        formData.value.minDonationAmount = project.minDonationAmount ? project.minDonationAmount.toLocaleString() : ''
+        formData.value.maxDonationAmount = project.maxDonationAmount ? project.maxDonationAmount.toLocaleString() : ''
+        formData.value.joinCondition = project.joinCondition || ''
+      }
+    } catch (error) {
+      console.error('프로젝트 정보 가져오기 실패:', error)
+    }
+  }
+})
 </script>
 
 <style scoped>

@@ -9,17 +9,17 @@
             <button class="p-2 hover:bg-gray-100 rounded-lg cursor-pointer">
               <i class="fas fa-arrow-left text-gray-600"></i>
             </button>
-            <h1 class="text-2xl font-bold text-gray-900">펀딩 프로젝트 생성</h1>
+            <h1 class="text-2xl font-bold text-gray-900">대출 펀딩 생성</h1>
           </div>
         </div>
         <!-- 프로그레스 바 -->
         <div class="pb-4">
           <div class="flex items-center justify-between mb-2">
-            <span class="text-sm font-medium text-blue-600">1단계</span>
-            <span class="text-sm text-gray-500">기본 정보 입력</span>
+            <span class="text-sm font-medium text-blue-600">진행률</span>
+            <span class="text-sm text-gray-500">{{ progressPercentage }}% 완료</span>
           </div>
           <div class="w-full bg-gray-200 rounded-full h-2">
-            <div class="bg-blue-600 h-2 rounded-full" style="width: 33%"></div>
+            <div class="bg-blue-600 h-2 rounded-full transition-all duration-300" :style="{ width: progressPercentage + '%' }"></div>
           </div>
         </div>
       </div>
@@ -259,11 +259,16 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
-import { useRouter } from 'vue-router'
+import { ref, onMounted, computed } from 'vue'
+import { useRouter, useRoute } from 'vue-router'
 import { createLoanFunding } from '@/api/fundingApi'
+import axios from 'axios'
 
 const router = useRouter()
+const route = useRoute()
+
+// URL에서 projectId 가져오기
+const projectId = route.query.projectId
 
 // 대출 펀딩 폼 데이터
 const formData = ref({
@@ -276,7 +281,7 @@ const formData = ref({
   maxInterestRate: '',
   reward: '',
   rewardCondition: '',
-  projectId: 1, // 임시값 - 실제로는 프로젝트 선택에서 가져와야 함
+  projectId: projectId || null,
   progress: 'Launch',
   launchDate: '',
   endDate: '',
@@ -287,6 +292,27 @@ const formData = ref({
 const uploadedImages = ref([])
 const uploadedFiles = ref([])
 const fileInput = ref(null)
+
+// 진행률 계산
+const progressPercentage = computed(() => {
+  let filledFields = 0
+  const totalFields = 11 // 전체 필수 필드 수
+  
+  // 각 필드 검사
+  if (formData.value.name) filledFields++
+  if (formData.value.loanLimit) filledFields++
+  if (formData.value.minInterestRate) filledFields++
+  if (formData.value.maxInterestRate) filledFields++
+  if (formData.value.launchDate) filledFields++
+  if (formData.value.endDate) filledFields++
+  if (uploadedImages.value.length > 0) filledFields++
+  if (formData.value.joinCondition) filledFields++
+  if (formData.value.detail) filledFields++
+  if (formData.value.reward) filledFields++
+  if (formData.value.rewardCondition) filledFields++
+  
+  return Math.round((filledFields / totalFields) * 100)
+})
 
 // 파일 업로드 처리
 const handleFileUpload = (event) => {
@@ -370,6 +396,35 @@ const submitFunding = async () => {
     alert('펀딩 프로젝트 생성에 실패했습니다. 다시 시도해주세요.')
   }
 }
+
+// 프로젝트 정보 가져와서 폼에 자동 채우기
+onMounted(async () => {
+  if (projectId) {
+    try {
+      const response = await axios.get(`/project/list/detail/${projectId}/full`)
+      const projectData = response.data
+      
+      // 프로젝트 정보를 펀딩 폼에 매핑
+      formData.value.name = projectData.basicInfo.title || ''
+      formData.value.detail = projectData.basicInfo.promotion || ''
+      
+      // 대출형 특정 정보 매핑
+      if (projectData.detailInfo) {
+        formData.value.loanLimit = projectData.detailInfo.loanLimit || ''
+        // 희망 금리를 최소/최대 금리의 중간값으로 설정
+        const desiredRate = projectData.detailInfo.desiredInterestRate
+        if (desiredRate) {
+          formData.value.minInterestRate = Math.max(desiredRate - 1, 0)
+          formData.value.maxInterestRate = desiredRate + 1
+        }
+        formData.value.reward = projectData.detailInfo.reward || ''
+        formData.value.rewardCondition = projectData.detailInfo.rewardCondition || ''
+      }
+    } catch (error) {
+      console.error('프로젝트 정보 조회 실패:', error)
+    }
+  }
+})
 </script>
 
 <style scoped>
