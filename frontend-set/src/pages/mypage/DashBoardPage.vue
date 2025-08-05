@@ -5,35 +5,14 @@
         <main class="p-6">
             <div class="grid grid-cols-3 gap-6 max-w-7xl mx-auto">
                 <!-- 대시보드 카드 -->
-                <div
-                    class="bg-white rounded-xl shadow-sm p-6 hover:shadow-md transition-shadow cursor-pointer"
-                >
-                    <div class="flex items-center justify-between mb-4">
-                        <h3 class="text-lg font-semibold text-gray-800">대시보드</h3>
-                        <i class="fas fa-chart-line text-blue-600 text-xl"></i>
-                    </div>
-                    <div class="space-y-3">
-                        <div class="flex justify-between items-center">
-                            <span class="text-sm text-gray-600">총 펀딩 수</span>
-                            <div class="text-right">
-                                <span class="text-2xl font-bold text-gray-800">1,234</span>
-                                <span class="text-green-500 text-sm ml-2">↗ +12%</span>
-                            </div>
-                        </div>
-                        <div class="flex justify-between items-center">
-                            <span class="text-sm text-gray-600">활성 펀딩</span>
-                            <div class="text-right">
-                                <span class="text-xl font-semibold text-blue-600">567</span>
-                                <span class="text-green-500 text-sm ml-2">↗ +8%</span>
-                            </div>
-                        </div>
-                        <div
-                            class="h-16 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg flex items-center justify-center"
-                        >
-                            <canvas ref="dashboardChart" class="w-full h-full"></canvas>
-                        </div>
-                    </div>
-                </div>
+                <DashboardCard
+                    title="대시보드"
+                    icon="fas fa-chart-line"
+                    iconColor="#2563EB"
+                    :totalFunding="1230"
+                    :activeFunding="160"
+                ></DashboardCard>
+
                 <!-- 펀딩 관리 카드 -->
                 <div
                     class="bg-white rounded-xl shadow-sm p-6 hover:shadow-md transition-shadow cursor-pointer"
@@ -184,67 +163,9 @@
                         </div>
                     </div>
                 </div>
-                <!-- 알림 센터 카드 -->
-                <div
-                    class="bg-white rounded-xl shadow-sm p-6 hover:shadow-md transition-shadow cursor-pointer"
-                >
-                    <div class="flex items-center justify-between mb-4">
-                        <h3 class="text-lg font-semibold text-gray-800">알림 센터</h3>
-                        <i class="fas fa-bell text-yellow-600 text-xl"></i>
-                    </div>
-                    <div class="space-y-2 max-h-40 overflow-y-auto">
-                        <div class="flex items-center space-x-2 p-2 bg-red-50 rounded-lg">
-                            <span class="text-red-500">🔴</span>
-                            <div class="flex-1">
-                                <div class="text-xs text-red-700">마감 임박</div>
-                                <div class="text-sm text-red-800">청년적금 펀딩 3일 남음</div>
-                            </div>
-                        </div>
-                        <div class="flex items-center space-x-2 p-2 bg-blue-50 rounded-lg">
-                            <span class="text-blue-500">📋</span>
-                            <div class="flex-1">
-                                <div class="text-xs text-blue-700">신규 문의</div>
-                                <div class="text-sm text-blue-800">창업대출 관련 문의 2건</div>
-                            </div>
-                        </div>
-                        <div class="flex items-center space-x-2 p-2 bg-green-50 rounded-lg">
-                            <span class="text-green-500">🟢</span>
-                            <div class="flex-1">
-                                <div class="text-xs text-green-700">결제 완료</div>
-                                <div class="text-sm text-green-800">기부 펀딩 50만원 결제</div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <!-- 결제 관리 카드 -->
-                <div
-                    class="bg-white rounded-xl shadow-sm p-6 hover:shadow-md transition-shadow cursor-pointer"
-                >
-                    <div class="flex items-center justify-between mb-4">
-                        <h3 class="text-lg font-semibold text-gray-800">결제 관리</h3>
-                        <i class="fas fa-credit-card text-pink-600 text-xl"></i>
-                    </div>
-                    <div class="space-y-3">
-                        <div class="flex justify-between items-center">
-                            <span class="text-sm text-gray-600">월 매출</span>
-                            <div class="text-right">
-                                <span class="text-2xl font-bold text-pink-600">₩123.4M</span>
-                                <span class="text-green-500 text-sm ml-2">↗ +23%</span>
-                            </div>
-                        </div>
-                        <div class="flex justify-between items-center">
-                            <span class="text-sm text-gray-600">환불 요청</span>
-                            <span class="text-lg font-semibold text-orange-500">5</span>
-                        </div>
-                        <div class="bg-pink-50 rounded-lg p-3">
-                            <div class="text-xs text-pink-700 mb-1">오늘 결제 건수</div>
-                            <div class="text-sm font-medium text-pink-800">1,456건</div>
-                        </div>
-                    </div>
-                </div>
             </div>
             <!-- 최근 펀딩 현황 테이블 -->
-            <div class="mt-8 bg-white rounded-xl shadow-sm p-6 max-w-7xl mx-auto">
+            <!-- <div class="mt-8 bg-white rounded-xl shadow-sm p-6 max-w-7xl mx-auto">
                 <h3 class="text-lg font-semibold text-gray-800 mb-4">최근 펀딩 현황</h3>
                 <div class="overflow-x-auto">
                     <table class="w-full">
@@ -367,11 +288,30 @@
                         </tbody>
                     </table>
                 </div>
-            </div>
+            </div> -->
+            <TableFundingStatus
+                :headers="['펀딩명', '타입', '진행률', '참여자', '마감일', '상태', '관리']"
+                :data="[
+                    {
+                        name: '청년 창업 지원 적금',
+                        type: '적금',
+                        progressColor: '#22C55E',
+                        participants: 1234,
+                        deadline: '2024-02-15',
+                        status: '진행중',
+                        statusBg: '#287EFF',
+                        statusColor: '#fff',
+                    },
+                ]"
+            ></TableFundingStatus>
         </main>
     </div>
 </template>
 <script lang="ts" setup>
+import DashboardCard from '@/components/mypage/DashboardCard.vue'
+import ChartCard from '@/components/mypage/ChartCard.vue'
+import TableFundingStatus from '@/components/mypage/TableFundingStatus.vue'
+
 import { ref, onMounted } from 'vue'
 const dashboardChart = ref<HTMLCanvasElement>()
 const pieChart = ref<HTMLCanvasElement>()
