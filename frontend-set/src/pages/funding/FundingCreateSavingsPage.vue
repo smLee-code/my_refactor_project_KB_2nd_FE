@@ -352,11 +352,11 @@ const submitFunding = async () => {
     }
     
     // JSON 데이터를 Blob으로 변환하여 FormData에 추가
-    formDataToSend.append('data', new Blob([JSON.stringify(jsonData)], { type: 'application/json' }))
+    formDataToSend.append('savingInfo', new Blob([JSON.stringify(jsonData)], { type: 'application/json' }))
     
     // 파일들 추가
     uploadedFiles.value.forEach((file, index) => {
-      formDataToSend.append('thumbnail', file)
+      formDataToSend.append('images', file)
     })
 
     console.log('전송 데이터 (JSON):', jsonData)
