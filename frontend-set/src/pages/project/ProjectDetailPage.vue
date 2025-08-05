@@ -36,7 +36,11 @@
             </div>
 
             <!-- 관련 프로젝트 추천 -->
-            <RecommendRelated :projects="relatedProjects" :userId="userId"></RecommendRelated>
+            <RecommendRelated
+                :projects="relatedProjects"
+                :userId="userId"
+                key="recommend-related"
+            ></RecommendRelated>
         </div>
         <!-- 푸터 -->
         <Footer></Footer>
@@ -45,10 +49,10 @@
 
 <script setup>
 import axios from 'axios'
+import { useRoute, useRouter, onBeforeRouteUpdate } from 'vue-router'
 import { ref, nextTick, onMounted, watch } from 'vue'
 import { watchEffect } from 'vue'
 
-import { useRoute } from 'vue-router'
 import ProjectInfo from '@/components/project/detail/ProjectInfo.vue'
 import SummaryBasicInfo from '@/components/project/detail/SummaryBasicInfo.vue'
 import WriterInfo from '@/components/project/detail/WriterInfo.vue'
@@ -77,6 +81,8 @@ const handleUpdateLike = (newState) => {
 }
 
 const fetchProjectData = async (id) => {
+    console.log('fetchProjectData 호출!')
+
     if (!id) return
     loading.value = true
     projectData.value = null // 기존 데이터 제거
@@ -101,6 +107,7 @@ const fetchProjectData = async (id) => {
 }
 
 onMounted(async () => {
+    console.log('onMounted 호출!')
     fetchProjectData(projectId.value)
     // // 사용자 정보는 별도 처리 (로그인 안 된 경우 대비)
     // try {
@@ -132,10 +139,18 @@ watch(
 watch(
     () => route.params.id, // 여기서 id만 감시
     (newId, oldId) => {
+        console.log('watch route.params.id 호출', route.params.id)
         if (newId && newId !== oldId) {
             projectId.value = newId
             fetchProjectData(newId)
         }
     },
 )
+
+// onBeforeRouteUpdate((to, from) => {
+//     const newId = to.params.id
+//     console.log('onBeforeRouteUpdate 호출됨:', newId)
+//     projectId.value = newId
+//     fetchProjectData(newId)
+// })
 </script>
