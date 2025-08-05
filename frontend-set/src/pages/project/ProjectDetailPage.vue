@@ -32,6 +32,11 @@
                         :isLiked="isLiked"
                         @update-like="handleUpdateLike"
                     />
+                    
+                    <!-- 펀딩 생성 버튼 -->
+                    <create-funding-button
+                        :projectId="Number(projectId)"
+                    />
                 </div>
             </div>
 
@@ -57,6 +62,7 @@ import ProjectInfo from '@/components/project/detail/ProjectInfo.vue'
 import SummaryBasicInfo from '@/components/project/detail/SummaryBasicInfo.vue'
 import WriterInfo from '@/components/project/detail/WriterInfo.vue'
 import ProjectVote from '@/components/project/detail/ProjectVote.vue'
+import CreateFundingButton from '@/components/project/detail/CreateFundingButton.vue'
 import '@/assets/styles/projectDetail.css'
 import ChatComponent from '@/components/chat/ChatComponent.vue'
 import Footer from '@/components/layout/Footer.vue'
