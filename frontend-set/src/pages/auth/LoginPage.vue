@@ -108,7 +108,10 @@
 </template>
 
 <script setup>
+import { useAuthStore } from '@/stores/auth'
 import { ref, computed } from 'vue'
+import { useRouter } from 'vue-router'
+import axios from 'axios'
 
 const email = ref('')
 const password = ref('')
@@ -118,6 +121,9 @@ const emailError = ref('')
 const passwordError = ref('')
 const loginError = ref('')
 
+const router = useRouter()
+const authStore = useAuthStore()
+
 const isFormValid = computed(() => {
     return email.value && password.value && !emailError.value && !passwordError.value
 })
@@ -126,9 +132,11 @@ const validateEmail = () => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
     if (!email.value) {
         emailError.value = '이메일을 입력해주세요'
-    } else if (!emailRegex.test(email.value)) {
-        emailError.value = '올바른 이메일 형식을 입력해주세요'
-    } else {
+    }
+    // else if (!emailRegex.test(email.value)) {
+    //     emailError.value = '올바른 이메일 형식을 입력해주세요'
+    // }
+    else {
         emailError.value = ''
     }
 }
@@ -156,13 +164,23 @@ const handleLogin = async () => {
 
     try {
         // 실제 로그인 로직은 여기에 구현
-        await new Promise((resolve) => setTimeout(resolve, 1500))
+        // await new Promise((resolve) => setTimeout(resolve, 1500))
+        await axios
+            .post('/member/login', {
+                email: email.value,
+                password: password.value,
+            })
+            .then((res) => {
+                authStore.login(res.data.accessToken)
+            })
 
         // 로그인 성공 시 리다이렉트 또는 상태 변경
         console.log('로그인 성공:', {
             email: email.value,
             password: password.value,
         })
+
+        router.push('/')
     } catch (error) {
         loginError.value = '로그인에 실패했습니다. 이메일과 비밀번호를 확인해주세요.'
     } finally {

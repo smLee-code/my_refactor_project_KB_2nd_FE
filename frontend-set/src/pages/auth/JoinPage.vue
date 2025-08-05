@@ -8,34 +8,34 @@
                 <h2 class="text-3xl font-bold text-gray-900 mb-2">회원가입</h2>
                 <p class="text-gray-600">Fund:ing에 오신 것을 환영합니다</p>
             </div>
-            <form @submit.prevent="handleSubmit" class="space-y-6">
+            <form class="space-y-6">
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-2"
                             >이름 <span class="text-red-500">*</span></label
                         >
                         <input
-                            v-model="form.name"
+                            v-model="form.username"
                             type="text"
                             placeholder="이름을 입력해주세요"
                             class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm transition-all"
-                            :class="{ 'border-red-500': errors.name }"
+                            :class="{ 'border-red-500': errors.username }"
                         />
-                        <p v-if="errors.name" class="text-red-500 text-xs mt-1">
-                            {{ errors.name }}
+                        <p v-if="errors.username" class="text-red-500 text-xs mt-1">
+                            {{ errors.username }}
                         </p>
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-2"
-                            >아이디 <span class="text-red-500">*</span></label
+                            >닉네임 <span class="text-red-500">*</span></label
                         >
                         <div class="flex gap-2">
                             <input
-                                v-model="form.username"
+                                v-model="form.nickname"
                                 type="text"
                                 placeholder="아이디를 입력해주세요"
                                 class="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm transition-all"
-                                :class="{ 'border-red-500': errors.username }"
+                                :class="{ 'border-red-500': errors.nickname }"
                             />
                             <button
                                 type="button"
@@ -45,8 +45,8 @@
                                 중복확인
                             </button>
                         </div>
-                        <p v-if="errors.username" class="text-red-500 text-xs mt-1">
-                            {{ errors.username }}
+                        <p v-if="errors.nickname" class="text-red-500 text-xs mt-1">
+                            {{ errors.nickname }}
                         </p>
                     </div>
                     <div class="md:col-span-2">
@@ -94,6 +94,18 @@
                                 확인
                             </button>
                         </div>
+                    </div>
+                    <div class="md:col-span-2">
+                        <label class="block text-sm font-medium text-gray-700 mb-2"
+                            >전화번호 <span class="text-red-500">*</span></label
+                        >
+                        <input
+                            v-model="form.phoneNumber"
+                            type="text"
+                            placeholder="전화번호를 입력해주세요"
+                            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm transition-all"
+                            :class="{ 'border-red-500': errors.phoneNumber }"
+                        />
                     </div>
                     <div class="md:col-span-2">
                         <label class="block text-sm font-medium text-gray-700 mb-2"
@@ -151,7 +163,7 @@
                         </p>
                     </div>
                 </div>
-                <div class="space-y-4">
+                <!-- <div class="space-y-4">
                     <h3 class="text-lg font-medium text-gray-900">
                         관심 금융상품 <span class="text-red-500">*</span>
                     </h3>
@@ -183,7 +195,7 @@
                             </div>
                         </div>
                     </div>
-                </div>
+                </div> -->
 
                 <div class="space-y-4 mt-8">
                     <div class="flex items-center justify-between">
@@ -191,31 +203,32 @@
                             관심사 키워드 <span class="text-red-500">*</span>
                         </h3>
                         <span class="text-sm text-gray-600"
-                            >{{ form.selectedKeywords.length }}/3 선택됨</span
+                            >{{ form.selectedKeywordIds.length }}/3 선택됨</span
                         >
                     </div>
                     <p class="text-sm text-gray-600">관심 있는 키워드를 3개 선택해주세요.</p>
                     <div class="flex flex-wrap gap-2">
                         <button
+                            type="button"
                             v-for="keyword in keywords"
-                            :key="keyword"
-                            @click="toggleKeyword(keyword)"
+                            :key="keyword.keywordId"
+                            @click="toggleKeyword(keyword.keywordId)"
                             :class="{
                                 'bg-blue-100 text-blue-800 border-blue-300':
-                                    form.selectedKeywords.includes(keyword),
+                                    form.selectedKeywordIds.includes(keyword.keywordId),
                                 'bg-gray-50 text-gray-700 border-gray-200 hover:border-gray-300':
-                                    !form.selectedKeywords.includes(keyword),
+                                    !form.selectedKeywordIds.includes(keyword.keywordId),
                                 'cursor-not-allowed opacity-50':
-                                    !form.selectedKeywords.includes(keyword) &&
-                                    form.selectedKeywords.length >= 3,
+                                    !form.selectedKeywordIds.includes(keyword.keywordId) &&
+                                    form.selectedKeywordIds.length >= 3,
                             }"
                             class="px-4 py-2 rounded-full border text-sm font-medium transition-all duration-200 !rounded-button whitespace-nowrap"
                             :disabled="
-                                !form.selectedKeywords.includes(keyword) &&
-                                form.selectedKeywords.length >= 3
+                                !form.selectedKeywordIds.includes(keyword.keywordId) &&
+                                form.selectedKeywordIds.length >= 3
                             "
                         >
-                            {{ keyword }}
+                            {{ keyword.name }}
                         </button>
                     </div>
                 </div>
@@ -234,6 +247,7 @@
                 <button
                     type="submit"
                     :disabled="!isFormValid || isLoading"
+                    @click="handleSubmit"
                     class="w-full bg-blue-600 text-white py-3 px-4 rounded-lg font-medium hover:bg-blue-700 disabled:bg-gray-400 transition-colors !rounded-button whitespace-nowrap cursor-pointer"
                 >
                     <span v-if="isLoading" class="flex items-center justify-center">
@@ -253,55 +267,63 @@
     </div>
 </template>
 <script lang="ts" setup>
-import { ref, computed } from 'vue'
+import { useRouter } from 'vue-router'
+import { ref, computed, onMounted } from 'vue'
+import axios from 'axios'
+
+const router = useRouter()
+
 const form = ref({
-    name: '',
     username: '',
+    nickname: '',
     email: '',
     password: '',
     passwordConfirm: '',
+    phoneNumber: '',
     verificationCode: '',
     selectedProduct: -1,
-    selectedKeywords: [] as string[],
+    selectedKeywordIds: [] as number[],
     termsAccepted: false,
 })
 
-const keywords = [
-    '운동',
-    '식습관',
-    '수면',
-    '루틴 설정',
-    '청소',
-    '독서',
-    '학습',
-    '글쓰기',
-    '취미 활동',
-    '명상',
-    '환경 보호',
-    '동물 보호',
-    '봉사',
-    '기후',
-    '저축',
-    '소비 절약',
-    '투자 학습',
-    '마음 건강',
-    '건강관리',
-    '디지털 디톡스',
-]
+const keywords = ref([])
+// const keywords = [
+//     '운동',
+//     '식습관',
+//     '수면',
+//     '루틴 설정',
+//     '청소',
+//     '독서',
+//     '학습',
+//     '글쓰기',
+//     '취미 활동',
+//     '명상',
+//     '환경 보호',
+//     '동물 보호',
+//     '봉사',
+//     '기후',
+//     '저축',
+//     '소비 절약',
+//     '투자 학습',
+//     '마음 건강',
+//     '건강관리',
+//     '디지털 디톡스',
+// ]
 
-const toggleKeyword = (keyword: string) => {
-    if (form.value.selectedKeywords.includes(keyword)) {
-        form.value.selectedKeywords = form.value.selectedKeywords.filter((k) => k !== keyword)
-    } else if (form.value.selectedKeywords.length < 3) {
-        form.value.selectedKeywords.push(keyword)
+const toggleKeyword = (keywordId: number) => {
+    if (form.value.selectedKeywordIds.includes(keywordId)) {
+        form.value.selectedKeywordIds = form.value.selectedKeywordIds.filter((k) => k !== keywordId)
+    } else if (form.value.selectedKeywordIds.length < 3) {
+        form.value.selectedKeywordIds.push(keywordId)
     }
 }
 const errors = ref({
-    name: '',
     username: '',
+    nickname: '',
     email: '',
     password: '',
     passwordConfirm: '',
+    phoneNumber: '',
 })
 const products = [
     {
@@ -333,21 +355,26 @@ const showPasswordConfirm = ref(false)
 const isVerificationSent = ref(false)
 const isFormValid = computed(() => {
     return (
-        form.value.name &&
         form.value.username &&
+        form.value.nickname &&
         form.value.email &&
         form.value.password &&
         form.value.passwordConfirm &&
         form.value.selectedProduct >= 0 &&
-        form.value.selectedKeywords.length === 3 &&
+        form.value.selectedKeywordIds.length === 3 &&
+        form.value.phoneNumber &&
         form.value.termsAccepted &&
         !Object.values(errors.value).some((error) => error)
     )
 })
 const validateForm = () => {
-    errors.value.name = !form.value.name ? '이름을 입력해주세요' : ''
-    errors.value.username = !form.value.username ? '아이디를 입력해주세요' : ''
+    console.log('⏹️ validateForm() 호출')
+
+    errors.value.username = !form.value.username ? '이름을 입력해주세요' : ''
+    errors.value.nickname = !form.value.nickname ? '아이디를 입력해주세요' : ''
     errors.value.email = !form.value.email ? '이메일을 입력해주세요' : ''
+    errors.value.phoneNumber = !form.value.phoneNumber ? '전화번호를 입력해주세요' : ''
+
     if (form.value.password.length < 8) {
         errors.value.password = '비밀번호는 8자 이상이어야 합니다'
     } else if (
@@ -357,6 +384,7 @@ const validateForm = () => {
     } else {
         errors.value.password = ''
     }
+
     if (form.value.password !== form.value.passwordConfirm) {
         errors.value.passwordConfirm = '비밀번호가 일치하지 않습니다'
     } else {
@@ -364,9 +392,11 @@ const validateForm = () => {
     }
 }
 const checkUsername = async () => {
-    if (!form.value.username) {
-        errors.value.username = '아이디를 입력해주세요'
+    if (!form.value.nickname) {
+        errors.value.nickname = '아이디를 입력해주세요'
         return
+    } else {
+        errors.value.nickname = ''
     }
     // 실제 중복 확인 로직 구현
 }
@@ -374,6 +404,8 @@ const sendVerification = async () => {
     if (!form.value.email) {
         errors.value.email = '이메일을 입력해주세요'
         return
+    } else {
+        errors.value.email = ''
     }
     isVerificationSent.value = true
 }
@@ -385,19 +417,44 @@ const selectProduct = (index: number) => {
     form.value.selectedProduct = index
 }
 const handleSubmit = async () => {
+    console.log('⏹️ handleSubmit() 호출')
     validateForm()
     if (!isFormValid.value) return
     isLoading.value = true
     try {
         // 실제 회원가입 로직 구현
-        await new Promise((resolve) => setTimeout(resolve, 1500))
+        // await new Promise((resolve) => setTimeout(resolve, 1500))
+        const signupForm = {
+            email: form.value.email,
+            password: form.value.password,
+            nickname: form.value.nickname,
+            username: form.value.username,
+            phoneNumber: form.value.phoneNumber,
+            keywordIds: form.value.selectedKeywordIds,
+        }
+
+        await axios.post('/member/signup', signupForm)
+
         console.log('회원가입 성공:', form.value)
+
+        router.push('/')
     } catch (error) {
         console.error('회원가입 실패:', error)
     } finally {
         isLoading.value = false
     }
 }
+
+onMounted(async () => {
+    try {
+        const res = await axios.get('/keyword')
+        keywords.value = res.data
+
+        console.log('✅키워드 불러오기 성공: ', res.data)
+    } catch (err) {
+        console.error('❌키워드 불러오기 실패: ', err)
+    }
+})
 </script>
 <style scoped>
 .\!rounded-button {
