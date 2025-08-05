@@ -340,7 +340,6 @@ const submitFunding = async () => {
     const jsonData = {
       name: formData.value.name,
       detail: formData.value.detail,
-      thumbnail: null,
       joinCondition: formData.value.joinCondition,
       challengePeriodDays: parseInt(formData.value.challengePeriodDays),
       reward: formData.value.reward,
@@ -354,8 +353,8 @@ const submitFunding = async () => {
       keywordIds: [14, 15]
     }
     
-    // JSON 데이터를 Blob으로 변환하여 FormData에 추가
-    formDataToSend.append('challengeInfo', new Blob([JSON.stringify(jsonData)], { type: 'application/json' }))
+    // JSON 데이터를 Blob으로 변환하여 FormData에 추가 (UTF-8 인코딩 명시)
+    formDataToSend.append('challengeInfo', new Blob([JSON.stringify(jsonData)], { type: 'application/json;charset=UTF-8' }))
     
     // 파일들 추가
     uploadedFiles.value.forEach((file, index) => {

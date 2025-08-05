@@ -5,7 +5,7 @@ const BASE_URL = "/api/funding";
 // 펀딩 생성 (대출)
 export const createLoanFunding = async (formData) => {
   try {
-    const response = await api.post('/api/fund/create/loan', formData, {
+    const response = await api.post('/fund/create/loan', formData, {
       headers: {
         'Content-Type': 'multipart/form-data',
       },
@@ -20,7 +20,7 @@ export const createLoanFunding = async (formData) => {
 // 펀딩 생성 (적금)
 export const createSavingsFunding = async (formData) => {
   try {
-    const response = await api.post('/api/fund/create/savings', formData, {
+    const response = await api.post('/fund/create/savings', formData, {
       headers: {
         'Content-Type': 'multipart/form-data',
       },
@@ -35,7 +35,7 @@ export const createSavingsFunding = async (formData) => {
 // 펀딩 생성 (기부)
 export const createDonationFunding = async (formData) => {
   try {
-    const response = await api.post('/api/fund/create/donation', formData, {
+    const response = await api.post('/fund/create/donation', formData, {
       headers: {
         'Content-Type': 'multipart/form-data',
       },
@@ -50,7 +50,7 @@ export const createDonationFunding = async (formData) => {
 // 펀딩 생성 (챌린지)
 export const createChallengeFunding = async (formData) => {
   try {
-    const response = await api.post('/api/fund/create/challenge', formData, {
+    const response = await api.post('/fund/create/challenge', formData, {
       headers: {
         'Content-Type': 'multipart/form-data',
       },

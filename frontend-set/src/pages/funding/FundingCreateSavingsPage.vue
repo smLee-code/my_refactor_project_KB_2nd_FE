@@ -338,7 +338,6 @@ const submitFunding = async () => {
     const jsonData = {
       name: formData.value.name,
       detail: formData.value.detail,
-      thumbnail: null,
       joinCondition: formData.value.joinCondition,
       interestRate: parseFloat(formData.value.interestRate),
       periodDays: parseInt(formData.value.periodDays),
@@ -351,8 +350,8 @@ const submitFunding = async () => {
       keywordIds: [8, 9, 10]
     }
     
-    // JSON 데이터를 Blob으로 변환하여 FormData에 추가
-    formDataToSend.append('savingInfo', new Blob([JSON.stringify(jsonData)], { type: 'application/json' }))
+    // JSON 데이터를 Blob으로 변환하여 FormData에 추가 (UTF-8 인코딩 명시)
+    formDataToSend.append('savingInfo', new Blob([JSON.stringify(jsonData)], { type: 'application/json;charset=UTF-8' }))
     
     // 파일들 추가
     uploadedFiles.value.forEach((file, index) => {

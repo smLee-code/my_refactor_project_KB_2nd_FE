@@ -48,6 +48,7 @@
             <input
               type="text"
               v-model="formData.loanLimit"
+              @input="formatLoanLimit"
               class="w-full px-4 py-3 pr-12 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
               placeholder="50,000,000"
             />
@@ -314,6 +315,21 @@ const progressPercentage = computed(() => {
   return Math.round((filledFields / totalFields) * 100)
 })
 
+// 금액 포맷팅 함수
+const formatNumber = (value) => {
+  // 숫자가 아닌 문자 제거
+  const numbers = value.replace(/[^0-9]/g, '')
+  // 콤마 추가
+  return numbers.replace(/\B(?=(\d{3})+(?!\d))/g, ',')
+}
+
+// 대출 한도 포맷팅
+const formatLoanLimit = (event) => {
+  const formatted = formatNumber(event.target.value)
+  formData.value.loanLimit = formatted
+  event.target.value = formatted
+}
+
 // 파일 업로드 처리
 const handleFileUpload = (event) => {
   const files = Array.from(event.target.files)
@@ -377,8 +393,8 @@ const submitFunding = async () => {
       keywordIds: [11, 12, 13]
     }
     
-    // JSON 데이터를 Blob으로 변환하여 FormData에 추가
-    formDataToSend.append('loanInfo', new Blob([JSON.stringify(jsonData)], { type: 'application/json' }))
+    // JSON 데이터를 Blob으로 변환하여 FormData에 추가 (UTF-8 인코딩 명시)
+    formDataToSend.append('loanInfo', new Blob([JSON.stringify(jsonData)], { type: 'application/json;charset=UTF-8' }))
     
     // 파일들 추가
     uploadedFiles.value.forEach((file, index) => {
