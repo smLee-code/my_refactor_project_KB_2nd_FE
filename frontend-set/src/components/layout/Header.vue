@@ -35,10 +35,16 @@
                 <div class="flex items-center space-x-4">
                     <template v-if="!auth.isLoggedIn">
                         <button
-                            @click="auth.login"
+                            @click="goToLoginPage"
                             class="bg-gray-900 text-white px-6 py-2 !rounded-button font-medium hover:bg-gray-800 cursor-pointer whitespace-nowrap shadow-lg hover:shadow-xl transition-all transform hover:-translate-y-0.5"
                         >
                             로그인
+                        </button>
+                        <button
+                            @click="goToJoinPage"
+                            class="bg-gray-900 text-white px-6 py-2 !rounded-button font-medium hover:bg-gray-800 cursor-pointer whitespace-nowrap shadow-lg hover:shadow-xl transition-all transform hover:-translate-y-0.5"
+                        >
+                            회원가입
                         </button>
                     </template>
                     <template v-else>
@@ -121,6 +127,14 @@ const auth = useAuthStore()
 const showUserMenu = ref(false)
 const showNotificationDropdown = ref(false)
 const router = useRouter()
+
+const goToLoginPage = () => {
+    router.push('/auth/login')
+}
+
+const goToJoinPage = () => {
+    router.push('/auth/join')
+}
 
 // mock data
 const notifications = ref([
