@@ -38,6 +38,7 @@
 <script setup>
 import { ref, onMounted, watch } from 'vue'
 import { useRoute } from 'vue-router'
+import { useAuthStore } from '@/stores/auth'
 import axios from 'axios'
 
 import DetailChallenge from './DetailChallenge.vue'
@@ -49,6 +50,7 @@ import DetailSavings from './DetailSavings.vue'
 //   project: Object,
 // })
 
+const authStore = useAuthStore()
 const props = defineProps(['project'])
 const route = useRoute()
 const projectId = ref(route.params.id)
@@ -98,7 +100,11 @@ const getTypeLabel = (type) => {
 const fetchProjectData = async (id) => {
     console.log('fetchProjectData 호출!')
     try {
-        const res = await axios.get(`/project/list/detail/${projectId.value}/full`)
+        const res = await axios.get(`/project/list/detail/${projectId.value}/full`, {
+            headers: {
+                Authorization: `Bearer ${authStore.loadToken()}`, // <-- 헤더에 JWT 토큰 추가
+            },
+        })
         projectData.value = res.data
         console.log('✅ 프로젝트 정보 로드:', res.data)
     } catch (e) {
