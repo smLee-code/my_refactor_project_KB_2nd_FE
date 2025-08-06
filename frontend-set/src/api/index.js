@@ -3,8 +3,8 @@ import axios from 'axios'
 import router from '@/router'
 
 const api = axios.create({
-  baseURL: '/api', // 👈 이게 자동으로 /api 앞에 붙음
-  withCredentials: true, // 세션 쿠키 포함
+    baseURL: import.meta.env.VITE_API_URL ? `${import.meta.env.VITE_API_URL}/api` : '/api',
+    withCredentials: true, // 세션 쿠키 포함
 })
 
 export default api
