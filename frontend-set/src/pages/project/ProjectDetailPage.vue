@@ -32,11 +32,9 @@
                         :isLiked="isLiked"
                         @update-like="handleUpdateLike"
                     />
-                    
+
                     <!-- 펀딩 생성 버튼 -->
-                    <create-funding-button
-                        :projectId="Number(projectId)"
-                    />
+                    <create-funding-button :projectId="Number(projectId)" />
                 </div>
             </div>
 
