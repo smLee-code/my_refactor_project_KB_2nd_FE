@@ -18,13 +18,15 @@ export const useAuthStore = defineStore('auth', () => {
         console.log('✅userRole:', receivedAuthData.userRole)
 
         localStorage.setItem('jwt', receivedAuthData.token)
-        localStorage.setItem('role', receivedAuthData.token)
+        localStorage.setItem('role', receivedAuthData.userRole)
     }
 
     function logout() {
         isLoggedIn.value = false
         token.value = ''
+        userRole.value = ''
         localStorage.removeItem('jwt')
+        localStorage.removeItem('role')
     }
 
     function loadToken() {
@@ -44,6 +46,10 @@ export const useAuthStore = defineStore('auth', () => {
         return userRole
     }
 
+    function isFinanceRole() {
+        return userRole.value === 'ROLE_FINANCE'
+    }
+
     return {
         isLoggedIn,
         token,
@@ -52,5 +58,6 @@ export const useAuthStore = defineStore('auth', () => {
         logout,
         loadToken,
         loadRole,
+        isFinanceRole,
     }
 })
