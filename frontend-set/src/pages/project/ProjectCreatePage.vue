@@ -479,7 +479,13 @@ const createProject = async () => {
 
     getChildForm()
 
-    const totalForm = { ...form.value, ...childForm.value }
+    const { images, ...formWithoutImages } = form.value
+
+    const totalForm = { ...formWithoutImages, ...childForm.value }
+
+    console.log('✅form 확인:', form.value)
+    console.log('✅formWithoutImages 확인:', formWithoutImages)
+    console.log('✅totalForm 확인:', totalForm)
 
     isLoading.value = true
     try {
@@ -492,15 +498,15 @@ const createProject = async () => {
 
         formData.append('projectInfo', jsonBlob)
 
-        // 자식 폼 데이터 추가 (펀딩 타입별 정보)
-        Object.keys(childForm.value).forEach((key) => {
-            formData.append(key, childForm.value[key])
-        })
+        // // 자식 폼 데이터 추가 (펀딩 타입별 정보)
+        // Object.keys(childForm.value).forEach((key) => {
+        //     formData.append(key, childForm.value[key])
+        // })
 
         // 이미지 파일들 추가
         if (form.value.images && form.value.images.length > 0) {
-            form.value.images.forEach((image, index) => {
-                formData.append(`images`, image)
+            form.value.images.forEach((file) => {
+                formData.append('images', file)
             })
         }
 
@@ -534,7 +540,6 @@ const createProject = async () => {
 
         // 폼 초기화
         form.value = {
-            userId: userId.value,
             title: '',
             promotion: '',
             projectType: '',
