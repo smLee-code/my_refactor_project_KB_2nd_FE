@@ -24,11 +24,11 @@
             <!-- 프로젝트 카드 그리드 -->
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
                 <ProjectCard
-                    v-for="projects in filteredProjects"
-                    :key="projects.id"
-                    :project="projects"
+                    v-for="project in filteredProjects"
+                    :key="project.id"
+                    :project="project"
                     @toggle-like="toggleLike"
-                    @click="goToDetail(projects.id)"
+                    @click="goToDetail(project)"
                 />
             </div>
             <!-- 새 프로젝트 등록 버튼 -->
@@ -61,6 +61,9 @@ import Footer from '@/components/layout/Footer.vue'
 
 //style import
 import '@/assets/styles/projectList.css'
+import { useAuthStore } from '@/stores/auth'
+
+const authStore = useAuthStore()
 
 const projects = ref([])
 const router = useRouter()
@@ -71,8 +74,13 @@ const goToCreatePage = () => {
     router.push(`/project/create`) // 원하는 페이지 경로
 }
 
-const goToDetail = (id) => {
-    router.push(`project/detail/${id}`)
+const goToDetail = (project) => {
+    router.push({
+        path: `project/detail/${project.id}`,
+        state: {
+            project,
+        },
+    })
 }
 
 const tabOptions = [
@@ -152,28 +160,57 @@ const toggleLike = async (projectId) => {
     const project = projects.value.find((p) => p.id === projectId)
     if (!project) return
 
+    const token = authStore.loadToken()
+    console.log('🔑 loadToken() 반환값:', token)
+    console.log('📦 localStorage jwt:', localStorage.getItem('jwt'))
+
     try {
         if (project.isLiked) {
-            await axios.post('/votes', { userId: userId.value, projectId })
+            await axios.post(
+                '/votes',
+                { userId: userId.value, projectId },
+                {
+                    headers: {
+                        Authorization: `Bearer ${token}`, // <-- 헤더에 JWT 토큰 추가
+                    },
+                },
+            )
             project.likes--
         } else {
-            await axios.post('/votes', { userId: userId.value, projectId })
+            await axios.post(
+                '/votes',
+                { userId: userId.value, projectId },
+                {
+                    headers: {
+                        Authorization: `Bearer ${token}`, // <-- 헤더에 JWT 토큰 추가
+                    },
+                },
+            )
             project.likes++
         }
         project.isLiked = !project.isLiked
     } catch (err) {
         console.error('❌ 좋아요 토글 실패:', err)
+        console.log('😀', token)
+        localStorage.getItem('jwt')
     }
 }
 
 onMounted(async () => {
     try {
-        const res = await axios.get('/project/list') // DB에서 받아온 응답
+        const res = await axios.get('/project/list', {
+            headers: {
+                Authorization: `Bearer ${authStore.loadToken()}`,
+            },
+        }) // DB에서 받아온 응답
         projects.value = res.data.map((item) => ({
             id: item.projectId,
             title: item.title,
+            deadline: item.deadline,
+            createAt: item.createAt,
+            proposer: item.userId,
             type: item.projectType || '기타',
-            image: item.imageUrl || '/default-thumbnail.png',
+            image: item.imageUrl || '/default-thumbnail.png', // <- S3ImageVO 객체로 변경
             description: item.promotion || '설명이 없습니다.',
             proposer: `작성자 ${item.userId}`,
             createdAt: formatDate(item.createAt),
@@ -195,20 +232,20 @@ onMounted(async () => {
         console.error('❌ 프로젝트 불러오기 실패:', err)
     }
 
-    for (const project of projects.value) {
-        try {
-            const res = await axios.get(`/votes?userId=${userId.value}&projectId=${project.id}`)
-            project.isLiked = res.data
-            console.log('✅ 투표 여부 API 응답:', res.data)
-            // 좋아요 개수
-            const voteCountRes = await axios.get('/votes/count', {
-                params: { projectId: project.id },
-            })
-            project.likes = voteCountRes.data
-        } catch (err) {
-            console.error(`❌ 프로젝트 ${project.id} 좋아요 데이터 조회 실패:`, err)
-        }
-    }
+    // for (const project of projects.value) {
+    //     try {
+    //         const res = await axios.get(`/votes?userId=${userId.value}&projectId=${project.id}`)
+    //         project.isLiked = res.data
+    //         console.log('✅ 투표 여부 API 응답:', res.data)
+    //         // 좋아요 개수
+    //         const voteCountRes = await axios.get('/votes/count', {
+    //             params: { projectId: project.id },
+    //         })
+    //         project.likes = voteCountRes.data
+    //     } catch (err) {
+    //         console.error(`❌ 프로젝트 ${project.id} 좋아요 데이터 조회 실패:`, err)
+    //     }
+    // }
 })
 
 const formatDate = (arr) => {
