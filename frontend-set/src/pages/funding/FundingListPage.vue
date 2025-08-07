@@ -37,7 +37,9 @@
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8 mb-12">
                 <FundingCard
                     v-for="funding in displayedFundingList"
-                    :key="funding.projectId"
+                    :key="funding.fundId"
+                    :id="funding.fundId"
+                    :fundType="funding.fundType"
                     :image="funding.thumbnailImage?.imageUrl || '/default.jpg'"
                     :title="funding.name"
                     :description="funding.financialInstitution || '금융기관 정보 없음'"

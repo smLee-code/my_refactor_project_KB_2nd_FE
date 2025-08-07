@@ -125,7 +125,7 @@
                             class="p-4 border rounded-lg cursor-pointer hover:bg-gray-50 transition-all"
                         >
                             <div class="flex items-center justify-center mb-2">
-                                <img src="https://developers.kakao.com/static/images/pc/product/icon_kakao_pay.png" 
+                                <img src="/images/kakaopay.png" 
                                      alt="카카오페이" 
                                      class="h-8">
                             </div>
