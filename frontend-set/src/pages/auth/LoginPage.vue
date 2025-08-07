@@ -171,7 +171,11 @@ const handleLogin = async () => {
                 password: password.value,
             })
             .then((res) => {
+                console.log('✅res.data:', res.data)
+
                 authStore.login(res.data.accessToken)
+                console.log('✅authStore token:', authStore.loadToken())
+                console.log('✅res accesstoken:', res.data)
             })
 
         // 로그인 성공 시 리다이렉트 또는 상태 변경
