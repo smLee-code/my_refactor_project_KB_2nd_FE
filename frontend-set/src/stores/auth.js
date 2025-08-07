@@ -7,11 +7,18 @@ export const useAuthStore = defineStore('auth', () => {
     const userRole = ref('')
 
     function login(receivedAuthData) {
+        console.log('✅receivedAuthData:', receivedAuthData)
+
         isLoggedIn.value = true
+
         token.value = receivedAuthData.token
+        console.log('✅token:', receivedAuthData.token)
+
         userRole.value = receivedAuthData.userRole
-        localStorage.setItem('jwt', receivedToken)
-        localStoragge.setItem('role', receivedRole)
+        console.log('✅userRole:', receivedAuthData.userRole)
+
+        localStorage.setItem('jwt', receivedAuthData.token)
+        localStorage.setItem('role', receivedAuthData.token)
     }
 
     function logout() {
