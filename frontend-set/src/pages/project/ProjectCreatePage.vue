@@ -251,6 +251,7 @@
 
 <script setup>
 import { ref, computed, watch, onMounted } from 'vue'
+import { useAuthStore } from '@/stores/auth'
 import axios from 'axios'
 
 import SavingsProjectInput from './components/SavingsProjectInput.vue'
@@ -258,58 +259,11 @@ import LoanProjectInput from './components/LoanProjectInput.vue'
 import DonationProjectInput from './components/DonationProjectInput.vue'
 import ChallengeProjectInput from './components/ChallengeProjectInput.vue'
 
+const authStore = useAuthStore()
+
 const categoryAndKeywords = ref([])
-// const categoryAndKeywords = ref([
-//     {
-//         category: { id: 1, name: '라이프스타일' },
-//         keywords: [
-//             { id: 8, name: '운동' },
-//             { id: 9, name: '식습관' },
-//             { id: 10, name: '수면' },
-//             { id: 11, name: '루틴 설정' },
-//             { id: 12, name: '청소' },
-//         ],
-//     },
-//     {
-//         category: { id: 2, name: '자기계발' },
-//         keywords: [
-//             { id: 13, name: '독서' },
-//             { id: 14, name: '학습' },
-//             { id: 15, name: '글쓰기' },
-//             { id: 16, name: '취미 활동' },
-//             { id: 17, name: '명상' },
-//         ],
-//     },
-//     {
-//         category: { id: 3, name: '환경' },
-//         keywords: [
-//             { id: 18, name: '환경 보호' },
-//             { id: 19, name: '동물 보호' },
-//             { id: 20, name: '봉사' },
-//             { id: 21, name: '기후' },
-//         ],
-//     },
-//     {
-//         category: { id: 4, name: '경제습관' },
-//         keywords: [
-//             { id: 22, name: '저축' },
-//             { id: 23, name: '소비 절약' },
-//             { id: 24, name: '투자 학습' },
-//         ],
-//     },
-//     {
-//         category: { id: 5, name: '웰빙' },
-//         keywords: [
-//             { id: 25, name: '마음 건강' },
-//             { id: 26, name: '건강관리' },
-//             { id: 27, name: '디지털 디톡스' },
-//         ],
-//     },
-// ])
 
 const selectedKeywordIds = ref([])
-
-const userId = ref(1)
 
 const childRef = ref(null)
 
@@ -319,7 +273,6 @@ const isChildFormValid = ref(false)
 const totalForm = ref({})
 
 const form = ref({
-    userId: userId.value,
     title: '',
     promotion: '',
     projectType: '',
@@ -489,9 +442,9 @@ const fetchCategories = async () => {
         const response = await axios.get('/category/all')
         categoryAndKeywords.value = response.data
 
-        console.log('모든 카테고리 및 키워드 목록: ', categoryAndKeywords.value)
+        console.log('⏹️모든 카테고리 및 키워드 목록: ', categoryAndKeywords.value)
     } catch (err) {
-        console.error('프로젝트 생성 실패:', err)
+        console.error('❌카테고리 & 키워드 목록 불러오기 실패:', err)
     }
 }
 
@@ -525,21 +478,19 @@ const createProject = async () => {
     form.value.keywordIds = selectedKeywordIds.value
 
     getChildForm()
-    totalForm.value = { ...form.value, ...childForm.value }
-    console.log('totalForm: ', totalForm.value)
+
+    const totalForm = { ...form.value, ...childForm.value }
 
     isLoading.value = true
     try {
         // FormData 생성
         const formData = new FormData()
 
-        // 기본 프로젝트 정보 추가
-        formData.append('userId', totalForm.value.userId)
-        formData.append('title', totalForm.value.title)
-        formData.append('promotion', totalForm.value.promotion)
-        formData.append('projectType', totalForm.value.projectType)
-        formData.append('deadline', totalForm.value.deadline)
-        formData.append('keywordIds', JSON.stringify(totalForm.value.keywordIds))
+        const jsonBlob = new Blob([JSON.stringify(totalForm)], {
+            type: 'application/json',
+        })
+
+        formData.append('projectInfo', jsonBlob)
 
         // 자식 폼 데이터 추가 (펀딩 타입별 정보)
         Object.keys(childForm.value).forEach((key) => {
@@ -555,12 +506,12 @@ const createProject = async () => {
 
         // FormData 내용을 콘솔에 출력
         console.log('=== FormData 내용임다 확인 부탁스딱스===')
-        console.log('userId:', totalForm.value.userId)
-        console.log('title:', totalForm.value.title)
-        console.log('promotion:', totalForm.value.promotion)
-        console.log('projectType:', totalForm.value.projectType)
-        console.log('deadline:', totalForm.value.deadline)
-        console.log('keywordIds:', totalForm.value.keywordIds)
+        console.log('userId:', form.value.userId)
+        console.log('title:', form.value.title)
+        console.log('promotion:', form.value.promotion)
+        console.log('projectType:', form.value.projectType)
+        console.log('deadline:', form.value.deadline)
+        console.log('keywordIds:', form.value.keywordIds)
         console.log('childForm:', childForm.value)
         console.log('이미지 개수:', form.value.images.length)
         form.value.images.forEach((image, index) => {
@@ -570,10 +521,12 @@ const createProject = async () => {
                 type: image.type,
             })
         })
+        console.log('formData:', formData)
 
         const response = await axios.post('/project', formData, {
             headers: {
-                'Content-Type': 'multipart/form-data', // FormData용 헤더
+                // 'Content-Type': 'multipart/form-data', // FormData용 헤더
+                Authorization: `Bearer ${authStore.loadToken()}`,
             },
         })
 
