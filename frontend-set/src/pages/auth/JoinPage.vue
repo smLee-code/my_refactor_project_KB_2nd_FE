@@ -265,6 +265,7 @@ const toggleKeyword = (keywordId: number) => {
 
     console.log('selectedKeywordIds:', form.value.selectedKeywordIds)
 }
+
 const errors = ref({
     username: '',
     nickname: '',
@@ -273,6 +274,7 @@ const errors = ref({
     passwordConfirm: '',
     phoneNumber: '',
 })
+
 const products = [
     {
         title: '저축형',
@@ -297,6 +299,7 @@ const products = [
         icon: 'fas fa-trophy',
     },
 ]
+
 const isLoading = ref(false)
 const showPassword = ref(false)
 const showPasswordConfirm = ref(false)
@@ -314,6 +317,7 @@ const isFormValid = computed(() => {
         !Object.values(errors.value).some((error) => error)
     )
 })
+
 const validateForm = () => {
     console.log('⏹️ validateForm() 호출')
 
@@ -338,6 +342,7 @@ const validateForm = () => {
         errors.value.passwordConfirm = ''
     }
 }
+
 const checkUsername = async () => {
     if (!form.value.nickname) {
         errors.value.nickname = '아이디를 입력해주세요'
@@ -347,19 +352,39 @@ const checkUsername = async () => {
     }
     // 실제 중복 확인 로직 구현
 }
+
 const sendVerification = async () => {
     if (!form.value.email) {
         errors.value.email = '이메일을 입력해주세요'
         return
     } else {
-        errors.value.email = ''
+        try {
+            const res = await axios.post(`/mail/send?email=${form.value.email}`)
+            console.log(res.data.message)
+            errors.value.email = ''
+            isVerificationSent.value = true
+        } catch (err) {
+            if (err.response) {
+                errors.value.email = err.response.data.message || '오류 발생'
+            } else {
+                errors.value.email = '서버 연결 실패'
+            }
+        }
     }
-    isVerificationSent.value = true
 }
 
 const verifyCode = async () => {
     if (!form.value.verificationCode) return
-    // 실제 인증 코드 확인 로직 구현
+
+    try {
+        const res = await axios.post(
+            `/mail/verify?email=${form.value.email}&code=${form.value.verificationCode}`,
+        )
+        console.log(res.data.message)
+        isVerificationSent.value = false
+    } catch (err) {
+        console.error('❌이메일 인증 실패', err)
+    }
 }
 
 const handleSubmit = async () => {
