@@ -160,6 +160,10 @@ const toggleLike = async (projectId) => {
     const project = projects.value.find((p) => p.id === projectId)
     if (!project) return
 
+    const token = authStore.loadToken()
+    console.log('🔑 loadToken() 반환값:', token)
+    console.log('📦 localStorage jwt:', localStorage.getItem('jwt'))
+
     try {
         if (project.isLiked) {
             await axios.post(
@@ -187,6 +191,8 @@ const toggleLike = async (projectId) => {
         project.isLiked = !project.isLiked
     } catch (err) {
         console.error('❌ 좋아요 토글 실패:', err)
+        console.log('😀', token)
+        localStorage.getItem('jwt')
     }
 }
 

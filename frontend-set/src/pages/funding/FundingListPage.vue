@@ -36,17 +36,15 @@
             <!-- 펀딩 카드 그리드 -->
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8 mb-12">
                 <FundingCard
-                    v-for="project in displayedProjects"
-                    :key="project.id"
-                    :image="project.image"
-                    :title="project.title"
-                    :description="project.description"
-                    :daysLeft="project.daysLeft"
-                    :category="project.category"
-                    :likes="project.likes"
-                    :progress="project.progress"
-                    :link="getProjectLink(project)"
-                    @click="goToProject(project)"
+                    v-for="funding in displayedFundingList"
+                    :key="funding.projectId"
+                    :image="funding.thumbnailImage?.imageUrl || '/default.jpg'"
+                    :title="funding.name"
+                    :description="funding.financialInstitution || '금융기관 정보 없음'"
+                    :daysLeft="getDaysLeft(funding.endAt)"
+                    :category="funding.fundType"
+                    :likes="funding.retryVotesCount || 0"
+                    :progress="funding.progress"
                 />
             </div>
             <!-- 페이지네이션 -->
@@ -78,7 +76,6 @@
 </template>
 <script setup>
 import { ref, computed } from 'vue'
-import { useRouter } from 'vue-router'
 import FundingUrgentCard from '@/components/funding/FundingUrgentCard.vue'
 import FundingCard from '@/components/funding/FundingCard.vue'
 import TabMenu from '@/components/common/TabMenu.vue'
@@ -86,14 +83,27 @@ import SearchBox from '@/components/common/SearchBox.vue'
 import SortSelect from '@/components/common/SortSelect.vue'
 import CategoryFilter from '@/components/common/CategoryFilter.vue'
 import Pagination from '@/components/common/Pagination.vue'
+import { onMounted } from 'vue'
+import axios from 'axios'
 
-const router = useRouter()
+const fundingList = ref([])
+const launchFunds = ref([])
+const endFunds = ref([])
+const likedFunds = ref([])
+
+const filteredByTab = computed(() => {
+    if (activeTab.value === 'ongoing') return launchFunds.value
+    if (activeTab.value === 'ended') return endFunds.value
+    if (activeTab.value === 'liked') return likedFunds.value
+    return []
+})
 
 const tabOptions = [
     { value: 'ongoing', label: '진행중인 펀딩' },
     { value: 'ended', label: '종료된 펀딩' },
     { value: 'liked', label: '좋아요한 펀딩' },
 ]
+
 const activeTab = ref('ongoing')
 const selectedCategory = ref('전체')
 const currentPage = ref(1)
@@ -108,131 +118,92 @@ const sortOptions = {
 }
 
 const categories = ref(['전체', '적금형', '대출형', '기부형', '챌린지형'])
+const fundTypeMap = {
+    Savings: '적금형',
+    Loan: '대출형',
+    Donation: '기부형',
+    Challenge: '챌린지형',
+}
 
-// 마감 임박 펀딩 mock data
-const urgentFundings = ref([
-    {
-        id: 1,
-        image: 'https://readdy.ai/api/search-image?query=urgent%20funding%20deadline%20project%20with%20clean%20white%20background%2C%20time-sensitive%20investment%20opportunity%2C%20red%20warning%20elements%2C%20professional%20financial%20design%2C%203D%20depth%20effect&width=150&height=150&seq=urgent1&orientation=squarish',
-        title: '다양한 위험 관리 펀딩 1',
-        timeLeft: '12시간 남음',
-        participants: 75,
-        progress: 90,
-    },
-    {
-        id: 2,
-        image: 'https://readdy.ai/api/search-image?query=last%20chance%20crowdfunding%20project%20with%20clean%20white%20background%2C%20urgent%20investment%20deadline%2C%20red%20accent%20colors%2C%20modern%20financial%20platform%20design%2C%203D%20depth%20effect&width=150&height=150&seq=urgent2&orientation=squarish',
-        title: '다양한 위험 관리 펀딩 2',
-        timeLeft: '6시간 남음',
-        participants: 85,
-        progress: 80,
-    },
-])
-
-const ongoingProjects = ref([
-    {
-        id: 1,
-        title: 'Project A',
-        description: 'Environment Sustainability Initiative',
-        daysLeft: 15,
-        likes: 142,
-        progress: 75,
-        participants: 89,
-        category: '적금형',
-        image: 'https://readdy.ai/api/search-image?query=environmental%20sustainability%20project%20with%20clean%20white%20background%2C%20green%20technology%20innovation%2C%20modern%20eco-friendly%20design%2C%20professional%20investment%20concept%2C%203D%20depth%20effect&width=300&height=240&seq=proj1&orientation=landscape',
-        link: '#',
-    },
-    {
-        id: 2,
-        title: 'Project B',
-        description: 'Local Art Fund Raising',
-        daysLeft: 8,
-        likes: 98,
-        progress: 60,
-        participants: 67,
-        category: '기부형',
-        image: 'https://readdy.ai/api/search-image?query=local%20art%20community%20funding%20project%20with%20clean%20white%20background%2C%20creative%20arts%20initiative%2C%20colorful%20artistic%20elements%2C%20modern%20cultural%20design%2C%203D%20depth%20effect&width=300&height=240&seq=proj2&orientation=landscape',
-        link: '#',
-    },
-])
-const endedProjects = ref([
-    {
-        id: 16,
-        title: 'Completed Project A',
-        description: 'Successfully Funded Initiative',
-        daysLeft: 0,
-        likes: 245,
-        progress: 100,
-        participants: 189,
-        category: '적금형',
-        image: 'https://readdy.ai/api/search-image?query=successfully%20completed%20funding%20project%20with%20clean%20white%20background%2C%20achievement%20celebration%20concept%2C%20success%20elements%2C%20professional%20completion%20design%2C%203D%20depth%20effect&width=300&height=240&seq=completed1&orientation=landscape',
-        link: '#',
-    },
-])
-const likedProjects = ref([
-    {
-        id: 18,
-        title: 'Liked Project A',
-        description: 'Sustainable Energy Initiative',
-        daysLeft: 25,
-        likes: 320,
-        progress: 75,
-        participants: 245,
-        category: '적금형',
-        image: 'https://readdy.ai/api/search-image?query=sustainable%20energy%20project%20with%20clean%20white%20background%2C%20renewable%20power%20initiative%2C%20green%20technology%20elements%2C%20professional%20environmental%20design%2C%203D%20depth%20effect&width=300&height=240&seq=liked1&orientation=landscape',
-        link: '#',
-    },
-])
-
-const currentProjects = computed(() => {
-    if (activeTab.value === 'ongoing') return ongoingProjects.value
-    if (activeTab.value === 'ended') return endedProjects.value
-    return likedProjects.value
+const urgentFundings = computed(() => {
+    return [...launchFunds.value]
+        .filter((fund) => new Date(fund.endAt) > new Date()) // 오늘 이후
+        .sort((a, b) => new Date(a.endAt) - new Date(b.endAt)) // 마감 빠른 순
+        .slice(0, 6) // 상위 5개만
+        .map((fund) => ({
+            id: fund.projectId,
+            image: fund.thumbnailImage?.imageUrl || '/default.jpg',
+            title: fund.name,
+            timeLeft: getDaysLeft(fund.endAt),
+            participants: fund.retryVotesCount || 0,
+            progress: fund.progress,
+        }))
 })
 
-const displayedProjects = computed(() => {
-    // 검색, 카테고리, 정렬 등 필터링 로직 추가 가능
-    let filtered = currentProjects.value
+const displayedFundingList = computed(() => {
+    let filtered = [...filteredByTab.value]
+
+    // 카테고리 필터링
     if (selectedCategory.value !== '전체') {
-        filtered = filtered.filter((p) => p.category === selectedCategory.value)
+        filtered = filtered.filter((item) => {
+            const typeLabel = fundTypeMap[item.fundType] || item.category
+            return typeLabel === selectedCategory.value
+        })
     }
-    if (searchQuery.value) {
-        filtered = filtered.filter(
-            (p) => p.title.includes(searchQuery.value) || p.description.includes(searchQuery.value),
-        )
+
+    // 검색 필터링
+    if (searchQuery.value.trim()) {
+        const keyword = searchQuery.value.toLowerCase()
+        filtered = filtered.filter((item) => {
+            return item.name?.toLowerCase().includes(keyword)
+        })
     }
-    // 정렬 예시
-    if (selectedSort.value === 'popular') {
-        filtered = [...filtered].sort((a, b) => b.likes - a.likes)
+
+    // 정렬
+    if (selectedSort.value === 'latest') {
+        filtered.sort((a, b) => new Date(b.launchAt) - new Date(a.launchAt))
+    } else if (selectedSort.value === 'popular') {
+        filtered.sort((a, b) => (b.retryVotesCount || 0) - (a.retryVotesCount || 0))
     } else if (selectedSort.value === 'deadline') {
-        filtered = [...filtered].sort((a, b) => a.daysLeft - b.daysLeft)
+        filtered.sort((a, b) => new Date(a.endAt) - new Date(b.endAt))
     }
-    // 페이지네이션
-    const startIndex = (currentPage.value - 1) * 10
-    return filtered.slice(startIndex, startIndex + 10)
+
+    return filtered
 })
 
 function handleSearch() {
     currentPage.value = 1
 }
 
-// 프로젝트 타입에 따른 링크 생성
-function getProjectLink(project) {
-    if (project.category === '챌린지형' || project.category === '기부형') {
-        return `/funding/join-payment/${project.id}`
-    } else {
-        return `/funding/join-apply/${project.id}`
-    }
+const getDaysLeft = (endAt) => {
+    const end = new Date(endAt)
+    const today = new Date()
+    const diff = Math.ceil((end - today) / (1000 * 60 * 60 * 24))
+    return diff >= 0 ? diff : 0
 }
 
-// 프로젝트 클릭 시 라우팅
-function goToProject(project) {
-    if (project.category === '챌린지형' || project.category === '기부형') {
-        router.push(`/funding/join-payment/${project.id}`)
-    } else {
-        router.push(`/funding/join-apply/${project.id}`)
+onMounted(async () => {
+    try {
+        const [launchRes, endRes] = await Promise.all([
+            axios.get('/fund/list', { params: { progress: 'Launch' } }),
+            axios.get('/fund/list', { params: { progress: 'End' } }),
+        ])
+
+        launchFunds.value = launchRes.data
+        endFunds.value = endRes.data
+
+        // 임시 likedFunds (ex: 투표 수 10 이상만)
+        likedFunds.value = [...launchRes.data, ...endRes.data].filter(
+            (item) => item.retryVotesCount > 10,
+        )
+
+        console.log('진행중 펀딩:', launchFunds.value)
+        console.log('종료된 펀딩:', endFunds.value)
+        console.log('좋아요한 펀딩:', likedFunds.value)
+    } catch (err) {
+        console.error(`❌ 펀딩 목록 실패:`, err)
     }
-}
+})
 </script>
 
 <style scoped>

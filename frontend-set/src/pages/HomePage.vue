@@ -117,6 +117,9 @@ import ProjectCard from '@/components/project/list/ProjectCard.vue'
 import FundingUrgentCard from '@/components/funding/FundingUrgentCard.vue'
 import Footer from '@/components/layout/MainFooter.vue'
 import axios from 'axios'
+import { useAuthStore } from '@/stores/auth'
+
+const authStore = useAuthStore()
 
 const router = useRouter()
 const topProjects = ref([])
@@ -133,6 +136,8 @@ onMounted(async () => {
     } catch (err) {
         console.error(`❌ 프로젝트 인기목록 실패:`, err)
     }
+
+    console.log('jwt 토큰:', authStore.loadToken())
 })
 
 const goToProjectList = () => {
