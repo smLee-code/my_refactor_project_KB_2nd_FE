@@ -82,6 +82,7 @@
               <div class="text-gray-500">마감일: 2025년 8월 6일</div>
             </div>
             <button
+              @click="goToFundingJoin"
               class="w-full sm:w-auto bg-yellow-400 text-gray-900 px-8 py-3 !rounded-button font-bold hover:bg-yellow-500 cursor-pointer whitespace-nowrap shadow-lg hover:shadow-xl transition-all transform hover:-translate-y-0.5"
             >
               펀딩 참여하기
@@ -367,14 +368,64 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
+import axios from 'axios'
 
+const route = useRoute()
+const router = useRouter()
+const fundingId = route.params.id
+
+// 펀딩 정보
+const fundingData = ref(null)
 const isLiked = ref(false)
 const participantCount = ref(142)
 const currentAmount = ref(37500000)
 const targetAmount = ref(50000000)
 const daysLeft = ref(15)
 const progressPercentage = ref(75)
+
+// 펀딩 정보 조회
+const fetchFundingDetail = async () => {
+  try {
+    const response = await axios.get(`/api/fund/detail/${fundingId}`)
+    fundingData.value = response.data
+    
+    // 실제 데이터로 업데이트
+    if (response.data) {
+      // targetAmount.value = response.data.targetAmount || 50000000
+      // currentAmount.value = response.data.currentAmount || 0
+      // progressPercentage.value = response.data.progress || 0
+      // participantCount.value = response.data.participantCount || 0
+    }
+  } catch (error) {
+    console.error('펀딩 상세 정보 조회 실패:', error)
+  }
+}
+
+// 펀딩 참여하기 버튼 클릭
+const goToFundingJoin = () => {
+  if (!fundingData.value) {
+    // 펀딩 데이터가 없으면 기본 페이지로
+    router.push(`/funding/join-payment/${fundingId}`)
+    return
+  }
+  
+  const fundType = fundingData.value.fundType
+  
+  // 타입별 페이지 분기
+  if (fundType === 'Loan' || fundType === 'Savings') {
+    // 대출/적금: 결제 없는 페이지
+    router.push(`/funding/join-apply/${fundingId}`)
+  } else {
+    // 기부/챌린지: 결제 있는 페이지  
+    router.push(`/funding/join-payment/${fundingId}`)
+  }
+}
+
+onMounted(() => {
+  fetchFundingDetail()
+})
 
 const toggleLike = () => {
   isLiked.value = !isLiked.value
@@ -383,8 +434,8 @@ const toggleLike = () => {
 const shareProject = () => {
   if (navigator.share) {
     navigator.share({
-      title: 'Project A - Environment Sustainability Initiative',
-      text: '지속 가능한 환경을 위한 혁신적인 기술 개발 프로젝트',
+      title: fundingData.value?.name || 'Project A - Environment Sustainability Initiative',
+      text: fundingData.value?.detail || '지속 가능한 환경을 위한 혁신적인 기술 개발 프로젝트',
       url: window.location.href,
     })
   } else {

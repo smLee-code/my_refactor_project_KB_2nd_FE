@@ -51,6 +51,14 @@ import { computed } from 'vue'
 import { useRouter } from 'vue-router'
 
 const props = defineProps({
+    id: {
+        type: [String, Number],
+        required: true,
+    },
+    fundType: {
+        type: String,
+        required: true,
+    },
     image: {
         type: String,
         required: true,
@@ -85,7 +93,8 @@ const props = defineProps({
 const router = useRouter()
 
 const handleCardClick = () => {
-    router.push('/funding/detail')
+    // 펀딩 상세 페이지로 이동
+    router.push(`/funding/detail/${props.id}`)
 }
 
 const categoryClass = computed(() => {

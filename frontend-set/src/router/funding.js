@@ -20,7 +20,7 @@ export default [
         component: () => import('../pages/funding/FundingCreateChallengePage.vue'),
     },
     {
-        path: '/funding/detail',
+        path: '/funding/detail/:id',
         name: 'fundingDetail',
         component: () => import('../pages/funding/FundingDetailPage.vue'),
     },

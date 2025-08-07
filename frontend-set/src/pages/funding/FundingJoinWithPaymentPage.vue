@@ -108,6 +108,23 @@
                 </div>
             </section>
 
+            <!-- 챌린지 보증금 안내 (챌린지일 경우에만 표시) -->
+            <section v-if="fundingType === 'challenge'" class="mb-8">
+                <div class="bg-white rounded-xl shadow-lg p-6 border border-gray-100">
+                    <div class="flex items-center mb-6">
+                        <i class="fas fa-trophy text-orange-500 text-xl mr-3"></i>
+                        <h3 class="text-xl font-bold text-gray-900">챌린지 보증금</h3>
+                    </div>
+                    <div class="bg-orange-50 border-2 border-orange-400 rounded-lg p-6 text-center">
+                        <div class="text-3xl font-bold text-gray-900 mb-2">{{ formatCurrency(fixedAmount) }}</div>
+                        <div class="text-gray-600 mb-2">챌린지 보증금</div>
+                        <div class="text-sm text-gray-500">
+                            챌린지 완주 시 보증금이 환급됩니다.
+                        </div>
+                    </div>
+                </div>
+            </section>
+
             <!-- 결제 수단 선택 -->
             <section class="mb-8">
                 <div class="bg-white rounded-xl shadow-lg p-6 border border-gray-100">
@@ -222,7 +239,7 @@
                         @click="processPayment"
                         :disabled="!canProceedPayment"
                         :class="{
-                            'bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white': canProceedPayment,
+                            'bg-yellow-400 hover:bg-yellow-500 text-gray-900': canProceedPayment,
                             'bg-gray-300 text-gray-500 cursor-not-allowed': !canProceedPayment,
                         }"
                         class="w-full py-4 !rounded-button font-bold text-lg transition-all shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 whitespace-nowrap"
@@ -242,7 +259,8 @@
 <script lang="ts" setup>
 import { ref, computed, onMounted, nextTick } from 'vue'
 import api from '@/api'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
+import axios from 'axios'
 
 // IMP 타입 선언
 declare global {
@@ -252,14 +270,34 @@ declare global {
 }
 
 const route = useRoute()
+const router = useRouter()
 const fundingId = route.params.id
 
-// 펀딩 정보 (임시값 - 실제로는 API에서 가져와야 함)
+// 펀딩 정보
+const fundingData = ref(null)
 const fundingTitle = ref('소외계층 아동 교육 지원')
-const fundingType = ref('donation') // 'challenge' 또는 'donation'
+const fundingType = ref('donation') // 임시로 모두 기부로 처리
 const fixedAmount = ref(50000) // 챌린지 고정 금액
 const minAmount = ref(1000) // 기부 최소 금액
 const maxAmount = ref(1000000) // 기부 최대 금액
+
+// 임시로 API 호출 없이 기본값 설정
+const fetchFundingInfo = async () => {
+    try {
+        console.log(`🔍 펀딩 ID ${fundingId} - 임시로 기부형으로 처리`)
+        
+        // 임시로 모든 펀딩을 기부형으로 처리
+        fundingTitle.value = `펀딩 ${fundingId} 참여하기`
+        fundingType.value = 'donation'
+        minAmount.value = 1000
+        maxAmount.value = 1000000
+        selectedAmount.value = 0
+        
+        console.log('🔍 기본값으로 설정 완료')
+    } catch (error) {
+        console.error('펀딩 정보 설정 실패:', error)
+    }
+}
 
 // 금액 관련
 const selectedAmount = ref(fundingType.value === 'challenge' ? fixedAmount.value : 0)
@@ -339,6 +377,10 @@ const canProceedPayment = computed(() => {
 
 // IMP 초기화
 onMounted(() => {
+    // 펀딩 정보 먼저 조회
+    fetchFundingInfo()
+    
+    // IMP 초기화
     nextTick(() => {
         setTimeout(() => {
             initIMP()
@@ -440,6 +482,10 @@ const processPayment = async () => {
 
 // 주문 생성
 const createOrder = async () => {
+    console.log('🔍 주문 생성 시작')
+    console.log('selectedAmount:', selectedAmount.value)
+    console.log('customAmount:', customAmount.value)
+    
     try {
         const requestData = {
             fundId: fundingId,
@@ -450,7 +496,12 @@ const createOrder = async () => {
             }
         }
         
+        console.log('서버로 전송할 데이터:', requestData)
+        
         const response = await api.post('/payments/create', requestData)
+        
+        console.log('서버 응답:', response.data)
+        
         return response.data // { merchant_uid, amount }
     } catch (error) {
         console.error('주문 생성 오류:', error)

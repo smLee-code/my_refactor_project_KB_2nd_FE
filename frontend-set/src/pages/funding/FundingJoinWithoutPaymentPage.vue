@@ -189,15 +189,17 @@
 </template>
 
 <script lang="ts" setup>
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import api from '@/api'
 import { useRoute, useRouter } from 'vue-router'
+import axios from 'axios'
 
 const route = useRoute()
 const router = useRouter()
 const fundingId = route.params.id
 
-// 펀딩 정보 (임시값 - 실제로는 API에서 가져와야 함)
+// 펀딩 정보
+const fundingData = ref(null)
 const fundingTitle = ref('청년 희망 대출')
 const fundingType = ref('loan') // 'loan' 또는 'savings'
 const loanLimit = ref(50000000) // 대출 한도
@@ -205,6 +207,43 @@ const minInterestRate = ref(2.5) // 최소 금리
 const maxInterestRate = ref(4.5) // 최대 금리
 const targetAmount = ref(10000000) // 적금 목표 금액
 const interestRate = ref(3.5) // 적금 이자율
+
+// 펀딩 정보 조회 및 타입 확인
+const fetchFundingInfo = async () => {
+    try {
+        const response = await axios.get(`/api/fund/detail/${fundingId}`)
+        fundingData.value = response.data
+        
+        // 펀딩 타입 확인
+        const type = response.data.fundType
+        
+        // 이 페이지는 결제가 없는 펀딩(대출/적금)만 처리
+        if (type === 'Donation' || type === 'Challenge') {
+            // 기부/챌린지인 경우 올바른 페이지로 리다이렉트
+            router.replace(`/funding/join-payment/${fundingId}`)
+            return
+        }
+        
+        // 펀딩 정보 업데이트
+        fundingTitle.value = response.data.name || '펀딩 프로젝트'
+        fundingType.value = type.toLowerCase() // 'Loan' -> 'loan'
+        
+        if (type === 'Loan') {
+            loanLimit.value = response.data.loanLimit || 50000000
+            minInterestRate.value = response.data.minInterestRate || 2.5
+            maxInterestRate.value = response.data.maxInterestRate || 4.5
+        } else if (type === 'Savings') {
+            targetAmount.value = response.data.targetAmount || 10000000
+            interestRate.value = response.data.interestRate || 3.5
+        }
+    } catch (error) {
+        console.error('펀딩 정보 조회 실패:', error)
+    }
+}
+
+onMounted(() => {
+    fetchFundingInfo()
+})
 
 // 신청자 정보
 const applicantInfo = ref({
