@@ -163,39 +163,6 @@
                         </p>
                     </div>
                 </div>
-                <!-- <div class="space-y-4">
-                    <h3 class="text-lg font-medium text-gray-900">
-                        관심 금융상품 <span class="text-red-500">*</span>
-                    </h3>
-                    <p class="text-sm text-gray-600 mb-4">
-                        회원님의 관심사에 맞는 금융상품을 추천해드리기 위해 필요한 정보입니다.
-                    </p>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div
-                            v-for="(product, index) in products"
-                            :key="index"
-                            @click="selectProduct(index)"
-                            class="p-4 border rounded-lg cursor-pointer transition-all duration-200"
-                            :class="{
-                                'border-blue-600 bg-blue-50': form.selectedProduct === index,
-                                'border-gray-200 hover:border-blue-300':
-                                    form.selectedProduct !== index,
-                            }"
-                        >
-                            <div class="flex items-start gap-3">
-                                <i :class="product.icon" class="text-2xl text-blue-600"></i>
-                                <div>
-                                    <h4 class="font-medium text-gray-900">
-                                        {{ product.title }}
-                                    </h4>
-                                    <p class="text-sm text-gray-600 mt-1">
-                                        {{ product.description }}
-                                    </p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div> -->
 
                 <div class="space-y-4 mt-8">
                     <div class="flex items-center justify-between">
@@ -281,41 +248,22 @@ const form = ref({
     passwordConfirm: '',
     phoneNumber: '',
     verificationCode: '',
-    selectedProduct: -1,
     selectedKeywordIds: [] as number[],
     termsAccepted: false,
 })
 
 const keywords = ref([])
-// const keywords = [
-//     '운동',
-//     '식습관',
-//     '수면',
-//     '루틴 설정',
-//     '청소',
-//     '독서',
-//     '학습',
-//     '글쓰기',
-//     '취미 활동',
-//     '명상',
-//     '환경 보호',
-//     '동물 보호',
-//     '봉사',
-//     '기후',
-//     '저축',
-//     '소비 절약',
-//     '투자 학습',
-//     '마음 건강',
-//     '건강관리',
-//     '디지털 디톡스',
-// ]
 
 const toggleKeyword = (keywordId: number) => {
+    console.log('⏹️ toggleKeyword() 호출')
+
     if (form.value.selectedKeywordIds.includes(keywordId)) {
         form.value.selectedKeywordIds = form.value.selectedKeywordIds.filter((k) => k !== keywordId)
     } else if (form.value.selectedKeywordIds.length < 3) {
         form.value.selectedKeywordIds.push(keywordId)
     }
+
+    console.log('selectedKeywordIds:', form.value.selectedKeywordIds)
 }
 const errors = ref({
     username: '',
@@ -360,8 +308,7 @@ const isFormValid = computed(() => {
         form.value.email &&
         form.value.password &&
         form.value.passwordConfirm &&
-        form.value.selectedProduct >= 0 &&
-        form.value.selectedKeywordIds.length === 3 &&
+        form.value.selectedKeywordIds.length > 0 &&
         form.value.phoneNumber &&
         form.value.termsAccepted &&
         !Object.values(errors.value).some((error) => error)
@@ -409,13 +356,12 @@ const sendVerification = async () => {
     }
     isVerificationSent.value = true
 }
+
 const verifyCode = async () => {
     if (!form.value.verificationCode) return
     // 실제 인증 코드 확인 로직 구현
 }
-const selectProduct = (index: number) => {
-    form.value.selectedProduct = index
-}
+
 const handleSubmit = async () => {
     console.log('⏹️ handleSubmit() 호출')
     validateForm()
