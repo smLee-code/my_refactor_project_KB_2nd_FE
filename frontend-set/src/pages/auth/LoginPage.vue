@@ -173,7 +173,7 @@ const handleLogin = async () => {
             .then((res) => {
                 console.log('✅res.data:', res.data)
 
-                authStore.login(res.data.accessToken)
+                authStore.login(res.data)
                 console.log('✅authStore token:', authStore.loadToken())
                 console.log('✅res accesstoken:', res.data)
             })
