@@ -32,11 +32,18 @@
                         :isLiked="isLiked"
                         @update-like="handleUpdateLike"
                     />
+
+                    <!-- 펀딩 생성 버튼 -->
+                    <create-funding-button :projectId="Number(projectId)" />
                 </div>
             </div>
 
             <!-- 관련 프로젝트 추천 -->
-            <!-- <RecommendRelated :projects="relatedProjects"></RecommendRelated> -->
+            <RecommendRelated
+                :projects="relatedProjects"
+                :userId="userId"
+                key="recommend-related"
+            ></RecommendRelated>
         </div>
         <!-- 푸터 -->
         <Footer></Footer>
@@ -45,13 +52,15 @@
 
 <script setup>
 import axios from 'axios'
+import { useRoute, useRouter, onBeforeRouteUpdate } from 'vue-router'
 import { ref, nextTick, onMounted, watch } from 'vue'
+import { watchEffect } from 'vue'
 
-import { useRoute } from 'vue-router'
 import ProjectInfo from '@/components/project/detail/ProjectInfo.vue'
 import SummaryBasicInfo from '@/components/project/detail/SummaryBasicInfo.vue'
 import WriterInfo from '@/components/project/detail/WriterInfo.vue'
 import ProjectVote from '@/components/project/detail/ProjectVote.vue'
+import CreateFundingButton from '@/components/project/detail/CreateFundingButton.vue'
 import '@/assets/styles/projectDetail.css'
 import ChatComponent from '@/components/chat/ChatComponent.vue'
 import Footer from '@/components/layout/Footer.vue'
@@ -60,55 +69,50 @@ import DetailHeader from '@/components/project/detail/DetailHeader.vue'
 
 const userId = ref(5)
 const route = useRoute()
-const projectId = route.params.id
+const projectId = ref(route.params.id)
 
 const projectData = ref(null)
 const isLoggedIn = ref(false)
 const isLiked = ref(false)
 const likeCount = ref()
 const voteCount = ref(0)
+const relatedProjects = ref([])
+const loading = ref(false)
 
 const handleUpdateLike = (newState) => {
     isLiked.value = newState
     likeCount.value += newState ? 1 : -1
 }
 
-onMounted(async () => {
+const fetchProjectData = async (id) => {
+    console.log('fetchProjectData 호출!')
+
+    if (!id) return
+    loading.value = true
+    projectData.value = null // 기존 데이터 제거
+
     try {
-        const res = await axios.get(`/project/list/detail/${projectId}/full`)
+        const res = await axios.get(`/project/list/detail/${id}/full`)
         projectData.value = res.data
-        console.log('✅ 프로젝트 API 응답:', res.data)
 
-        // 연관 프로젝트 API 호출 (예: 같은 카테고리 기반)
-        // const relatedRes = await axios.get(`/project/related`, {
-        //     params: { projectId },
-        // })
-        // relatedProjects.value = relatedRes.data
+        const relatedRes = await axios.get(`/project/related/${id}`)
+        relatedProjects.value = relatedRes.data
+
+        const likeRes = await axios.get(`/votes?userId=${userId.value}&projectId=${id}`)
+        isLiked.value = likeRes.data
+
+        const countRes = await axios.get('/votes/count', { params: { projectId: id } })
+        voteCount.value = countRes.data
     } catch (e) {
-        console.error('❌ 프로젝트 정보 요청 실패:', e)
-        alert('프로젝트 정보를 불러올 수 없습니다.')
-        return
+        console.error('❌ 프로젝트 데이터 갱신 실패:', e)
+    } finally {
+        loading.value = false
     }
+}
 
-    try {
-        const res = await axios.get(`/votes?userId=${userId.value}&projectId=${projectId}`)
-        isLiked.value = res.data
-        console.log('✅ 투표 여부 API 응답:', res.data)
-        // 좋아요 개수
-        voteCount.value = await axios.get('/votes/count', {
-            params: { projectId },
-        })
-    } catch (err) {
-        console.error(`❌ 프로젝트 ${projectId} 좋아요 데이터 조회 실패:`, err)
-    }
-
-    try {
-        const res = await axios.get(`/votes/count?projectId=${projectId}`)
-        voteCount.value = res.data
-        console.log('✅ 프로젝트 좋아요 수 API 응답:', res.data)
-    } catch (err) {
-        console.error(`❌ 프로젝트 좋아요 수 데이터 조회 실패:`, err)
-    }
+onMounted(async () => {
+    console.log('onMounted 호출!')
+    fetchProjectData(projectId.value)
     // // 사용자 정보는 별도 처리 (로그인 안 된 경우 대비)
     // try {
     //   const userRes = await axios.get('/user/me')
@@ -124,7 +128,7 @@ watch(
     () => isLiked.value,
     async () => {
         try {
-            const res = await axios.get(`/votes/count?projectId=${projectId}`)
+            const res = await axios.get(`/votes/count?projectId=${projectId.value}`)
             voteCount.value = res.data
             console.log('✅ 프로젝트 좋아요 수 API 응답:', res.data)
         } catch (err) {
@@ -132,4 +136,25 @@ watch(
         }
     },
 )
+
+// 라우트 id 변화 감시 (프로젝트 데이터 다시 로드)
+
+// URL 변경 감시
+watch(
+    () => route.params.id, // 여기서 id만 감시
+    (newId, oldId) => {
+        console.log('watch route.params.id 호출', route.params.id)
+        if (newId && newId !== oldId) {
+            projectId.value = newId
+            fetchProjectData(newId)
+        }
+    },
+)
+
+// onBeforeRouteUpdate((to, from) => {
+//     const newId = to.params.id
+//     console.log('onBeforeRouteUpdate 호출됨:', newId)
+//     projectId.value = newId
+//     fetchProjectData(newId)
+// })
 </script>

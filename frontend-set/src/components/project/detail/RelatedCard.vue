@@ -15,16 +15,9 @@
         <!-- 카테고리 태그와 좋아요 -->
         <div class="flex items-center justify-between mb-3">
             <span class="bg-kb-ui-09 text-kb-ui-03 px-3 py-1 rounded-full caption font-medium">
-                {{ project.type }}
+                {{ project.projectType }}
             </span>
             <div class="flex items-center space-x-1 text-kb-ui-05">
-                <button @click.stop="$emit('toggle-like', project.id)" class="cursor-pointer">
-                    <i
-                        class="fa-heart text-sm"
-                        :class="project.isLiked ? 'fas text-status-error' : 'far text-kb-ui-06'"
-                    ></i>
-                </button>
-
                 <span class="caption">{{ project.likes }}</span>
             </div>
         </div>

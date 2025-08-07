@@ -1,8 +1,23 @@
 export default [
     {
-        path: '/funding/create',
-        name: 'fundingCreate',
-        component: () => import('../pages/funding/FundingCreatePage.vue'),
+        path: '/funding/create/loan',
+        name: 'fundingCreateLoan',
+        component: () => import('../pages/funding/FundingCreateLoanPage.vue'),
+    },
+    {
+        path: '/funding/create/savings',
+        name: 'fundingCreateSavings',
+        component: () => import('../pages/funding/FundingCreateSavingsPage.vue'),
+    },
+    {
+        path: '/funding/create/donation',
+        name: 'fundingCreateDonation',
+        component: () => import('../pages/funding/FundingCreateDonationPage.vue'),
+    },
+    {
+        path: '/funding/create/challenge',
+        name: 'fundingCreateChallenge',
+        component: () => import('../pages/funding/FundingCreateChallengePage.vue'),
     },
     {
         path: '/funding/detail',

@@ -41,9 +41,9 @@
                     <h3 class="text-2xl font-bold text-gray-900 mb-6 drop-shadow-sm">
                         인기 프로젝트
                     </h3>
-                    <div class="space-y-4 h-[680px] flex flex-col justify-between">
+                    <div class="space-y-4 flex flex-col justify-between">
                         <ProjectRankingCard
-                            v-for="(project, index) in topProjects"
+                            v-for="(project, index) in topProjects.slice(0, 5)"
                             :key="project.projectId"
                             :rank="index + 1"
                             :title="project.title"

@@ -1,6 +1,7 @@
 <template>
   <div
     class="bg-white rounded-xl shadow-lg hover:shadow-2xl transition-all duration-300 cursor-pointer transform hover:-translate-y-1 border border-gray-100"
+    @click="handleCardClick"
   >
     <div class="p-3">
       <div class="w-full h-56 bg-gray-200 rounded-lg overflow-hidden mb-4 shadow-inner">
@@ -47,6 +48,7 @@
 // - link: 상세 페이지 링크(선택)
 import ProgressBar from '@/components/common/ProgressBar.vue'
 import { computed } from 'vue'
+import { useRouter } from 'vue-router'
 
 const props = defineProps({
   image: String,
@@ -58,6 +60,12 @@ const props = defineProps({
   progress: Number,
   link: String,
 })
+
+const router = useRouter()
+
+const handleCardClick = () => {
+  router.push('/funding/detail')
+}
 
 const categoryClass = computed(() => {
   return [
