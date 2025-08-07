@@ -125,6 +125,21 @@ const fundTypeMap = {
     Challenge: '챌린지형',
 }
 
+const urgentFundings = computed(() => {
+    return [...launchFunds.value]
+        .filter((fund) => new Date(fund.endAt) > new Date()) // 오늘 이후
+        .sort((a, b) => new Date(a.endAt) - new Date(b.endAt)) // 마감 빠른 순
+        .slice(0, 6) // 상위 5개만
+        .map((fund) => ({
+            id: fund.projectId,
+            image: fund.thumbnailImage?.imageUrl || '/default.jpg',
+            title: fund.name,
+            timeLeft: getDaysLeft(fund.endAt),
+            participants: fund.retryVotesCount || 0,
+            progress: fund.progress,
+        }))
+})
+
 const displayedFundingList = computed(() => {
     let filtered = [...filteredByTab.value]
 
