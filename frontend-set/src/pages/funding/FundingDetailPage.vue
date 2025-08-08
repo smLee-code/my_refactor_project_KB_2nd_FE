@@ -41,6 +41,7 @@
                 :user-role="authStore.userRole"
                 :interest-rate="fundingData.interestRate"
                 :fund-type="fundingData.fundType"
+                :joined="fundingData.joined"
                 @participate="handleParticipate"
             />
 
@@ -80,9 +81,9 @@
                 :keywords="fundingData.keywords"
             />
 
-            <!-- 인증샷 업로드 영역 (챌린지 타입일 때만 표시) -->
+            <!-- 인증샷 업로드 영역 (챌린지 타입이고 참여 중인 경우에만 표시) -->
             <ChallengeUploadSection
-                v-if="fundingData && fundingType === 'challenge'"
+                v-if="fundingData && fundingType === 'Challenge' && fundingData.joined"
                 :funding-id="fundingData.id"
                 :certification-data="certificationData"
                 :start-date="fundingData.startDate"
@@ -174,6 +175,7 @@ import { ref, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import api from '@/api'
 import { useAuthStore } from '@/stores/auth'
+
 import FundingHeaderSection from '@/components/funding/FundingHeaderSection.vue'
 import FundingProgressCard from '@/components/funding/FundingProgressCard.vue'
 import ChallengeUploadSection from '@/components/funding/ChallengeUploadSection.vue'
@@ -414,7 +416,7 @@ const fetchFundingDetail = async () => {
                 endDate: formatDateArray(data.endAt),
                 startDate: formatDateArray(data.launchAt),
                 endDateForCertification: formatDateArray(data.endAt),
-                fundType: data.fundType || 'Savings',
+                fundType: data.fundType || 'Challenge', // 테스트용으로 Challenge로 변경
                 name: data.name,
                 detail: data.detail,
                 financialInstitution: data.financialInstitution,
@@ -422,7 +424,7 @@ const fetchFundingDetail = async () => {
                 periodDays: calculatePeriodDays(data.periodDays, data.launchAt, data.endAt),
                 productCondition: data.productCondition,
                 successCondition: data.successCondition,
-                joined: data.joined,
+                joined: data.joined || true, // 테스트용으로 참여 중으로 설정
                 keywords: data.keywords || [],
                 // 챌린지 전용 필드들
                 challengePeriodDays: data.challengePeriodDays,
@@ -431,7 +433,7 @@ const fetchFundingDetail = async () => {
             }
 
             // 펀딩 타입 설정
-            fundingType.value = data.fundType || 'Savings'
+            fundingType.value = data.fundType || 'Challenge' // 테스트용으로 Challenge로 설정
         }
     } catch (error) {
         console.error('펀딩 상세 정보 조회 실패:', error)
@@ -444,24 +446,24 @@ const fetchFundingDetail = async () => {
             progress: '진행중', // progress 필드 추가
             progressPercentage: 0,
             participantCount: 0,
-            daysLeft: 0,
-            endDate: '2024년 12월 31일',
-            startDate: '2024년 1월 1일',
-            endDateForCertification: '2024년 12월 31일',
-            fundType: 'Savings',
-            name: '청년 희망 저축',
-            detail: '청년을 위한 특별 금리 저축 상품',
+            daysLeft: 23, // 테스트용으로 23일 남음으로 설정
+            endDate: '2025년 8월 31일', // 테스트용으로 현재 날짜 기준으로 설정
+            startDate: '2025년 8월 1일', // 테스트용으로 현재 날짜 기준으로 설정
+            endDateForCertification: '2025년 8월 31일', // 테스트용으로 현재 날짜 기준으로 설정
+            fundType: 'Challenge', // 테스트용으로 Challenge로 설정
+            name: '하루 1시간 걷기 챌린지',
+            detail: '매일 1시간씩 걷기로 건강한 습관 만들기',
             financialInstitution: '국민은행',
             interestRate: 3.5,
-            periodDays: 365,
-            productCondition: '만 19-34세, 소득 증빙 필요',
-            successCondition: '매월 10만원 이상 납입',
-            joined: false,
+            periodDays: 30,
+            productCondition: '매일 1시간 이상 걷기',
+            successCondition: '30일 중 25일 이상 인증',
+            joined: true, // 테스트용으로 참여 중으로 설정
             keywords: [],
             // 챌린지 전용 필드들
-            challengePeriodDays: 0,
-            challengeReward: '',
-            challengeRewardCondition: '',
+            challengePeriodDays: 30,
+            challengeReward: '건강한 습관 형성',
+            challengeRewardCondition: '30일 중 25일 이상 인증',
         }
     } finally {
         isLoading.value = false

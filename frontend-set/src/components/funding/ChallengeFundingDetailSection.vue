@@ -92,7 +92,7 @@
                             <li>매일 인증샷을 업로드하여 챌린지를 진행합니다</li>
                             <li>{{ challengePeriodDays }}일 동안 꾸준히 참여하세요</li>
                             <li>모든 조건을 달성하면 {{ challengeReward }}를 받을 수 있습니다</li>
-                            <li>인증 실패 시 재도전 기회가 있습니다</li>
+                            <li>인증 실패 시 실패 사유를 확인할 수 있습니다.</li>
                         </ul>
                     </div>
                 </div>

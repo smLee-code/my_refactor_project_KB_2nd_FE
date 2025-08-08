@@ -59,12 +59,20 @@
                 </div>
                 <!-- ROLE_NORMAL 사용자만 참여 가능 -->
                 <button
-                    v-if="userRole === 'ROLE_NORMAL' && daysLeft > 0"
+                    v-if="userRole === 'ROLE_NORMAL' && daysLeft > 0 && !joined"
                     @click="$emit('participate')"
                     class="w-full sm:w-auto bg-yellow-400 text-gray-900 px-8 py-3 !rounded-button font-bold hover:bg-yellow-500 cursor-pointer whitespace-nowrap shadow-lg hover:shadow-xl transition-all transform hover:-translate-y-0.5"
                 >
                     펀딩 참여하기
                 </button>
+                <!-- 참여 중인 펀딩 안내 메시지 -->
+                <div
+                    v-else-if="userRole === 'ROLE_NORMAL' && joined"
+                    class="text-sm text-blue-600 bg-blue-50 px-4 py-2 rounded-lg border border-blue-200"
+                >
+                    <i class="fas fa-check-circle mr-2"></i>
+                    참여중인 펀딩입니다
+                </div>
                 <!-- 마감된 펀딩 안내 메시지 -->
                 <div
                     v-else-if="userRole === 'ROLE_NORMAL' && daysLeft <= 0"
@@ -141,6 +149,10 @@ const props = defineProps({
     fundType: {
         type: String,
         default: 'Savings',
+    },
+    joined: {
+        type: Boolean,
+        default: false,
     },
 })
 
