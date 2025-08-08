@@ -79,6 +79,7 @@
                         v-for="item in recommendedProjects"
                         :key="item.id"
                         :project="item"
+                        @click="goToProject(item.projectId)"
                     />
                 </div>
             </div>

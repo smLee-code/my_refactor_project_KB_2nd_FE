@@ -21,7 +21,7 @@
                 <button @click.stop="$emit('toggle-like', project.id)" class="cursor-pointer">
                     <i
                         class="fa-heart text-sm"
-                        :class="project.isLiked ? 'fas text-status-error' : 'far text-kb-ui-06'"
+                        :class="isLiked ? 'fas text-status-error' : 'far text-kb-ui-06'"
                     ></i>
                 </button>
 
@@ -65,8 +65,12 @@
 </template>
 
 <script setup>
+import { computed } from 'vue'
+
 // project: 프로젝트 객체 (필수)
-defineProps({
+const props = defineProps({
     project: { type: Object, required: true },
 })
+
+const isLiked = computed(() => props.project.isLiked)
 </script>

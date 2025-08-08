@@ -64,6 +64,7 @@ import '@/assets/styles/projectList.css'
 import { useAuthStore } from '@/stores/auth'
 
 const authStore = useAuthStore()
+authStore.loadToken()
 
 const projects = ref([])
 const router = useRouter()
@@ -160,9 +161,16 @@ const toggleLike = async (projectId) => {
     const project = projects.value.find((p) => p.id === projectId)
     if (!project) return
 
-    const token = authStore.loadToken()
-    console.log('🔑 loadToken() 반환값:', token)
-    console.log('📦 localStorage jwt:', localStorage.getItem('jwt'))
+    const token = authStore.token
+    console.log('👍 좋아요 요청 보낼 데이터:', {
+        userId: userId.value,
+        projectId: projectId,
+    })
+
+    if (!token) {
+        console.warn('❗ 토큰 없음, 로그인 필요')
+        return
+    }
 
     try {
         if (project.isLiked) {
@@ -191,17 +199,21 @@ const toggleLike = async (projectId) => {
         project.isLiked = !project.isLiked
     } catch (err) {
         console.error('❌ 좋아요 토글 실패:', err)
-        console.log('😀', token)
-        localStorage.getItem('jwt')
+        console.log(token)
     }
 }
 
 onMounted(async () => {
+    console.log('토큰 상태:', {
+        token: authStore.token,
+        tokenValue: authStore.token.value,
+        isLoggedIn: authStore.isLoggedIn,
+    })
     try {
         const res = await axios.get('/project/list', {
-            headers: {
-                Authorization: `Bearer ${authStore.loadToken()}`,
-            },
+            // headers: {
+            //     Authorization: `Bearer ${authStore.token}`,
+            // },
         }) // DB에서 받아온 응답
         projects.value = res.data.map((item) => ({
             id: item.projectId,
@@ -231,21 +243,6 @@ onMounted(async () => {
     } catch (err) {
         console.error('❌ 프로젝트 불러오기 실패:', err)
     }
-
-    // for (const project of projects.value) {
-    //     try {
-    //         const res = await axios.get(`/votes?userId=${userId.value}&projectId=${project.id}`)
-    //         project.isLiked = res.data
-    //         console.log('✅ 투표 여부 API 응답:', res.data)
-    //         // 좋아요 개수
-    //         const voteCountRes = await axios.get('/votes/count', {
-    //             params: { projectId: project.id },
-    //         })
-    //         project.likes = voteCountRes.data
-    //     } catch (err) {
-    //         console.error(`❌ 프로젝트 ${project.id} 좋아요 데이터 조회 실패:`, err)
-    //     }
-    // }
 })
 
 const formatDate = (arr) => {
