@@ -51,8 +51,8 @@
                 :headers="['펀딩명', '타입', '진행률', '참여자', '마감일', '상태', '상세보기']"
                 :data="[
                     {
-                        name: '청년 창업 지원 적금',
-                        type: '적금',
+                        name: '청년 창업 지원 저축',
+                        type: '저축',
                         progressColor: '#22C55E',
                         progress: 83,
                         participants: 1234,

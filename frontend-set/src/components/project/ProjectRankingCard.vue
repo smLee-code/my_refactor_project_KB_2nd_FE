@@ -48,7 +48,7 @@ defineProps({
 })
 
 const typeMap = {
-    Savings: '적금',
+    Savings: '저축',
     Loan: '대출',
     Challenge: '챌린지',
     Donation: '기부',

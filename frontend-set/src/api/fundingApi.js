@@ -15,7 +15,7 @@ export const createLoanFunding = async (formData) => {
     }
 }
 
-// 펀딩 생성 (적금)
+// 펀딩 생성 (저축)
 export const createSavingsFunding = async (formData) => {
     try {
         const response = await api.post('/fund/create/savings', formData, {
@@ -25,7 +25,7 @@ export const createSavingsFunding = async (formData) => {
         })
         return response.data
     } catch (error) {
-        console.error('적금 펀딩 생성 실패:', error)
+        console.error('저축 펀딩 생성 실패:', error)
         throw error
     }
 }

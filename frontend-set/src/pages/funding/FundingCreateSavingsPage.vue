@@ -1,232 +1,250 @@
 <!-- The exported code uses Tailwind CSS. Install Tailwind CSS in your dev environment to ensure all styles work. -->
 <template>
-  <div class="min-h-screen bg-gray-50">
-    <!-- 헤더 섹션 -->
-    <div class="bg-white border-b border-gray-200">
-      <div class="max-w-[1200px] mx-auto px-5">
-        <div class="flex items-center justify-between py-4">
-          <div class="flex items-center space-x-4">
-            <button class="p-2 hover:bg-gray-100 rounded-lg cursor-pointer">
-              <i class="fas fa-arrow-left text-gray-600"></i>
-            </button>
-            <h1 class="text-2xl font-bold text-gray-900">저축 펀딩 생성</h1>
-          </div>
-        </div>
-        <!-- 프로그레스 바 -->
-        <div class="pb-4">
-          <div class="flex items-center justify-between mb-2">
-            <span class="text-sm font-medium text-blue-600">진행률</span>
-            <span class="text-sm text-gray-500">{{ progressPercentage }}% 완료</span>
-          </div>
-          <div class="w-full bg-gray-200 rounded-full h-2">
-            <div class="bg-blue-600 h-2 rounded-full transition-all duration-300" :style="{ width: progressPercentage + '%' }"></div>
-          </div>
-        </div>
-      </div>
-    </div>
-    <!-- 메인 컨텐츠 -->
-    <div class="max-w-[1200px] mx-auto px-5 py-8">
-      <form class="space-y-8">
-        <!-- 적금 상품명 -->
-        <div>
-          <label class="block text-sm font-medium text-gray-700 mb-2">
-            적금 상품명 <span class="text-red-500">*</span>
-          </label>
-          <input
-            type="text"
-            v-model="formData.name"
-            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
-            placeholder="예: 청년 희망 적금"
-          />
-        </div>
-        
-        <!-- 성공 조건 -->
-        <div>
-          <label class="block text-sm font-medium text-gray-700 mb-2">
-            성공 조건 <span class="text-red-500">*</span>
-          </label>
-          <input
-            type="text"
-            v-model="formData.successCondition"
-            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
-            placeholder="예: 매월 10만원 이상 납입"
-          />
-        </div>
-        
-        <!-- 금리 및 기간 -->
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-2">
-              연 이자율 <span class="text-red-500">*</span>
-            </label>
-            <div class="relative">
-              <input
-                type="number"
-                step="0.1"
-                v-model="formData.interestRate"
-                class="w-full px-4 py-3 pr-12 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
-                placeholder="3.5"
-              />
-              <span class="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-500 text-sm"
-                >%</span
-              >
-            </div>
-          </div>
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-2">
-              기간 (일수) <span class="text-red-500">*</span>
-            </label>
-            <div class="relative">
-              <input
-                type="number"
-                v-model="formData.periodDays"
-                class="w-full px-4 py-3 pr-12 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
-                placeholder="365"
-              />
-              <span class="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-500 text-sm"
-                >일</span
-              >
-            </div>
-          </div>
-        </div>
-        
-        <!-- 출시일 및 종료일 -->
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-2">
-              출시일 <span class="text-red-500">*</span>
-            </label>
-            <input
-              type="date"
-              v-model="formData.launchDate"
-              class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
-            />
-          </div>
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-2">
-              종료일 <span class="text-red-500">*</span>
-            </label>
-            <input
-              type="date"
-              v-model="formData.endDate"
-              class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
-            />
-          </div>
-        </div>
-        
-        <!-- 이미지 업로드 (여러 장) -->
-        <div>
-          <label class="block text-sm font-medium text-gray-700 mb-2">
-            이미지 업로드 <span class="text-red-500">*</span>
-          </label>
-          <div
-            class="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center hover:border-blue-400 transition-colors"
-          >
-            <div v-if="uploadedImages.length === 0" class="space-y-4">
-              <div
-                class="w-16 h-16 mx-auto bg-gray-100 rounded-full flex items-center justify-center"
-              >
-                <i class="fas fa-image text-gray-400 text-xl"></i>
-              </div>
-              <div>
-                <p class="text-gray-600 text-sm mb-2">이미지를 업로드해주세요 (여러 장 선택 가능)</p>
-                <label class="cursor-pointer">
-                  <input
-                    type="file"
-                    multiple
-                    accept="image/*"
-                    @change="handleFileUpload"
-                    class="hidden"
-                    ref="fileInput"
-                  />
-                  <span class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm whitespace-nowrap !rounded-button inline-block">
-                    파일 선택
-                  </span>
-                </label>
-              </div>
-            </div>
-            <div v-else>
-              <div class="grid grid-cols-3 gap-4 mb-4">
-                <div v-for="(image, index) in uploadedImages" :key="index" class="relative">
-                  <img :src="image.preview" alt="업로드 이미지" class="w-full h-32 object-cover rounded-lg" />
-                  <button
-                    type="button"
-                    @click="removeImage(index)"
-                    class="absolute top-1 right-1 w-6 h-6 bg-red-500 text-white rounded-full hover:bg-red-600 cursor-pointer text-xs"
-                  >
-                    <i class="fas fa-times"></i>
-                  </button>
+    <div class="min-h-screen bg-gray-50">
+        <!-- 헤더 섹션 -->
+        <div class="bg-white border-b border-gray-200">
+            <div class="max-w-[1200px] mx-auto px-5">
+                <div class="flex items-center justify-between py-4">
+                    <div class="flex items-center space-x-4">
+                        <button class="p-2 hover:bg-gray-100 rounded-lg cursor-pointer">
+                            <i class="fas fa-arrow-left text-gray-600"></i>
+                        </button>
+                        <h1 class="text-2xl font-bold text-gray-900">저축 펀딩 생성</h1>
+                    </div>
                 </div>
-              </div>
-              <label class="cursor-pointer">
-                <input
-                  type="file"
-                  multiple
-                  accept="image/*"
-                  @change="handleFileUpload"
-                  class="hidden"
-                  ref="fileInput"
-                />
-                <span class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 text-sm cursor-pointer whitespace-nowrap !rounded-button inline-block">
-                  <i class="fas fa-plus mr-2"></i>
-                  이미지 추가
-                </span>
-              </label>
+                <!-- 프로그레스 바 -->
+                <div class="pb-4">
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="text-sm font-medium text-blue-600">진행률</span>
+                        <span class="text-sm text-gray-500">{{ progressPercentage }}% 완료</span>
+                    </div>
+                    <div class="w-full bg-gray-200 rounded-full h-2">
+                        <div
+                            class="bg-blue-600 h-2 rounded-full transition-all duration-300"
+                            :style="{ width: progressPercentage + '%' }"
+                        ></div>
+                    </div>
+                </div>
             </div>
-          </div>
         </div>
-        
-        <!-- 가입 조건 -->
-        <div>
-          <label class="block text-sm font-medium text-gray-700 mb-2">
-            가입 조건 <span class="text-red-500">*</span>
-          </label>
-          <input
-            type="text"
-            v-model="formData.joinCondition"
-            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
-            placeholder="예: 만 19-34세, 월 소득 3000만원 이하"
-          />
+        <!-- 메인 컨텐츠 -->
+        <div class="max-w-[1200px] mx-auto px-5 py-8">
+            <form class="space-y-8">
+                <!-- 저축 상품명 -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                        저축 상품명 <span class="text-red-500">*</span>
+                    </label>
+                    <input
+                        type="text"
+                        v-model="formData.name"
+                        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
+                        placeholder="예: 청년 희망 저축"
+                    />
+                </div>
+
+                <!-- 성공 조건 -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                        성공 조건 <span class="text-red-500">*</span>
+                    </label>
+                    <input
+                        type="text"
+                        v-model="formData.successCondition"
+                        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
+                        placeholder="예: 매월 10만원 이상 납입"
+                    />
+                </div>
+
+                <!-- 금리 및 기간 -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            연 이자율 <span class="text-red-500">*</span>
+                        </label>
+                        <div class="relative">
+                            <input
+                                type="number"
+                                step="0.1"
+                                v-model="formData.interestRate"
+                                class="w-full px-4 py-3 pr-12 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
+                                placeholder="3.5"
+                            />
+                            <span
+                                class="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-500 text-sm"
+                                >%</span
+                            >
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            기간 (일수) <span class="text-red-500">*</span>
+                        </label>
+                        <div class="relative">
+                            <input
+                                type="number"
+                                v-model="formData.periodDays"
+                                class="w-full px-4 py-3 pr-12 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
+                                placeholder="365"
+                            />
+                            <span
+                                class="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-500 text-sm"
+                                >일</span
+                            >
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 출시일 및 종료일 -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            출시일 <span class="text-red-500">*</span>
+                        </label>
+                        <input
+                            type="date"
+                            v-model="formData.launchDate"
+                            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
+                        />
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            종료일 <span class="text-red-500">*</span>
+                        </label>
+                        <input
+                            type="date"
+                            v-model="formData.endDate"
+                            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
+                        />
+                    </div>
+                </div>
+
+                <!-- 이미지 업로드 (여러 장) -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                        이미지 업로드 <span class="text-red-500">*</span>
+                    </label>
+                    <div
+                        class="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center hover:border-blue-400 transition-colors"
+                    >
+                        <div v-if="uploadedImages.length === 0" class="space-y-4">
+                            <div
+                                class="w-16 h-16 mx-auto bg-gray-100 rounded-full flex items-center justify-center"
+                            >
+                                <i class="fas fa-image text-gray-400 text-xl"></i>
+                            </div>
+                            <div>
+                                <p class="text-gray-600 text-sm mb-2">
+                                    이미지를 업로드해주세요 (여러 장 선택 가능)
+                                </p>
+                                <label class="cursor-pointer">
+                                    <input
+                                        type="file"
+                                        multiple
+                                        accept="image/*"
+                                        @change="handleFileUpload"
+                                        class="hidden"
+                                        ref="fileInput"
+                                    />
+                                    <span
+                                        class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm whitespace-nowrap !rounded-button inline-block"
+                                    >
+                                        파일 선택
+                                    </span>
+                                </label>
+                            </div>
+                        </div>
+                        <div v-else>
+                            <div class="grid grid-cols-3 gap-4 mb-4">
+                                <div
+                                    v-for="(image, index) in uploadedImages"
+                                    :key="index"
+                                    class="relative"
+                                >
+                                    <img
+                                        :src="image.preview"
+                                        alt="업로드 이미지"
+                                        class="w-full h-32 object-cover rounded-lg"
+                                    />
+                                    <button
+                                        type="button"
+                                        @click="removeImage(index)"
+                                        class="absolute top-1 right-1 w-6 h-6 bg-red-500 text-white rounded-full hover:bg-red-600 cursor-pointer text-xs"
+                                    >
+                                        <i class="fas fa-times"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            <label class="cursor-pointer">
+                                <input
+                                    type="file"
+                                    multiple
+                                    accept="image/*"
+                                    @change="handleFileUpload"
+                                    class="hidden"
+                                    ref="fileInput"
+                                />
+                                <span
+                                    class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 text-sm cursor-pointer whitespace-nowrap !rounded-button inline-block"
+                                >
+                                    <i class="fas fa-plus mr-2"></i>
+                                    이미지 추가
+                                </span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 가입 조건 -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                        가입 조건 <span class="text-red-500">*</span>
+                    </label>
+                    <input
+                        type="text"
+                        v-model="formData.joinCondition"
+                        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
+                        placeholder="예: 만 19-34세, 월 소득 3000만원 이하"
+                    />
+                </div>
+
+                <!-- 상세 설명 -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                        상세 설명 <span class="text-red-500">*</span>
+                    </label>
+                    <textarea
+                        v-model="formData.detail"
+                        rows="8"
+                        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm resize-none"
+                        placeholder="저축 상품에 대한 상세한 설명을 입력해주세요"
+                    ></textarea>
+                </div>
+            </form>
         </div>
-        
-        <!-- 상세 설명 -->
-        <div>
-          <label class="block text-sm font-medium text-gray-700 mb-2">
-            상세 설명 <span class="text-red-500">*</span>
-          </label>
-          <textarea
-            v-model="formData.detail"
-            rows="8"
-            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm resize-none"
-            placeholder="적금 상품에 대한 상세한 설명을 입력해주세요"
-          ></textarea>
+        <!-- 하단 네비게이션 -->
+        <div class="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 z-50">
+            <div class="max-w-[1200px] mx-auto px-5 py-4">
+                <div class="flex items-center justify-between">
+                    <button
+                        type="button"
+                        class="px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 font-medium cursor-pointer whitespace-nowrap !rounded-button"
+                    >
+                        임시저장
+                    </button>
+                    <button
+                        type="button"
+                        @click="submitFunding"
+                        class="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium cursor-pointer whitespace-nowrap !rounded-button"
+                    >
+                        생성하기
+                    </button>
+                </div>
+            </div>
         </div>
-        
-      </form>
+        <!-- 하단 네비게이션 공간 확보 -->
+        <div class="h-20"></div>
     </div>
-    <!-- 하단 네비게이션 -->
-    <div class="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 z-50">
-      <div class="max-w-[1200px] mx-auto px-5 py-4">
-        <div class="flex items-center justify-between">
-          <button
-            type="button"
-            class="px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 font-medium cursor-pointer whitespace-nowrap !rounded-button"
-          >
-            임시저장
-          </button>
-          <button
-            type="button"
-            @click="submitFunding"
-            class="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium cursor-pointer whitespace-nowrap !rounded-button"
-          >
-            생성하기
-          </button>
-        </div>
-      </div>
-    </div>
-    <!-- 하단 네비게이션 공간 확보 -->
-    <div class="h-20"></div>
-  </div>
 </template>
 
 <script setup>
@@ -241,21 +259,21 @@ const route = useRoute()
 // URL에서 projectId 가져오기
 const projectId = route.query.projectId
 
-// 적금 펀딩 폼 데이터
+// 저축 펀딩 폼 데이터
 const formData = ref({
-  name: '',
-  detail: '',
-  thumbnail: null,
-  joinCondition: '',
-  interestRate: '',
-  periodDays: '',
-  successCondition: '',
-  projectId: projectId || null,
-  progress: 'Launch',
-  launchDate: '',
-  endDate: '',
-  financialInstitution: '국민은행', // 임시값
-  keywordIds: []
+    name: '',
+    detail: '',
+    thumbnail: null,
+    joinCondition: '',
+    interestRate: '',
+    periodDays: '',
+    successCondition: '',
+    projectId: projectId || null,
+    progress: 'Launch',
+    launchDate: '',
+    endDate: '',
+    financialInstitution: '국민은행', // 임시값
+    keywordIds: [],
 })
 
 const uploadedImages = ref([])
@@ -264,148 +282,159 @@ const fileInput = ref(null)
 
 // 진행률 계산
 const progressPercentage = computed(() => {
-  let filledFields = 0
-  const totalFields = 9 // 저축형 필수 필드 수
-  
-  // 각 필드 검사
-  if (formData.value.name) filledFields++
-  if (formData.value.interestRate) filledFields++
-  if (formData.value.periodDays) filledFields++
-  if (formData.value.launchDate) filledFields++
-  if (formData.value.endDate) filledFields++
-  if (uploadedImages.value.length > 0) filledFields++
-  if (formData.value.joinCondition) filledFields++
-  if (formData.value.detail) filledFields++
-  if (formData.value.successCondition) filledFields++
-  
-  return Math.round((filledFields / totalFields) * 100)
+    let filledFields = 0
+    const totalFields = 9 // 저축형 필수 필드 수
+
+    // 각 필드 검사
+    if (formData.value.name) filledFields++
+    if (formData.value.interestRate) filledFields++
+    if (formData.value.periodDays) filledFields++
+    if (formData.value.launchDate) filledFields++
+    if (formData.value.endDate) filledFields++
+    if (uploadedImages.value.length > 0) filledFields++
+    if (formData.value.joinCondition) filledFields++
+    if (formData.value.detail) filledFields++
+    if (formData.value.successCondition) filledFields++
+
+    return Math.round((filledFields / totalFields) * 100)
 })
 
 // 금액 포맷팅 함수
 const formatNumber = (value) => {
-  // 숫자가 아닌 문자 제거
-  const numbers = value.replace(/[^0-9]/g, '')
-  // 콤마 추가
-  return numbers.replace(/\B(?=(\d{3})+(?!\d))/g, ',')
+    // 숫자가 아닌 문자 제거
+    const numbers = value.replace(/[^0-9]/g, '')
+    // 콤마 추가
+    return numbers.replace(/\B(?=(\d{3})+(?!\d))/g, ',')
 }
 
 // 파일 업로드 처리
 const handleFileUpload = (event) => {
-  const files = Array.from(event.target.files)
-  
-  files.forEach(file => {
-    // 파일 크기 제한 (10MB)
-    if (file.size > 10 * 1024 * 1024) {
-      alert(`${file.name}은 10MB를 초과합니다.`)
-      return
-    }
-    
-    // 파일 미리보기 생성
-    const reader = new FileReader()
-    reader.onload = (e) => {
-      uploadedImages.value.push({
-        preview: e.target.result,
-        file: file
-      })
-      uploadedFiles.value.push(file)
-    }
-    reader.readAsDataURL(file)
-  })
-  
-  // 입력 초기화
-  event.target.value = ''
+    const files = Array.from(event.target.files)
+
+    files.forEach((file) => {
+        // 파일 크기 제한 (10MB)
+        if (file.size > 10 * 1024 * 1024) {
+            alert(`${file.name}은 10MB를 초과합니다.`)
+            return
+        }
+
+        // 파일 미리보기 생성
+        const reader = new FileReader()
+        reader.onload = (e) => {
+            uploadedImages.value.push({
+                preview: e.target.result,
+                file: file,
+            })
+            uploadedFiles.value.push(file)
+        }
+        reader.readAsDataURL(file)
+    })
+
+    // 입력 초기화
+    event.target.value = ''
 }
 
 // 이미지 제거
 const removeImage = (index) => {
-  uploadedImages.value.splice(index, 1)
-  uploadedFiles.value.splice(index, 1)
+    uploadedImages.value.splice(index, 1)
+    uploadedFiles.value.splice(index, 1)
 }
 
 // 펀딩 생성 API 호출
 const submitFunding = async () => {
-  try {
-    // 유효성 검사
-    if (!formData.value.name || !formData.value.detail || !formData.value.launchDate || !formData.value.endDate || !formData.value.successCondition || !formData.value.interestRate || !formData.value.periodDays) {
-      alert('필수 항목을 모두 입력해주세요.')
-      return
-    }
+    try {
+        // 유효성 검사
+        if (
+            !formData.value.name ||
+            !formData.value.detail ||
+            !formData.value.launchDate ||
+            !formData.value.endDate ||
+            !formData.value.successCondition ||
+            !formData.value.interestRate ||
+            !formData.value.periodDays
+        ) {
+            alert('필수 항목을 모두 입력해주세요.')
+            return
+        }
 
-    // FormData 객체 생성 (multipart/form-data로 전송)
-    const formDataToSend = new FormData()
-    
-    // JSON 데이터 추가
-    const jsonData = {
-      name: formData.value.name,
-      detail: formData.value.detail,
-      joinCondition: formData.value.joinCondition,
-      interestRate: parseFloat(formData.value.interestRate),
-      periodDays: parseInt(formData.value.periodDays),
-      successCondition: formData.value.successCondition,
-      projectId: formData.value.projectId,
-      progress: formData.value.progress,
-      launchDate: formData.value.launchDate,
-      endDate: formData.value.endDate,
-      financialInstitution: '국민은행', // 임시값 고정
-      keywordIds: [8, 9, 10]
-    }
-    
-    // JSON 데이터를 Blob으로 변환하여 FormData에 추가 (UTF-8 인코딩 명시)
-    formDataToSend.append('savingInfo', new Blob([JSON.stringify(jsonData)], { type: 'application/json;charset=UTF-8' }))
-    
-    // 파일들 추가
-    uploadedFiles.value.forEach((file, index) => {
-      formDataToSend.append('images', file)
-    })
+        // FormData 객체 생성 (multipart/form-data로 전송)
+        const formDataToSend = new FormData()
 
-    console.log('전송 데이터 (JSON):', jsonData)
-    console.log('업로드 파일 수:', uploadedFiles.value.length)
-    
-    const response = await createSavingsFunding(formDataToSend)
-    alert('적금 펀딩 프로젝트가 성공적으로 생성되었습니다.')
-    router.push('/funding') // 펀딩 목록 페이지로 이동
-  } catch (error) {
-    console.error('적금 펀딩 생성 실패:', error)
-    alert('적금 펀딩 프로젝트 생성에 실패했습니다. 다시 시도해주세요.')
-  }
+        // JSON 데이터 추가
+        const jsonData = {
+            name: formData.value.name,
+            detail: formData.value.detail,
+            joinCondition: formData.value.joinCondition,
+            interestRate: parseFloat(formData.value.interestRate),
+            periodDays: parseInt(formData.value.periodDays),
+            successCondition: formData.value.successCondition,
+            projectId: formData.value.projectId,
+            progress: formData.value.progress,
+            launchDate: formData.value.launchDate,
+            endDate: formData.value.endDate,
+            financialInstitution: '국민은행', // 임시값 고정
+            keywordIds: [8, 9, 10],
+        }
+
+        // JSON 데이터를 Blob으로 변환하여 FormData에 추가 (UTF-8 인코딩 명시)
+        formDataToSend.append(
+            'savingInfo',
+            new Blob([JSON.stringify(jsonData)], { type: 'application/json;charset=UTF-8' }),
+        )
+
+        // 파일들 추가
+        uploadedFiles.value.forEach((file, index) => {
+            formDataToSend.append('images', file)
+        })
+
+        console.log('전송 데이터 (JSON):', jsonData)
+        console.log('업로드 파일 수:', uploadedFiles.value.length)
+
+        const response = await createSavingsFunding(formDataToSend)
+        alert('저축 펀딩 프로젝트가 성공적으로 생성되었습니다.')
+        router.push('/funding') // 펀딩 목록 페이지로 이동
+    } catch (error) {
+        console.error('저축 펀딩 생성 실패:', error)
+        alert('저축 펀딩 프로젝트 생성에 실패했습니다. 다시 시도해주세요.')
+    }
 }
 
 // 프로젝트 정보 가져와서 폼에 자동 채우기
 onMounted(async () => {
-  if (projectId) {
-    try {
-      const response = await axios.get(`/project/list/detail/${projectId}/full`)
-      const projectData = response.data
-      
-      // 프로젝트 정보를 펀딩 폼에 매핑
-      formData.value.name = projectData.basicInfo.title || ''
-      formData.value.detail = projectData.basicInfo.promotion || ''
-      
-      // 저축형 특정 정보 매핑
-      if (projectData.detailInfo) {
-        formData.value.interestRate = projectData.detailInfo.interestRate || ''
-        formData.value.periodDays = projectData.detailInfo.periodDays || ''
-        formData.value.successCondition = projectData.detailInfo.successCondition || ''
-      }
-    } catch (error) {
-      console.error('프로젝트 정보 조회 실패:', error)
+    if (projectId) {
+        try {
+            const response = await axios.get(`/project/list/detail/${projectId}/full`)
+            const projectData = response.data
+
+            // 프로젝트 정보를 펀딩 폼에 매핑
+            formData.value.name = projectData.basicInfo.title || ''
+            formData.value.detail = projectData.basicInfo.promotion || ''
+
+            // 저축형 특정 정보 매핑
+            if (projectData.detailInfo) {
+                formData.value.interestRate = projectData.detailInfo.interestRate || ''
+                formData.value.periodDays = projectData.detailInfo.periodDays || ''
+                formData.value.successCondition = projectData.detailInfo.successCondition || ''
+            }
+        } catch (error) {
+            console.error('프로젝트 정보 조회 실패:', error)
+        }
     }
-  }
 })
 </script>
 
 <style scoped>
 .\!rounded-button {
-  border-radius: 8px;
+    border-radius: 8px;
 }
 
 input[type='number']::-webkit-outer-spin-button,
 input[type='number']::-webkit-inner-spin-button {
-  -webkit-appearance: none;
-  margin: 0;
+    -webkit-appearance: none;
+    margin: 0;
 }
 
 input[type='number'] {
-  -moz-appearance: textfield;
+    -moz-appearance: textfield;
 }
 </style>

@@ -62,7 +62,7 @@ export const getMyLoans = async () => {
     return response.data
 }
 
-// 참여 중인 적금 조회
+// 참여 중인 저축 조회
 export const getMySavings = async () => {
     const response = await api.get('/api/user-saving/my-savings')
     return response.data

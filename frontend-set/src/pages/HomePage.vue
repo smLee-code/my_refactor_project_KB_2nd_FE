@@ -124,7 +124,6 @@ const authStore = useAuthStore()
 
 authStore.loadToken()
 
-
 const router = useRouter()
 const topProjects = ref([])
 const recommendedProjects = ref([])
@@ -178,7 +177,6 @@ onMounted(async () => {
     } catch (err) {
         console.error('❌ 추천 프로젝트 로딩 실패:', err)
     }
-
 })
 
 const goToProjectList = () => {
@@ -209,7 +207,7 @@ const popularFundings = [
         title: '인기 펀딩 1',
         description: '설명1',
         daysLeft: 10,
-        category: '적금형',
+        category: '저축형',
         likes: 100,
         progress: 80,
         link: '#',
