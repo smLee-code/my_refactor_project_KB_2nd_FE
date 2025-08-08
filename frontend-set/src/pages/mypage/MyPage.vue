@@ -60,8 +60,6 @@
 
 <script setup>
 import { ref, onMounted, reactive } from 'vue'
-import { useRouter } from 'vue-router'
-import { useAuthStore } from '@/stores/auth'
 import {
     getMyPageInfo,
     getMyKeywords,
@@ -80,14 +78,6 @@ import TabNavigation from '@/components/mypage/TabNavigation.vue'
 import UserInfoCard from '@/components/mypage/UserInfoCard.vue'
 import LikedProjectsSection from '@/components/mypage/LikedProjectsSection.vue'
 import ParticipatingFundingsSection from '@/components/mypage/ParticipatingFundingsSection.vue'
-
-const router = useRouter()
-const authStore = useAuthStore()
-
-// 인증 상태 확인
-if (!authStore.isLoggedIn || !authStore.isTokenValid()) {
-    router.push('/auth/login')
-}
 
 const activeTab = ref('info')
 const showUserMenu = ref(false)
