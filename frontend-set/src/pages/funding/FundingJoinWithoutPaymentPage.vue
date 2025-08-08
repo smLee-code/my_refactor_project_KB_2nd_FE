@@ -16,8 +16,8 @@
             </div>
             <!-- 펀딩 참여 헤더 -->
             <div class="mb-8">
-                <h1 class="text-3xl font-bold text-gray-900 mb-2">{{ fundingTitle }} 신청하기</h1>
-                <p class="text-lg text-gray-600">{{ fundingType === 'loan' ? '대출' : '적금' }} 상품</p>
+                <h1 class="text-3xl font-bold text-gray-900 mb-2">{{ fundingTitle || '로딩중...' }} 신청하기</h1>
+                <p v-if="fundingType" class="text-lg text-gray-600">{{ fundingType === 'loan' ? '대출' : '적금' }} 상품</p>
             </div>
 
             <!-- 상품 정보 요약 -->
@@ -200,8 +200,8 @@ const fundingId = route.params.id
 
 // 펀딩 정보
 const fundingData = ref(null)
-const fundingTitle = ref('청년 희망 대출')
-const fundingType = ref('loan') // 'loan' 또는 'savings'
+const fundingTitle = ref('')
+const fundingType = ref('') // 'loan' 또는 'savings' - 초기값 없음
 const loanLimit = ref(50000000) // 대출 한도
 const minInterestRate = ref(2.5) // 최소 금리
 const maxInterestRate = ref(4.5) // 최대 금리
@@ -211,8 +211,10 @@ const interestRate = ref(3.5) // 적금 이자율
 // 펀딩 정보 조회 및 타입 확인
 const fetchFundingInfo = async () => {
     try {
-        const response = await axios.get(`/api/fund/detail/${fundingId}`)
+        const response = await api.get(`/fund/${fundingId}`)
         fundingData.value = response.data
+        
+        console.log('펀딩 정보:', response.data)
         
         // 펀딩 타입 확인
         const type = response.data.fundType
@@ -225,8 +227,10 @@ const fetchFundingInfo = async () => {
         }
         
         // 펀딩 정보 업데이트
-        fundingTitle.value = response.data.name || '펀딩 프로젝트'
-        fundingType.value = type.toLowerCase() // 'Loan' -> 'loan'
+        fundingTitle.value = response.data.fundName || response.data.name || '펀딩 프로젝트'
+        fundingType.value = type.toLowerCase() // 'Loan' -> 'loan', 'Savings' -> 'savings'
+        
+        console.log('펀딩 타입:', fundingType.value)
         
         if (type === 'Loan') {
             loanLimit.value = response.data.loanLimit || 50000000
@@ -238,6 +242,9 @@ const fetchFundingInfo = async () => {
         }
     } catch (error) {
         console.error('펀딩 정보 조회 실패:', error)
+        alert('펀딩 정보를 불러올 수 없습니다.')
+        // 에러시 이전 페이지로 돌아가기
+        router.back()
     }
 }
 

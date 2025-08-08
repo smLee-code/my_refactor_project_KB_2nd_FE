@@ -76,7 +76,7 @@
                 </div>
                 <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
                     <ProjectCard
-                        v-for="item in recommendedProjects"
+                        v-for="item in recommendedProjects.slice(0, 4)"
                         :key="item.id"
                         :project="item"
                         @click="goToProject(item.projectId)"
@@ -93,6 +93,7 @@
                         <FundingUrgentCard
                             v-for="item in visibleUrgentFundings"
                             :key="item.id"
+                            :id="item.id"
                             :image="item.image"
                             :title="item.title"
                             :timeLeft="item.timeLeft"
@@ -121,8 +122,6 @@ import axios from 'axios'
 import { useAuthStore } from '@/stores/auth'
 
 const authStore = useAuthStore()
-
-authStore.loadToken()
 
 const router = useRouter()
 const topProjects = ref([])
