@@ -4,12 +4,20 @@
 </template>
 
 <script setup>
-import { computed } from 'vue'
+import { computed, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
+import { useAuthStore } from '@/stores/auth'
 import Header from '@/components/layout/Header.vue'
 import AuthHeader from '@/components/layout/AuthHeader.vue'
 
 const route = useRoute()
+const authStore = useAuthStore()
+
+// 앱 시작 시 저장된 토큰과 role 로드
+onMounted(() => {
+  authStore.loadToken()
+  authStore.loadRole()
+})
 
 // auth 페이지에서는 AuthHeader, 그 외 페이지에서는 Header 컴포넌트 사용
 const headerComponent = computed(() => {

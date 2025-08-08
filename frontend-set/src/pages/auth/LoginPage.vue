@@ -173,9 +173,12 @@ const handleLogin = async () => {
             .then((res) => {
                 console.log('✅res.data:', res.data)
 
+                console.log('여기까진 됨')
                 authStore.login(res.data)
+
+                console.log('여기부터 안나옴')
                 console.log('✅authStore token:', authStore.loadToken())
-                console.log('✅res accesstoken:', res.data)
+                console.log('✅authStore role:', authStore.loadRole())
             })
 
         // 로그인 성공 시 리다이렉트 또는 상태 변경

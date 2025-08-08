@@ -120,7 +120,9 @@ import axios from 'axios'
 import { useAuthStore } from '@/stores/auth'
 
 const authStore = useAuthStore()
+
 authStore.loadToken()
+
 
 const router = useRouter()
 const topProjects = ref([])
@@ -146,6 +148,7 @@ onMounted(async () => {
     } catch (err) {
         console.error(`❌ 프로젝트 인기목록 실패:`, err)
     }
+
     try {
         const allRes = await axios.get('/project/list') // 전체 프로젝트
 
@@ -174,6 +177,7 @@ onMounted(async () => {
     } catch (err) {
         console.error('❌ 추천 프로젝트 로딩 실패:', err)
     }
+
 })
 
 const goToProjectList = () => {
