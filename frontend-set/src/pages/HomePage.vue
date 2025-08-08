@@ -143,16 +143,36 @@ onMounted(async () => {
         const res = await axios.get('/project/top')
         topProjects.value = res.data
         console.log(`프로젝트 인기목록:`, res.data)
-
-        const recommendRes = await axios.get('/project/list/keyword', {
-            headers: {
-                Authorization: `Bearer ${authStore.token}`,
-            },
-        })
-        recommendedProjects.value = recommendRes.data
-        console.log(`키워드 기반 추천:`, recommendRes.data)
     } catch (err) {
         console.error(`❌ 프로젝트 인기목록 실패:`, err)
+    }
+    try {
+        const allRes = await axios.get('/project/list') // 전체 프로젝트
+
+        const allProjects = allRes.data.sort(() => Math.random() - 0.5) // 랜덤 섞기
+
+        if (authStore.isLoggedIn && authStore.token) {
+            const recommendRes = await axios.get('/project/list/keyword', {
+                headers: {
+                    Authorization: `Bearer ${authStore.token}`,
+                },
+            })
+
+            const recommended = recommendRes.data || []
+            const recommendedIds = recommended.map((p) => p.projectId)
+
+            // 중복 제거 후 부족한 수만큼 랜덤으로 채움
+            const extra = allProjects
+                .filter((p) => !recommendedIds.includes(p.projectId))
+                .slice(0, 4 - recommended.length)
+
+            recommendedProjects.value = [...recommended, ...extra]
+        } else {
+            // 로그인 안 했을 때는 그냥 랜덤 4개
+            recommendedProjects.value = allProjects.slice(0, 4)
+        }
+    } catch (err) {
+        console.error('❌ 추천 프로젝트 로딩 실패:', err)
     }
 })
 
