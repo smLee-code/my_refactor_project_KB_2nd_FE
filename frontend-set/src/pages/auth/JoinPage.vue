@@ -33,17 +33,17 @@
                             <input
                                 v-model="form.nickname"
                                 type="text"
-                                placeholder="아이디를 입력해주세요"
+                                placeholder="닉네임을 입력해주세요"
                                 class="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm transition-all"
                                 :class="{ 'border-red-500': errors.nickname }"
                             />
-                            <button
+                            <!-- <button
                                 type="button"
                                 @click="checkUsername"
                                 class="px-4 py-2 border border-blue-600 text-blue-600 rounded-lg hover:bg-blue-50 text-sm font-medium !rounded-button whitespace-nowrap cursor-pointer"
                             >
                                 중복확인
-                            </button>
+                            </button> -->
                         </div>
                         <p v-if="errors.nickname" class="text-red-500 text-xs mt-1">
                             {{ errors.nickname }}

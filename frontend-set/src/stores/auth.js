@@ -4,29 +4,20 @@ import { defineStore } from 'pinia'
 export const useAuthStore = defineStore('auth', () => {
     const isLoggedIn = ref(false)
     const token = ref('')
-    const userRole = ref('')
 
-    function login(receivedAuthData) {
-        console.log('✅receivedAuthData:', receivedAuthData)
-
+    function login(receivedToken) {
         isLoggedIn.value = true
-
-        token.value = receivedAuthData.token
-        console.log('✅token:', receivedAuthData.token)
-
-        userRole.value = receivedAuthData.userRole
-        console.log('✅userRole:', receivedAuthData.userRole)
-
-        localStorage.setItem('jwt', receivedAuthData.token)
-        localStorage.setItem('role', receivedAuthData.userRole)
+        token.value = receivedToken
+        localStorage.setItem('jwt', receivedToken)
     }
 
     function logout() {
         isLoggedIn.value = false
         token.value = ''
-        userRole.value = ''
         localStorage.removeItem('jwt')
-        localStorage.removeItem('role')
+
+        // 로그아웃 후 로그인 페이지로 리다이렉트
+        window.location.href = '/auth/login'
     }
 
     function loadToken() {
@@ -34,30 +25,37 @@ export const useAuthStore = defineStore('auth', () => {
         if (savedToken) {
             token.value = savedToken
             isLoggedIn.value = true
+            return true
         }
-        return token
+        return false
     }
 
-    function loadRole() {
-        const savedRole = localStorage.getItem('role')
-        if (savedRole) {
-            userRole.value = savedRole
-        }
-        return userRole
+    function getToken() {
+        return token.value || localStorage.getItem('jwt')
     }
 
-    function isFinanceRole() {
-        return userRole.value === 'ROLE_FINANCE'
+    function isTokenValid() {
+        const currentToken = getToken()
+        if (!currentToken) return false
+
+        try {
+            // JWT 토큰의 만료 시간 확인 (간단한 검증)
+            const payload = JSON.parse(atob(currentToken.split('.')[1]))
+            const currentTime = Math.floor(Date.now() / 1000)
+            return payload.exp > currentTime
+        } catch (error) {
+            console.error('토큰 파싱 오류:', error)
+            return false
+        }
     }
 
     return {
         isLoggedIn,
         token,
-        userRole,
         login,
         logout,
         loadToken,
-        loadRole,
-        isFinanceRole,
+        getToken,
+        isTokenValid,
     }
 })
