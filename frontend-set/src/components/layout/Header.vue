@@ -49,7 +49,7 @@
                     </template>
                     <template v-else>
                         <div class="flex items-center space-x-4">
-                            <div class="relative">
+                            <!-- <div class="relative">
                                 <button
                                     class="relative p-2 text-gray-600 hover:text-gray-900 cursor-pointer transition-colors"
                                     @click="toggleNotificationDropdown"
@@ -82,7 +82,7 @@
                                         </div>
                                     </template>
                                 </div>
-                            </div>
+                            </div> -->
                             <div class="relative">
                                 <button
                                     id="user-menu-button"
@@ -105,7 +105,7 @@
                                 </div>
                             </div>
                             <button
-                                @click="auth.logout"
+                                @click="handleLogout"
                                 class="bg-gray-100 text-gray-700 px-4 py-2 !rounded-button font-medium hover:bg-gray-200 cursor-pointer whitespace-nowrap transition-all"
                             >
                                 로그아웃
@@ -134,6 +134,11 @@ const goToLoginPage = () => {
 
 const goToJoinPage = () => {
     router.push('/auth/join')
+}
+
+const handleLogout = () => {
+    auth.logout()
+    router.push('/')
 }
 
 // mock data
@@ -187,4 +192,8 @@ onBeforeUnmount(() => {
 })
 </script>
 
-<style scoped></style>
+<style scoped>
+.\!rounded-button {
+    border-radius: 8px;
+}
+</style>

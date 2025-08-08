@@ -34,9 +34,19 @@ export const useAuthStore = defineStore('auth', () => {
         token.value = ''
         userRole.value = ''
         userId.value = null
+
+        // 모든 사용자 관련 localStorage 데이터 정리
         localStorage.removeItem('jwt')
         localStorage.removeItem('role')
         localStorage.removeItem('userId')
+
+        // 추가적으로 모든 localStorage 항목 중 사용자 관련된 것들 정리
+        // (필요시 다른 키들도 여기에 추가 가능)
+
+        // sessionStorage도 정리
+        sessionStorage.clear()
+
+        console.log('✅ 로그아웃 완료: 모든 사용자 데이터가 정리되었습니다.')
     }
 
     function loadToken() {

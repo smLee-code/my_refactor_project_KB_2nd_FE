@@ -279,7 +279,7 @@ const updateUserInfo = async () => {
 </script>
 
 <style scoped>
-.rounded-button {
+.\!rounded-button {
     border-radius: 8px;
 }
 </style>
