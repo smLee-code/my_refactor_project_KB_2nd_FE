@@ -81,11 +81,23 @@
               </div>
               <div class="text-gray-500">마감일: 2025년 8월 6일</div>
             </div>
+            <!-- ROLE_NORMAL 사용자만 참여 가능 -->
             <button
+              v-if="authStore.userRole === 'ROLE_NORMAL'"
+              @click="goToFundingJoin"
               class="w-full sm:w-auto bg-yellow-400 text-gray-900 px-8 py-3 !rounded-button font-bold hover:bg-yellow-500 cursor-pointer whitespace-nowrap shadow-lg hover:shadow-xl transition-all transform hover:-translate-y-0.5"
             >
               펀딩 참여하기
             </button>
+            <!-- 다른 역할 사용자 안내 메시지 -->
+            <div v-else-if="authStore.userRole === 'ROLE_FINANCE'" class="text-sm text-gray-600 bg-gray-100 px-4 py-2 rounded-lg">
+              <i class="fas fa-info-circle mr-2"></i>
+              금융사 회원은 펀딩에 참여할 수 없습니다
+            </div>
+            <div v-else-if="authStore.userRole === 'ROLE_ADMIN'" class="text-sm text-gray-600 bg-gray-100 px-4 py-2 rounded-lg">
+              <i class="fas fa-info-circle mr-2"></i>
+              관리자 계정은 펀딩에 참여할 수 없습니다
+            </div>
           </div>
         </div>
       </section>
@@ -367,14 +379,72 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
+import api from '@/api'
+import { useAuthStore } from '@/stores/auth'
 
+const route = useRoute()
+const router = useRouter()
+const authStore = useAuthStore()
+const fundingId = route.params.id
+
+// 펀딩 정보
+const fundingData = ref(null)
 const isLiked = ref(false)
 const participantCount = ref(142)
 const currentAmount = ref(37500000)
 const targetAmount = ref(50000000)
 const daysLeft = ref(15)
 const progressPercentage = ref(75)
+
+// 펀딩 정보 조회
+const fetchFundingDetail = async () => {
+  try {
+    const response = await api.get(`/fund/${fundingId}`)
+    fundingData.value = response.data
+    
+    console.log('펀딩 상세 정보:', response.data)
+    
+    // 실제 데이터로 업데이트
+    if (response.data) {
+      // targetAmount.value = response.data.targetAmount || 50000000
+      // currentAmount.value = response.data.currentAmount || 0
+      // progressPercentage.value = response.data.progress || 0
+      // participantCount.value = response.data.participantCount || 0
+    }
+  } catch (error) {
+    console.error('펀딩 상세 정보 조회 실패:', error)
+  }
+}
+
+// 펀딩 참여하기 버튼 클릭
+const goToFundingJoin = () => {
+  if (!fundingData.value) {
+    // 펀딩 데이터가 없으면 기본 페이지로
+    router.push(`/funding/join-payment/${fundingId}`)
+    return
+  }
+  
+  const fundType = fundingData.value.fundType
+  
+  // 타입별 페이지 분기
+  if (fundType === 'Loan' || fundType === 'Savings') {
+    // 대출/적금: 결제 없는 페이지
+    router.push(`/funding/join-apply/${fundingId}`)
+  } else {
+    // 기부/챌린지: 결제 있는 페이지  
+    router.push(`/funding/join-payment/${fundingId}`)
+  }
+}
+
+onMounted(() => {
+  // role 정보 로드
+  authStore.loadRole()
+  console.log('현재 유저 role:', authStore.userRole)
+  
+  fetchFundingDetail()
+})
 
 const toggleLike = () => {
   isLiked.value = !isLiked.value
@@ -383,8 +453,8 @@ const toggleLike = () => {
 const shareProject = () => {
   if (navigator.share) {
     navigator.share({
-      title: 'Project A - Environment Sustainability Initiative',
-      text: '지속 가능한 환경을 위한 혁신적인 기술 개발 프로젝트',
+      title: fundingData.value?.name || 'Project A - Environment Sustainability Initiative',
+      text: fundingData.value?.detail || '지속 가능한 환경을 위한 혁신적인 기술 개발 프로젝트',
       url: window.location.href,
     })
   } else {
