@@ -68,7 +68,6 @@ authStore.loadToken()
 
 const projects = ref([])
 const router = useRouter()
-const userId = ref(1)
 
 //라우터
 const goToCreatePage = () => {
@@ -158,14 +157,16 @@ const filteredProjects = computed(() => {
 })
 
 const toggleLike = async (projectId) => {
+    console.log('⏹️toggleLike() 실행')
+
+    console.log('⏹️projectId:', projectId)
+
     const project = projects.value.find((p) => p.id === projectId)
     if (!project) return
 
-    const token = authStore.token
-    console.log('👍 좋아요 요청 보낼 데이터:', {
-        userId: userId.value,
-        projectId: projectId,
-    })
+    const token = authStore.loadToken()
+
+    console.log('⏹️token:', token)
 
     if (!token) {
         console.warn('❗ 토큰 없음, 로그인 필요')
@@ -173,48 +174,70 @@ const toggleLike = async (projectId) => {
     }
 
     try {
-        if (project.isLiked) {
-            await axios.post(
-                '/votes',
-                { userId: userId.value, projectId },
-                {
-                    headers: {
-                        Authorization: `Bearer ${token}`, // <-- 헤더에 JWT 토큰 추가
-                    },
-                },
-            )
-            project.likes--
-        } else {
-            await axios.post(
-                '/votes',
-                { userId: userId.value, projectId },
-                {
-                    headers: {
-                        Authorization: `Bearer ${token}`, // <-- 헤더에 JWT 토큰 추가
-                    },
-                },
-            )
-            project.likes++
-        }
+        await axios.post(`/votes/${projectId}`, null, {
+            headers: {
+                Authorization: `Bearer ${token}`,
+            },
+        })
+
+        if (project.isLiked) project.likes--
+        else project.likes++
+
         project.isLiked = !project.isLiked
     } catch (err) {
         console.error('❌ 좋아요 토글 실패:', err)
-        console.log(token)
     }
+
+    // console.log('👍 좋아요 요청 보낼 데이터:', {
+    //     userId: userId.value,
+    //     projectId: projectId,
+    // })
+
+    // try {
+    //     if (project.isLiked) {
+    //         await axios.post(
+    //             '/votes',
+    //             { userId: userId.value, projectId },
+    //             {
+    //                 headers: {
+    //                     Authorization: `Bearer ${token}`, // <-- 헤더에 JWT 토큰 추가
+    //                 },
+    //             },
+    //         )
+    //         project.likes--
+    //     } else {
+    //         await axios.post(
+    //             '/votes',
+    //             { userId: userId.value, projectId },
+    //             {
+    //                 headers: {
+    //                     Authorization: `Bearer ${token}`, // <-- 헤더에 JWT 토큰 추가
+    //                 },
+    //             },
+    //         )
+    //         project.likes++
+    //     }
+    //     project.isLiked = !project.isLiked
+    // } catch (err) {
+    //     console.error('❌ 좋아요 토글 실패:', err)
+    //     console.log(token)
+    // }
 }
 
 onMounted(async () => {
-    console.log('토큰 상태:', {
-        token: authStore.token,
-        tokenValue: authStore.token.value,
-        isLoggedIn: authStore.isLoggedIn,
-    })
+    // console.log('토큰 상태:', {
+    //     token: authStore.token,
+    //     tokenValue: authStore.token.value,
+    //     isLoggedIn: authStore.isLoggedIn,
+    // })
+
     try {
         const res = await axios.get('/project/list', {
-            // headers: {
-            //     Authorization: `Bearer ${authStore.token}`,
-            // },
+            headers: {
+                Authorization: `Bearer ${authStore.token}`,
+            },
         }) // DB에서 받아온 응답
+
         projects.value = res.data.map((item) => ({
             id: item.projectId,
             title: item.title,
@@ -235,11 +258,13 @@ onMounted(async () => {
                       ? '마감'
                       : '알수없음',
         }))
-        console.log('api 호출: ', res.data)
-        console.log(
-            'status:',
-            projects.value.map((p) => p.status),
-        )
+
+        console.log('⏹️res data: ', res.data)
+        console.log('⏹️projects value: ', projects.value)
+        // console.log(
+        //     'status:',
+        //     projects.value.map((p) => p.status),
+        // )
     } catch (err) {
         console.error('❌ 프로젝트 불러오기 실패:', err)
     }

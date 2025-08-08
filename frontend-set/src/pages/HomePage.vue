@@ -135,8 +135,8 @@ onMounted(async () => {
     console.log('token:', authStore.loadToken) // ✅ JWT 문자열 출력돼야 함
 
     console.log('토큰 상태:', {
-        token: authStore.token,
-        tokenValue: authStore.token.value,
+        token: authStore.loadToken(),
+        userRole: authStore.loadRole(),
         isLoggedIn: authStore.isLoggedIn,
     })
 
