@@ -13,9 +13,9 @@
             </div>
 
             <!-- 프로젝트 정보 -->
-            <div v-else-if="projectData" class="space-y-4">
-                <div class="flex items-start space-x-4 mb-4">
-                    <div class="w-16 h-16 bg-gray-200 rounded-xl overflow-hidden flex-shrink-0">
+            <div v-else-if="projectData" class="space-y-6">
+                <div class="flex items-start space-x-6">
+                    <div class="w-40 h-28 bg-gray-200 rounded-xl overflow-hidden flex-shrink-0">
                         <img
                             :src="projectData.thumbnail || '/public/images/logo.png'"
                             :alt="projectData.title + ' 썸네일'"
@@ -23,36 +23,20 @@
                         />
                     </div>
                     <div class="flex-1">
-                        <h4 class="font-bold text-gray-900 mb-1">
+                        <h4 class="font-bold text-gray-900 mb-3 text-lg">
                             {{ projectData.title }}
                         </h4>
-                        <p class="text-sm text-gray-600 mb-2">{{ projectData.organization }}</p>
-                        <div class="flex items-center space-x-2 text-sm text-gray-600">
+                        <p class="text-sm text-gray-600 mb-4">{{ projectData.organization }}</p>
+                        <div class="flex flex-wrap items-center gap-3 text-sm text-gray-600">
                             <span
                                 v-for="tag in projectData.tags"
                                 :key="tag"
-                                :class="getTagClass(tag)"
+                                class="bg-blue-50 text-blue-700 px-3 py-1.5 rounded-full text-xs"
                             >
                                 {{ tag }}
                             </span>
                         </div>
                     </div>
-                </div>
-
-                <div class="bg-gray-50 rounded-lg p-4">
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                        <div>
-                            <p class="text-sm text-gray-600 mb-1">프로젝트 기간</p>
-                            <p class="font-medium text-gray-900">{{ projectData.period }}</p>
-                        </div>
-                        <div>
-                            <p class="text-sm text-gray-600 mb-1">프로젝트 단계</p>
-                            <p class="font-medium text-gray-900">{{ projectData.stage }}</p>
-                        </div>
-                    </div>
-                    <p class="text-gray-700 text-sm leading-relaxed">
-                        {{ projectData.description }}
-                    </p>
                 </div>
             </div>
 
@@ -60,8 +44,8 @@
             <div v-else class="text-center py-8 text-gray-500">
                 <i class="fas fa-exclamation-triangle text-2xl mb-2"></i>
                 <p>{{ errorMessage || '프로젝트 정보를 불러올 수 없습니다.' }}</p>
-                <button 
-                    v-if="errorMessage" 
+                <button
+                    v-if="errorMessage"
                     @click="fetchProjectDetail"
                     class="mt-3 bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition-colors"
                 >
@@ -103,28 +87,31 @@ const fetchProjectDetail = async () => {
         console.log('프로젝트 ID로 상세 정보 요청:', props.projectId)
         const response = await api.get(`/project/list/detail/${props.projectId}/full`)
         const data = response.data
-        
+
         // API 응답 구조에 맞게 데이터 처리
         if (data && data.basicInfo) {
             projectData.value = {
                 title: data.basicInfo.title,
                 description: data.basicInfo.promotion,
                 organization: data.basicInfo.nickname || '알 수 없음',
-                period: data.basicInfo.deadline ? new Date(data.basicInfo.deadline).toLocaleDateString('ko-KR') : '미정',
+                period: data.basicInfo.deadline
+                    ? new Date(data.basicInfo.deadline).toLocaleDateString('ko-KR')
+                    : '미정',
                 stage: data.basicInfo.progress || '진행중',
                 tags: [data.basicInfo.projectType, data.basicInfo.progress].filter(Boolean),
-                thumbnail: data.imageList && data.imageList.length > 0 ? data.imageList[0].imageUrl : null
+                thumbnail:
+                    data.imageList && data.imageList.length > 0 ? data.imageList[0].imageUrl : null,
             }
         } else {
             projectData.value = data // 기존 구조 그대로 사용
         }
-        
+
         console.log('출처 프로젝트 정보:', projectData.value)
     } catch (error) {
         console.error('프로젝트 상세 정보 조회 실패:', error)
         console.error('에러 상세:', error.response?.data)
         projectData.value = null
-        
+
         // 404 에러인 경우 프로젝트가 존재하지 않는 것
         if (error.response?.status === 404) {
             errorMessage.value = '프로젝트를 찾을 수 없습니다.'
@@ -140,19 +127,6 @@ const fetchProjectDetail = async () => {
     } finally {
         isLoading.value = false
     }
-}
-
-// 태그별 스타일 클래스 반환
-const getTagClass = (tag) => {
-    const tagClasses = {
-        진행중: 'bg-blue-50 text-blue-700 px-2 py-1 rounded-full text-xs',
-        완료: 'bg-green-50 text-green-700 px-2 py-1 rounded-full text-xs',
-        연구개발: 'bg-purple-50 text-purple-700 px-2 py-1 rounded-full text-xs',
-        '환경/에너지': 'bg-green-50 text-green-700 px-2 py-1 rounded-full text-xs',
-        기술: 'bg-orange-50 text-orange-700 px-2 py-1 rounded-full text-xs',
-        사회공헌: 'bg-red-50 text-red-700 px-2 py-1 rounded-full text-xs',
-    }
-    return tagClasses[tag] || 'bg-gray-50 text-gray-700 px-2 py-1 rounded-full text-xs'
 }
 
 onMounted(() => {
