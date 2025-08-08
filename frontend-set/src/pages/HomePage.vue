@@ -92,6 +92,7 @@
                         <FundingUrgentCard
                             v-for="item in visibleUrgentFundings"
                             :key="item.id"
+                            :id="item.id"
                             :image="item.image"
                             :title="item.title"
                             :timeLeft="item.timeLeft"
@@ -117,15 +118,30 @@ import ProjectCard from '@/components/project/list/ProjectCard.vue'
 import FundingUrgentCard from '@/components/funding/FundingUrgentCard.vue'
 import Footer from '@/components/layout/MainFooter.vue'
 import axios from 'axios'
+import { useAuthStore } from '@/stores/auth'
+
+const authStore = useAuthStore()
+
+authStore.loadToken()
+
 
 const router = useRouter()
 const topProjects = ref([])
+const recommendedProjects = ref([])
 
 const goToProject = (id) => {
     router.push(`project/detail/${id}`)
 }
 
 onMounted(async () => {
+    console.log('token:', authStore.loadToken) // ✅ JWT 문자열 출력돼야 함
+
+    console.log('토큰 상태:', {
+        token: authStore.token,
+        tokenValue: authStore.token.value,
+        isLoggedIn: authStore.isLoggedIn,
+    })
+
     try {
         const res = await axios.get('/project/top')
         topProjects.value = res.data
@@ -133,6 +149,36 @@ onMounted(async () => {
     } catch (err) {
         console.error(`❌ 프로젝트 인기목록 실패:`, err)
     }
+
+    try {
+        const allRes = await axios.get('/project/list') // 전체 프로젝트
+
+        const allProjects = allRes.data.sort(() => Math.random() - 0.5) // 랜덤 섞기
+
+        if (authStore.isLoggedIn && authStore.token) {
+            const recommendRes = await axios.get('/project/list/keyword', {
+                headers: {
+                    Authorization: `Bearer ${authStore.token}`,
+                },
+            })
+
+            const recommended = recommendRes.data || []
+            const recommendedIds = recommended.map((p) => p.projectId)
+
+            // 중복 제거 후 부족한 수만큼 랜덤으로 채움
+            const extra = allProjects
+                .filter((p) => !recommendedIds.includes(p.projectId))
+                .slice(0, 4 - recommended.length)
+
+            recommendedProjects.value = [...recommended, ...extra]
+        } else {
+            // 로그인 안 했을 때는 그냥 랜덤 4개
+            recommendedProjects.value = allProjects.slice(0, 4)
+        }
+    } catch (err) {
+        console.error('❌ 추천 프로젝트 로딩 실패:', err)
+    }
+
 })
 
 const goToProjectList = () => {
@@ -192,45 +238,6 @@ const popularFundings = [
     },
 ]
 
-const recommendedProjects = [
-    // ProjectCard용 mock data
-    {
-        id: 4,
-        title: '추천 프로젝트 1',
-        description: '추천 설명1',
-        likes: 90,
-        participants: 20,
-        image: '/images/logo.png',
-        category: '적금형',
-    },
-    {
-        id: 5,
-        title: '추천 프로젝트 2',
-        description: '추천 설명2',
-        likes: 70,
-        participants: 15,
-        image: '/images/logo.png',
-        category: '기부형',
-    },
-    {
-        id: 6,
-        title: '추천 프로젝트 3',
-        description: '추천 설명3',
-        likes: 60,
-        participants: 10,
-        image: '/images/logo.png',
-        category: '대출형',
-    },
-    {
-        id: 7,
-        title: '추천 프로젝트 4',
-        description: '추천 설명4',
-        likes: 50,
-        participants: 8,
-        image: '/images/logo.png',
-        category: '챌린지형',
-    },
-]
 const visibleUrgentFundings = [
     // FundingUrgentCard용 mock data
     {

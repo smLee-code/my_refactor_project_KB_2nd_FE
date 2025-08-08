@@ -1,5 +1,6 @@
 <template>
     <div
+        @click="goToDetail"
         class="bg-white rounded-xl shadow-lg hover:shadow-2xl transition-all duration-300 cursor-pointer transform hover:-translate-y-1 border border-red-100 p-6 flex items-start space-x-6"
     >
         <!-- 썸네일 이미지 -->
@@ -37,18 +38,27 @@
 <script setup>
 // 마감 임박 펀딩 카드
 // props:
+// - id: 펀딩 ID
 // - image: 썸네일 이미지 URL
 // - title: 펀딩 제목
 // - timeLeft: 남은 시간(문자열)
 // - participants: 참여자 수
 // - progress: 진행률(숫자)
 import ProgressBar from '@/components/common/ProgressBar.vue'
+import { useRouter } from 'vue-router'
 
-defineProps({
+const router = useRouter()
+
+const props = defineProps({
+    id: Number,
     image: String,
     title: String,
     timeLeft: String,
     participants: Number,
     progress: Number,
 })
+
+const goToDetail = () => {
+    router.push(`/funding/detail/${props.id}`)
+}
 </script>

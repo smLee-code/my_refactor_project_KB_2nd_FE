@@ -9,6 +9,7 @@
                     <FundingUrgentCard
                         v-for="urgent in urgentFundings"
                         :key="urgent.id"
+                        :id="urgent.id"
                         :image="urgent.image"
                         :title="urgent.title"
                         :timeLeft="urgent.timeLeft"
@@ -37,7 +38,9 @@
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8 mb-12">
                 <FundingCard
                     v-for="funding in displayedFundingList"
-                    :key="funding.projectId"
+                    :key="funding.fundId"
+                    :id="funding.fundId"
+                    :fundType="funding.fundType"
                     :image="funding.thumbnailImage?.imageUrl || '/default.jpg'"
                     :title="funding.name"
                     :description="funding.financialInstitution || '금융기관 정보 없음'"
@@ -128,10 +131,28 @@ const fundTypeMap = {
 const urgentFundings = computed(() => {
     return [...launchFunds.value]
         .filter((fund) => new Date(fund.endAt) > new Date()) // 오늘 이후
-        .sort((a, b) => new Date(a.endAt) - new Date(b.endAt)) // 마감 빠른 순
-        .slice(0, 6) // 상위 5개만
+        .sort((a, b) => {
+            const dateDiff = new Date(a.endAt) - new Date(b.endAt)
+            
+            // 마감일이 같으면 2차 정렬 기준 적용
+            if (dateDiff === 0) {
+                // 1. 진행률이 높은 순 (목표 달성에 가까운 것 우선)
+                const progressDiff = (b.progress || 0) - (a.progress || 0)
+                if (progressDiff !== 0) return progressDiff
+                
+                // 2. 참여자(투표수)가 많은 순 (인기 있는 것 우선)
+                const votesDiff = (b.retryVotesCount || 0) - (a.retryVotesCount || 0)
+                if (votesDiff !== 0) return votesDiff
+                
+                // 3. 펀딩 ID 순서 (먼저 등록된 것 우선)
+                return a.fundId - b.fundId
+            }
+            
+            return dateDiff
+        }) // 마감 빠른 순 + 2차 정렬
+        .slice(0, 2) // 상위 2개만
         .map((fund) => ({
-            id: fund.projectId,
+            id: fund.fundId,  // fundId로 변경
             image: fund.thumbnailImage?.imageUrl || '/default.jpg',
             title: fund.name,
             timeLeft: getDaysLeft(fund.endAt),

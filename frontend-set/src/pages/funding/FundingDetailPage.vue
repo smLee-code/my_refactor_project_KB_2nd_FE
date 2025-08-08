@@ -22,8 +22,10 @@
                 :participant-count="fundingData.participantCount"
                 :days-left="fundingData.daysLeft"
                 :end-date="fundingData.endDate"
+                :user-role="authStore.userRole"
                 @participate="handleParticipate"
             />
+
             <!-- 상세 정보 섹션 -->
             <FundingDetailSection
                 :purpose="detailData.purpose"
@@ -110,6 +112,7 @@
                     </div>
                 </div>
             </section>
+
             <!-- 추천 펀딩 섹션 -->
             <section class="mb-8">
                 <h3 class="text-2xl font-bold text-gray-900 mb-6">다른 펀딩 둘러보기</h3>
@@ -204,14 +207,23 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
+import api from '@/api'
+import { useAuthStore } from '@/stores/auth'
 import FundingHeaderSection from '@/components/funding/FundingHeaderSection.vue'
 import FundingProgressCard from '@/components/funding/FundingProgressCard.vue'
 import ChallengeUploadSection from '@/components/funding/ChallengeUploadSection.vue'
 import FundingDetailSection from '@/components/funding/FundingDetailSection.vue'
 
-// Props 정의
-// @param {string} fundingId - 펀딩 ID (라우터 파라미터에서 가져옴)
+const route = useRoute()
+const router = useRouter()
+const authStore = useAuthStore()
+const fundingId = route.params.id
+
+// 펀딩 정보
+const fundingData = ref(null)
+const isLiked = ref(false)
 
 // 프로젝트 데이터
 const projectData = ref({
@@ -219,20 +231,6 @@ const projectData = ref({
     title: 'Project A - Environment Sustainability Initiative',
     description: '지속 가능한 환경을 위한 혁신적인 기술 개발 프로젝트',
     status: '진행중',
-})
-
-// 펀딩 데이터
-const fundingData = ref({
-    id: 1,
-    targetAmount: 50000000,
-    currentAmount: 37500000,
-    progressPercentage: 75,
-    participantCount: 142,
-    daysLeft: 15,
-    endDate: '2025년 8월 6일',
-    // 실제 펀딩 기간으로 설정 (약 1개월)
-    startDate: '2025-07-01', // 7월 1일부터
-    endDateForCertification: '2025-08-10', // 8월 6일까지
 })
 
 // 상세 정보 데이터
@@ -272,9 +270,6 @@ const detailData = ref({
 // 펀딩 타입 (챌린지로 설정하여 인증샷 업로드 영역이 보이도록 함)
 const fundingType = ref('challenge')
 
-// 좋아요 상태
-const isLiked = ref(false)
-
 // 인증샷 데이터 (날짜별) - 실제 펀딩 기간에 맞춤
 const certificationData = ref([
     {
@@ -299,6 +294,76 @@ const certificationData = ref([
     // 실제로는 이 부분이 없어야 하며, 오늘 날짜에 업로드하면 자동으로 추가됨
 ])
 
+// 펀딩 정보 조회
+const fetchFundingDetail = async () => {
+    try {
+        const response = await api.get(`/fund/${fundingId}`)
+        fundingData.value = response.data
+
+        console.log('펀딩 상세 정보:', response.data)
+
+        // 실제 데이터로 업데이트
+        if (response.data) {
+            // 기본값 설정
+            fundingData.value = {
+                id: fundingId,
+                targetAmount: response.data.targetAmount || 50000000,
+                currentAmount: response.data.currentAmount || 37500000,
+                progressPercentage: response.data.progress || 75,
+                participantCount: response.data.participantCount || 142,
+                daysLeft: response.data.daysLeft || 15,
+                endDate: response.data.endDate || '2025년 8월 6일',
+                startDate: response.data.startDate || '2025-07-01',
+                endDateForCertification: response.data.endDateForCertification || '2025-08-10',
+                fundType: response.data.fundType || 'challenge',
+            }
+
+            // 펀딩 타입 설정
+            fundingType.value = response.data.fundType || 'challenge'
+        }
+    } catch (error) {
+        console.error('펀딩 상세 정보 조회 실패:', error)
+        // 에러 시 기본값 설정
+        fundingData.value = {
+            id: fundingId,
+            targetAmount: 50000000,
+            currentAmount: 37500000,
+            progressPercentage: 75,
+            participantCount: 142,
+            daysLeft: 15,
+            endDate: '2025년 8월 6일',
+            startDate: '2025-07-01',
+            endDateForCertification: '2025-08-10',
+            fundType: 'challenge',
+        }
+    }
+}
+
+// 펀딩 참여하기 버튼 클릭 (incoming 브랜치의 분기 처리 로직 적용)
+const goToFundingJoin = () => {
+    if (!fundingData.value) {
+        // 펀딩 데이터가 없으면 기본 페이지로
+        router.push(`/funding/join-payment/${fundingId}`)
+        return
+    }
+
+    const fundType = fundingData.value.fundType
+
+    // 타입별 페이지 분기
+    if (fundType === 'Loan' || fundType === 'Savings') {
+        // 대출/적금: 결제 없는 페이지
+        router.push(`/funding/join-apply/${fundingId}`)
+    } else {
+        // 기부/챌린지: 결제 있는 페이지
+        router.push(`/funding/join-payment/${fundingId}`)
+    }
+}
+
+// 펀딩 참여 처리 (FundingProgressCard에서 호출)
+const handleParticipate = () => {
+    goToFundingJoin()
+}
+
 // 좋아요 토글
 const toggleLike = () => {
     isLiked.value = !isLiked.value
@@ -316,12 +381,6 @@ const shareProject = () => {
         navigator.clipboard.writeText(window.location.href)
         alert('링크가 클립보드에 복사되었습니다!')
     }
-}
-
-// 펀딩 참여 처리
-const handleParticipate = () => {
-    // 펀딩 참여 로직 구현
-    console.log('펀딩 참여 버튼 클릭')
 }
 
 // 인증샷 업로드 완료 처리
@@ -342,6 +401,14 @@ const handleUploadError = (errorMessage) => {
     alert(errorMessage)
     console.error('업로드 에러:', errorMessage)
 }
+
+onMounted(() => {
+    // role 정보 로드
+    authStore.loadRole()
+    console.log('현재 유저 role:', authStore.userRole)
+
+    fetchFundingDetail()
+})
 </script>
 
 <style scoped>
