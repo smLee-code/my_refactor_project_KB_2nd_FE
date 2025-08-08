@@ -3,12 +3,27 @@
     <div class="min-h-screen bg-gray-50 w-full">
         <!-- 메인 콘텐츠 영역 -->
         <div class="container mx-auto px-4 sm:px-6 lg:px-32 py-8">
-            <!-- 프로젝트 메인 비주얼 -->
+            <!-- 로딩 상태 -->
+            <div v-if="isLoading" class="flex justify-center items-center py-20">
+                <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-yellow-400"></div>
+                <span class="ml-3 text-gray-600">펀딩 정보를 불러오는 중...</span>
+            </div>
+
+            <!-- 펀딩 메인 비주얼 -->
             <FundingHeaderSection
-                :project-image="projectData.image"
-                :project-title="projectData.title"
-                :project-description="projectData.description"
-                :status="projectData.status"
+                v-if="!isLoading && fundingData"
+                :funding-image="
+                    fundingData.imageUrls && fundingData.imageUrls.length > 0
+                        ? fundingData.imageUrls[0]
+                        : '/public/images/logo.png'
+                "
+                :funding-name="fundingData.name"
+                :funding-detail="fundingData.detail"
+                :fund-type="fundingData.fundType"
+                :financial-institution="fundingData.financialInstitution"
+                :interest-rate="fundingData.interestRate"
+                :period-days="fundingData.periodDays"
+                :progress="fundingData.progress"
                 :is-liked="isLiked"
                 @toggle-like="toggleLike"
                 @share="shareProject"
@@ -16,6 +31,7 @@
 
             <!-- 펀딩 현황 카드 -->
             <FundingProgressCard
+                v-if="fundingData"
                 :target-amount="fundingData.targetAmount"
                 :current-amount="fundingData.currentAmount"
                 :progress-percentage="fundingData.progressPercentage"
@@ -23,21 +39,50 @@
                 :days-left="fundingData.daysLeft"
                 :end-date="fundingData.endDate"
                 :user-role="authStore.userRole"
+                :interest-rate="fundingData.interestRate"
+                :fund-type="fundingData.fundType"
                 @participate="handleParticipate"
             />
 
-            <!-- 상세 정보 섹션 -->
-            <FundingDetailSection
-                :purpose="detailData.purpose"
-                :background="detailData.background"
-                :source-project="detailData.sourceProject"
-                :budget-plan="detailData.budgetPlan"
-                :benefits="detailData.benefits"
+            <!-- 출처 프로젝트 섹션 -->
+            <SourceProjectSection
+                v-if="!isLoading && fundingData && fundingData.projectId"
+                :project-id="fundingData.projectId"
+            />
+
+            <!-- 상세 정보 섹션 - fundType에 따라 다른 컴포넌트 렌더링 -->
+
+            <!-- Savings 타입 -->
+            <SavingsFundingDetailSection
+                v-if="!isLoading && fundingData && fundingData.fundType === 'Savings'"
+                :product-name="fundingData.name"
+                :product-detail="fundingData.detail"
+                :financial-institution="fundingData.financialInstitution"
+                :product-type="fundingData.fundType"
+                :interest-rate="fundingData.interestRate"
+                :period-days="fundingData.periodDays"
+                :product-condition="fundingData.productCondition"
+                :success-condition="fundingData.successCondition"
+                :keywords="fundingData.keywords"
+            />
+
+            <!-- Challenge 타입 -->
+            <ChallengeFundingDetailSection
+                v-if="!isLoading && fundingData && fundingData.fundType === 'Challenge'"
+                :challenge-name="fundingData.name"
+                :challenge-detail="fundingData.detail"
+                :product-condition="fundingData.productCondition"
+                :challenge-period-days="fundingData.challengePeriodDays"
+                :challenge-reward="fundingData.challengeReward"
+                :challenge-reward-condition="fundingData.challengeRewardCondition"
+                :progress="fundingData.progress"
+                :joined="fundingData.joined"
+                :keywords="fundingData.keywords"
             />
 
             <!-- 인증샷 업로드 영역 (챌린지 타입일 때만 표시) -->
             <ChallengeUploadSection
-                v-if="fundingType === 'challenge'"
+                v-if="fundingData && fundingType === 'challenge'"
                 :funding-id="fundingData.id"
                 :certification-data="certificationData"
                 :start-date="fundingData.startDate"
@@ -47,71 +92,11 @@
             />
 
             <!-- 참여자 피드백 영역 -->
-            <section class="mb-8">
-                <div class="bg-white rounded-xl shadow-lg p-6 border border-gray-100">
-                    <div class="flex items-center justify-between mb-6">
-                        <h3 class="text-xl font-bold text-gray-900">참여자 피드백</h3>
-                        <span class="text-sm text-gray-600">총 24개의 댓글</span>
-                    </div>
-                    <div class="space-y-4 mb-6">
-                        <div class="flex items-start space-x-3 p-4 bg-gray-50 rounded-lg">
-                            <div
-                                class="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center flex-shrink-0"
-                            >
-                                <i class="fas fa-user text-white text-sm"></i>
-                            </div>
-                            <div class="flex-1">
-                                <div class="flex items-center space-x-2 mb-1">
-                                    <span class="font-medium text-gray-900">김지원</span>
-                                    <span class="text-xs text-gray-500">2시간 전</span>
-                                </div>
-                                <p class="text-sm text-gray-700">
-                                    정말 의미 있는 프로젝트네요! 환경을 위한 기술 개발에 참여할 수
-                                    있어서 기쁩니다.
-                                </p>
-                            </div>
-                        </div>
-                        <div class="flex items-start space-x-3 p-4 bg-gray-50 rounded-lg">
-                            <div
-                                class="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center flex-shrink-0"
-                            >
-                                <i class="fas fa-user text-white text-sm"></i>
-                            </div>
-                            <div class="flex-1">
-                                <div class="flex items-center space-x-2 mb-1">
-                                    <span class="font-medium text-gray-900">박민수</span>
-                                    <span class="text-xs text-gray-500">5시간 전</span>
-                                </div>
-                                <p class="text-sm text-gray-700">
-                                    김환경 박사님의 이전 연구 성과를 보고 신뢰하게 되었습니다.
-                                    성공을 기원합니다!
-                                </p>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="border-t pt-4">
-                        <div class="flex items-center space-x-3">
-                            <div
-                                class="w-8 h-8 bg-gray-300 rounded-full flex items-center justify-center flex-shrink-0"
-                            >
-                                <i class="fas fa-user text-gray-600 text-sm"></i>
-                            </div>
-                            <div class="flex-1">
-                                <input
-                                    type="text"
-                                    placeholder="댓글을 입력하세요..."
-                                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:border-transparent text-sm"
-                                />
-                            </div>
-                            <button
-                                class="bg-yellow-400 text-gray-900 px-4 py-2 !rounded-button font-medium hover:bg-yellow-500 cursor-pointer whitespace-nowrap"
-                            >
-                                등록
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </section>
+            <CommentSection
+                v-if="!isLoading && fundingData"
+                target-type="Funding"
+                :target-id="fundingData.id"
+            />
 
             <!-- 추천 펀딩 섹션 -->
             <section class="mb-8">
@@ -181,28 +166,6 @@
                 </div>
             </section>
         </div>
-        <!-- 푸터 -->
-        <footer class="bg-gradient-to-r from-gray-100 to-gray-200 py-8 shadow-inner mt-16">
-            <div class="container mx-auto px-4 sm:px-6 lg:px-32">
-                <div class="flex justify-center space-x-8">
-                    <a
-                        href="#"
-                        class="text-gray-600 hover:text-gray-900 cursor-pointer transition-colors hover:drop-shadow-sm"
-                        >Terms and Conditions</a
-                    >
-                    <a
-                        href="#"
-                        class="text-gray-600 hover:text-gray-900 cursor-pointer transition-colors hover:drop-shadow-sm"
-                        >Privacy Policy</a
-                    >
-                    <a
-                        href="#"
-                        class="text-gray-600 hover:text-gray-900 cursor-pointer transition-colors hover:drop-shadow-sm"
-                        >Contact Us</a
-                    >
-                </div>
-            </div>
-        </footer>
     </div>
 </template>
 
@@ -214,7 +177,10 @@ import { useAuthStore } from '@/stores/auth'
 import FundingHeaderSection from '@/components/funding/FundingHeaderSection.vue'
 import FundingProgressCard from '@/components/funding/FundingProgressCard.vue'
 import ChallengeUploadSection from '@/components/funding/ChallengeUploadSection.vue'
-import FundingDetailSection from '@/components/funding/FundingDetailSection.vue'
+import SavingsFundingDetailSection from '@/components/funding/SavingsFundingDetailSection.vue'
+import ChallengeFundingDetailSection from '@/components/funding/ChallengeFundingDetailSection.vue'
+import SourceProjectSection from '@/components/funding/SourceProjectSection.vue'
+import CommentSection from '@/components/funding/CommentSection.vue'
 
 const route = useRoute()
 const router = useRouter()
@@ -222,16 +188,34 @@ const authStore = useAuthStore()
 const fundingId = route.params.id
 
 // 펀딩 정보
-const fundingData = ref(null)
-const isLiked = ref(false)
-
-// 프로젝트 데이터
-const projectData = ref({
-    image: 'https://readdy.ai/api/search-image?query=environmental%20sustainability%20project%20hero%20banner%20with%20clean%20white%20background%2C%20green%20technology%20innovation%20concept%2C%20modern%20eco-friendly%20design%20with%20left%20side%20text%20area%2C%20professional%20investment%20presentation%2C%20minimalist%20clean%20aesthetic%2C%20nature%20elements%20integrated%20seamlessly&width=1200&height=400&seq=hero1&orientation=landscape',
-    title: 'Project A - Environment Sustainability Initiative',
-    description: '지속 가능한 환경을 위한 혁신적인 기술 개발 프로젝트',
-    status: '진행중',
+const fundingData = ref({
+    id: null,
+    projectId: null,
+    targetAmount: 0,
+    currentAmount: 0,
+    progressPercentage: 0,
+    participantCount: 0,
+    daysLeft: 0,
+    endDate: '',
+    startDate: '',
+    endDateForCertification: '',
+    fundType: 'Savings',
+    name: '',
+    detail: '',
+    financialInstitution: '',
+    interestRate: 0,
+    periodDays: 0,
+    productCondition: '',
+    successCondition: '',
+    joined: false,
+    keywords: [],
+    // 챌린지 전용 필드들
+    challengePeriodDays: 0,
+    challengeReward: '',
+    challengeRewardCondition: '',
 })
+const isLiked = ref(false)
+const isLoading = ref(true)
 
 // 상세 정보 데이터
 const detailData = ref({
@@ -298,44 +282,189 @@ const certificationData = ref([
 const fetchFundingDetail = async () => {
     try {
         const response = await api.get(`/fund/${fundingId}`)
-        fundingData.value = response.data
+        const data = response.data
 
-        console.log('펀딩 상세 정보:', response.data)
+        console.log('펀딩 상세 정보:', data)
 
-        // 실제 데이터로 업데이트
-        if (response.data) {
-            // 기본값 설정
+        // 실제 API 응답 데이터로 업데이트
+        if (data) {
+            // 날짜 배열을 문자열로 변환하는 함수
+            const formatDateArray = (dateArray) => {
+                if (!dateArray || dateArray.length < 3) return ''
+                const [year, month, day] = dateArray
+                return `${year}년 ${month}월 ${day}일`
+            }
+
+            // 남은 일수 계산 (마감일 - 오늘 날짜)
+            const calculateDaysLeft = (endAt) => {
+                if (!endAt || endAt.length < 3) return 0
+                const [year, month, day] = endAt
+                const endDate = new Date(year, month - 1, day)
+                const today = new Date()
+
+                // 오늘 날짜를 자정으로 설정하여 정확한 일수 계산
+                today.setHours(0, 0, 0, 0)
+                endDate.setHours(0, 0, 0, 0)
+
+                const diffTime = endDate - today
+                const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
+
+                console.log('daysLeft 계산:', {
+                    endDate: endDate.toISOString(),
+                    today: today.toISOString(),
+                    diffDays: diffDays,
+                    isExpired: diffDays <= 0,
+                })
+
+                return diffDays // 음수도 허용 (마감된 펀딩 표시용)
+            }
+
+            // 기간 일수 계산 (periodDays가 0이거나 null일 때 endDate - launchDate로 계산)
+            const calculatePeriodDays = (periodDays, launchAt, endAt) => {
+                // periodDays가 유효한 값이면 그대로 사용
+                if (periodDays && periodDays > 0) {
+                    return periodDays
+                }
+
+                // periodDays가 0이거나 null이면 날짜 차이로 계산
+                if (launchAt && endAt && launchAt.length >= 3 && endAt.length >= 3) {
+                    const [launchYear, launchMonth, launchDay] = launchAt
+                    const [endYear, endMonth, endDay] = endAt
+
+                    const launchDate = new Date(launchYear, launchMonth - 1, launchDay)
+                    const endDate = new Date(endYear, endMonth - 1, endDay)
+
+                    const diffTime = endDate - launchDate
+                    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
+
+                    console.log('periodDays 계산:', {
+                        original: periodDays,
+                        calculated: diffDays,
+                        launchDate: launchDate.toISOString(),
+                        endDate: endDate.toISOString(),
+                    })
+
+                    return Math.max(1, diffDays) // 최소 1일
+                }
+
+                // 날짜 정보도 없으면 기본값 365일
+                return 365
+            }
+
+            // 진행률 계산 (progressPercentage가 없으면 날짜 기반으로 계산)
+            const calculateProgressPercentage = (progressPercentage, launchAt, endAt) => {
+                // progressPercentage가 유효한 값이면 그대로 사용
+                if (
+                    progressPercentage !== null &&
+                    progressPercentage !== undefined &&
+                    progressPercentage >= 0
+                ) {
+                    return progressPercentage
+                }
+
+                // progressPercentage가 없으면 날짜 기반으로 계산
+                if (launchAt && endAt && launchAt.length >= 3 && endAt.length >= 3) {
+                    const [launchYear, launchMonth, launchDay] = launchAt
+                    const [endYear, endMonth, endDay] = endAt
+
+                    const launchDate = new Date(launchYear, launchMonth - 1, launchDay)
+                    const endDate = new Date(endYear, endMonth - 1, endDay)
+                    const today = new Date()
+
+                    // 전체 기간
+                    const totalDuration = endDate - launchDate
+                    // 경과 기간
+                    const elapsedDuration = today - launchDate
+
+                    // 진행률 계산 (0-100 범위로 제한)
+                    let percentage = (elapsedDuration / totalDuration) * 100
+                    percentage = Math.max(0, Math.min(100, percentage)) // 0-100 범위로 제한
+
+                    console.log('progressPercentage 계산:', {
+                        original: progressPercentage,
+                        calculated: percentage.toFixed(1),
+                        launchDate: launchDate.toISOString(),
+                        endDate: endDate.toISOString(),
+                        today: today.toISOString(),
+                        totalDuration: totalDuration / (1000 * 60 * 60 * 24) + '일',
+                        elapsedDuration: elapsedDuration / (1000 * 60 * 60 * 24) + '일',
+                    })
+
+                    return parseFloat(percentage.toFixed(1)) // 소수점 한 자리까지
+                }
+
+                // 날짜 정보도 없으면 기본값 0
+                return 0
+            }
+
+            // 펀딩 데이터 설정
             fundingData.value = {
-                id: fundingId,
-                targetAmount: response.data.targetAmount || 50000000,
-                currentAmount: response.data.currentAmount || 37500000,
-                progressPercentage: response.data.progress || 75,
-                participantCount: response.data.participantCount || 142,
-                daysLeft: response.data.daysLeft || 15,
-                endDate: response.data.endDate || '2025년 8월 6일',
-                startDate: response.data.startDate || '2025-07-01',
-                endDateForCertification: response.data.endDateForCertification || '2025-08-10',
-                fundType: response.data.fundType || 'challenge',
+                id: data.fundId,
+                projectId: 117, // 임시로 프로젝트 ID 117로 설정
+                targetAmount: data.targetAmount || 50000000,
+                currentAmount: data.currentAmount || 0,
+                progress: data.progress || '진행중', // progress 필드 추가
+                progressPercentage: calculateProgressPercentage(
+                    data.progressPercentage,
+                    data.launchAt,
+                    data.endAt,
+                ),
+                participantCount: data.participantCount || 0,
+                daysLeft: calculateDaysLeft(data.endAt),
+                endDate: formatDateArray(data.endAt),
+                startDate: formatDateArray(data.launchAt),
+                endDateForCertification: formatDateArray(data.endAt),
+                fundType: data.fundType || 'Savings',
+                name: data.name,
+                detail: data.detail,
+                financialInstitution: data.financialInstitution,
+                interestRate: data.interestRate,
+                periodDays: calculatePeriodDays(data.periodDays, data.launchAt, data.endAt),
+                productCondition: data.productCondition,
+                successCondition: data.successCondition,
+                joined: data.joined,
+                keywords: data.keywords || [],
+                // 챌린지 전용 필드들
+                challengePeriodDays: data.challengePeriodDays,
+                challengeReward: data.challengeReward,
+                challengeRewardCondition: data.challengeRewardCondition,
             }
 
             // 펀딩 타입 설정
-            fundingType.value = response.data.fundType || 'challenge'
+            fundingType.value = data.fundType || 'Savings'
         }
     } catch (error) {
         console.error('펀딩 상세 정보 조회 실패:', error)
         // 에러 시 기본값 설정
         fundingData.value = {
             id: fundingId,
+            projectId: null, // 프로젝트 ID 추가
             targetAmount: 50000000,
-            currentAmount: 37500000,
-            progressPercentage: 75,
-            participantCount: 142,
-            daysLeft: 15,
-            endDate: '2025년 8월 6일',
-            startDate: '2025-07-01',
-            endDateForCertification: '2025-08-10',
-            fundType: 'challenge',
+            currentAmount: 0,
+            progress: '진행중', // progress 필드 추가
+            progressPercentage: 0,
+            participantCount: 0,
+            daysLeft: 0,
+            endDate: '2024년 12월 31일',
+            startDate: '2024년 1월 1일',
+            endDateForCertification: '2024년 12월 31일',
+            fundType: 'Savings',
+            name: '청년 희망 저축',
+            detail: '청년을 위한 특별 금리 저축 상품',
+            financialInstitution: '국민은행',
+            interestRate: 3.5,
+            periodDays: 365,
+            productCondition: '만 19-34세, 소득 증빙 필요',
+            successCondition: '매월 10만원 이상 납입',
+            joined: false,
+            keywords: [],
+            // 챌린지 전용 필드들
+            challengePeriodDays: 0,
+            challengeReward: '',
+            challengeRewardCondition: '',
         }
+    } finally {
+        isLoading.value = false
     }
 }
 
@@ -351,7 +480,7 @@ const goToFundingJoin = () => {
 
     // 타입별 페이지 분기
     if (fundType === 'Loan' || fundType === 'Savings') {
-        // 대출/적금: 결제 없는 페이지
+        // 대출/저축: 결제 없는 페이지
         router.push(`/funding/join-apply/${fundingId}`)
     } else {
         // 기부/챌린지: 결제 있는 페이지
@@ -369,12 +498,12 @@ const toggleLike = () => {
     isLiked.value = !isLiked.value
 }
 
-// 프로젝트 공유
+// 펀딩 공유
 const shareProject = () => {
     if (navigator.share) {
         navigator.share({
-            title: projectData.value.title,
-            text: projectData.value.description,
+            title: fundingData.value?.name || '펀딩 상품',
+            text: fundingData.value?.detail || '펀딩 상품을 확인해보세요!',
             url: window.location.href,
         })
     } else {

@@ -6,19 +6,17 @@
                     <div class="text-xl sm:text-2xl font-bold text-gray-900 mb-1">
                         {{ formatCurrency(targetAmount) }}
                     </div>
-                    <div class="text-sm text-gray-600">목표 금액</div>
+                    <div class="text-sm text-gray-600">{{ getAmountLabel() }}</div>
                 </div>
                 <div class="text-center">
                     <div class="text-2xl font-bold text-yellow-600 mb-1">
                         {{ formatCurrency(currentAmount) }}
                     </div>
-                    <div class="text-sm text-gray-600">현재 모금액</div>
+                    <div class="text-sm text-gray-600">{{ getCurrentAmountLabel() }}</div>
                 </div>
                 <div class="text-center">
-                    <div class="text-2xl font-bold text-green-600 mb-1">
-                        {{ progressPercentage }}%
-                    </div>
-                    <div class="text-sm text-gray-600">달성률</div>
+                    <div class="text-2xl font-bold text-green-600 mb-1">{{ interestRate }}%</div>
+                    <div class="text-sm text-gray-600">이자율</div>
                 </div>
                 <div class="text-center">
                     <div class="text-2xl font-bold text-blue-600 mb-1">
@@ -29,8 +27,8 @@
             </div>
             <div class="mb-6">
                 <div class="flex justify-between text-sm text-gray-600 mb-2">
-                    <span>펀딩 진행률</span>
-                    <span>{{ progressPercentage }}% 달성</span>
+                    <span>{{ getProgressLabel() }}</span>
+                    <span>{{ getProgressValue() }}</span>
                 </div>
                 <div class="w-full bg-gray-200 rounded-full h-4 shadow-inner">
                     <div
@@ -45,20 +43,36 @@
                 <div
                     class="flex flex-col sm:flex-row items-center space-y-2 sm:space-y-0 sm:space-x-4 text-sm text-gray-600"
                 >
-                    <div class="flex items-center bg-red-50 px-3 py-2 rounded-full">
-                        <i class="fas fa-clock text-red-500 mr-2"></i>
-                        <span>{{ daysLeft }}일 남음</span>
+                    <div
+                        class="flex items-center px-3 py-2 rounded-full"
+                        :class="daysLeft > 0 ? 'bg-red-50' : 'bg-gray-100'"
+                    >
+                        <i
+                            class="fas fa-clock mr-2"
+                            :class="daysLeft > 0 ? 'text-red-500' : 'text-gray-500'"
+                        ></i>
+                        <span :class="daysLeft > 0 ? 'text-red-600' : 'text-gray-600'">
+                            {{ daysLeft > 0 ? `${daysLeft}일 남음` : '마감된 펀딩' }}
+                        </span>
                     </div>
                     <div class="text-gray-500">마감일: {{ endDate }}</div>
                 </div>
                 <!-- ROLE_NORMAL 사용자만 참여 가능 -->
                 <button
-                    v-if="userRole === 'ROLE_NORMAL'"
+                    v-if="userRole === 'ROLE_NORMAL' && daysLeft > 0"
                     @click="$emit('participate')"
                     class="w-full sm:w-auto bg-yellow-400 text-gray-900 px-8 py-3 !rounded-button font-bold hover:bg-yellow-500 cursor-pointer whitespace-nowrap shadow-lg hover:shadow-xl transition-all transform hover:-translate-y-0.5"
                 >
                     펀딩 참여하기
                 </button>
+                <!-- 마감된 펀딩 안내 메시지 -->
+                <div
+                    v-else-if="userRole === 'ROLE_NORMAL' && daysLeft <= 0"
+                    class="text-sm text-gray-600 bg-gray-100 px-4 py-2 rounded-lg"
+                >
+                    <i class="fas fa-info-circle mr-2"></i>
+                    마감된 펀딩입니다
+                </div>
                 <!-- 다른 역할 사용자 안내 메시지 -->
                 <div
                     v-else-if="userRole === 'ROLE_FINANCE'"
@@ -88,6 +102,8 @@
 // @param {number} daysLeft - 남은 일수
 // @param {string} endDate - 마감일 (YYYY년 MM월 DD일 형식)
 // @param {string} userRole - 사용자 역할 (ROLE_NORMAL, ROLE_FINANCE, ROLE_ADMIN)
+// @param {number} interestRate - 이자율
+// @param {string} fundType - 펀딩 타입 (Savings, Loan, Donation, Challenge)
 
 const props = defineProps({
     targetAmount: {
@@ -118,6 +134,14 @@ const props = defineProps({
         type: String,
         default: 'ROLE_NORMAL',
     },
+    interestRate: {
+        type: Number,
+        default: 0,
+    },
+    fundType: {
+        type: String,
+        default: 'Savings',
+    },
 })
 
 // Emits 정의
@@ -128,6 +152,63 @@ defineEmits(['participate'])
 // 금액 포맷팅 함수
 const formatCurrency = (amount) => {
     return new Intl.NumberFormat('ko-KR').format(amount)
+}
+
+// 펀딩 타입별 라벨 반환
+const getAmountLabel = () => {
+    switch (props.fundType) {
+        case 'Savings':
+            return '월 납입 금액'
+        case 'Loan':
+            return '대출 한도'
+        case 'Donation':
+        case 'Challenge':
+            return '목표 금액'
+        default:
+            return '목표 금액'
+    }
+}
+
+const getCurrentAmountLabel = () => {
+    switch (props.fundType) {
+        case 'Savings':
+            return '누적 납입액'
+        case 'Loan':
+            return '현재 대출액'
+        case 'Donation':
+        case 'Challenge':
+            return '현재 모금액'
+        default:
+            return '현재 모금액'
+    }
+}
+
+const getProgressLabel = () => {
+    switch (props.fundType) {
+        case 'Savings':
+            return '저축 진행률'
+        case 'Loan':
+            return '대출 진행률'
+        case 'Donation':
+        case 'Challenge':
+            return '펀딩 진행률'
+        default:
+            return '진행률'
+    }
+}
+
+const getProgressValue = () => {
+    switch (props.fundType) {
+        case 'Savings':
+            return `${props.progressPercentage}% 달성`
+        case 'Loan':
+            return `${props.progressPercentage}% 진행`
+        case 'Donation':
+        case 'Challenge':
+            return `${props.progressPercentage}% 달성`
+        default:
+            return `${props.progressPercentage}%`
+    }
 }
 </script>
 
