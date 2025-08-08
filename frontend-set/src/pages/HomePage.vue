@@ -117,19 +117,40 @@ import ProjectCard from '@/components/project/list/ProjectCard.vue'
 import FundingUrgentCard from '@/components/funding/FundingUrgentCard.vue'
 import Footer from '@/components/layout/MainFooter.vue'
 import axios from 'axios'
+import { useAuthStore } from '@/stores/auth'
+
+const authStore = useAuthStore()
+authStore.loadToken()
 
 const router = useRouter()
 const topProjects = ref([])
+const recommendedProjects = ref([])
 
 const goToProject = (id) => {
     router.push(`project/detail/${id}`)
 }
 
 onMounted(async () => {
+    console.log('token:', authStore.loadToken) // ✅ JWT 문자열 출력돼야 함
+
+    console.log('토큰 상태:', {
+        token: authStore.token,
+        tokenValue: authStore.token.value,
+        isLoggedIn: authStore.isLoggedIn,
+    })
+
     try {
         const res = await axios.get('/project/top')
         topProjects.value = res.data
         console.log(`프로젝트 인기목록:`, res.data)
+
+        const recommendRes = await axios.get('/project/list/keyword', {
+            headers: {
+                Authorization: `Bearer ${authStore.token}`,
+            },
+        })
+        recommendedProjects.value = recommendRes.data
+        console.log(`키워드 기반 추천:`, recommendRes.data)
     } catch (err) {
         console.error(`❌ 프로젝트 인기목록 실패:`, err)
     }
@@ -192,45 +213,6 @@ const popularFundings = [
     },
 ]
 
-const recommendedProjects = [
-    // ProjectCard용 mock data
-    {
-        id: 4,
-        title: '추천 프로젝트 1',
-        description: '추천 설명1',
-        likes: 90,
-        participants: 20,
-        image: '/images/logo.png',
-        category: '적금형',
-    },
-    {
-        id: 5,
-        title: '추천 프로젝트 2',
-        description: '추천 설명2',
-        likes: 70,
-        participants: 15,
-        image: '/images/logo.png',
-        category: '기부형',
-    },
-    {
-        id: 6,
-        title: '추천 프로젝트 3',
-        description: '추천 설명3',
-        likes: 60,
-        participants: 10,
-        image: '/images/logo.png',
-        category: '대출형',
-    },
-    {
-        id: 7,
-        title: '추천 프로젝트 4',
-        description: '추천 설명4',
-        likes: 50,
-        participants: 8,
-        image: '/images/logo.png',
-        category: '챌린지형',
-    },
-]
 const visibleUrgentFundings = [
     // FundingUrgentCard용 mock data
     {
