@@ -2,8 +2,10 @@ import { fileURLToPath, URL } from 'node:url'
 import { defineConfig, loadEnv } from 'vite'
 import vue from '@vitejs/plugin-vue'
 
+// https://vite.dev/config/
 export default defineConfig(({ mode }) => {
     const env = loadEnv(mode, process.cwd(), '')
+    const target = env.VITE_API_URL || 'https://fund-ing.store'
 
     return {
         plugins: [vue()],
@@ -14,12 +16,12 @@ export default defineConfig(({ mode }) => {
         },
 
         define: {
-            global: {}, // ✅ global을 빈 객체로 define해서 sockjs-client global 참조 에러 방지
+            global: {}, // ✅ sockjs-client global 참조 에러 방지
         },
         server: {
             proxy: {
                 '/api': {
-                    target: env.VITE_API_URL || 'http://localhost:8080',
+                    target,
                     changeOrigin: true,
                     secure: false,
                     configure: (proxy, options) => {
@@ -29,11 +31,11 @@ export default defineConfig(({ mode }) => {
                     },
                 },
                 '/chat': {
-                    target: env.VITE_API_URL || 'http://localhost:8080',
+                    target,
                     changeOrigin: true,
                 },
                 '/chat-app': {
-                    target: env.VITE_API_URL || 'http://localhost:8080',
+                    target,
                     changeOrigin: true,
                     ws: true,
                 },

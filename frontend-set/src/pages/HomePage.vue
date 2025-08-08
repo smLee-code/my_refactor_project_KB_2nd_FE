@@ -76,9 +76,10 @@
                 </div>
                 <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
                     <ProjectCard
-                        v-for="item in recommendedProjects"
+                        v-for="item in recommendedProjects.slice(0, 4)"
                         :key="item.id"
                         :project="item"
+                        @click="goToProject(item.projectId)"
                     />
                 </div>
             </div>
@@ -121,7 +122,6 @@ import axios from 'axios'
 import { useAuthStore } from '@/stores/auth'
 
 const authStore = useAuthStore()
-
 authStore.loadToken()
 
 const router = useRouter()
@@ -136,8 +136,8 @@ onMounted(async () => {
     console.log('token:', authStore.loadToken) // ✅ JWT 문자열 출력돼야 함
 
     console.log('토큰 상태:', {
-        token: authStore.token,
-        tokenValue: authStore.token.value,
+        token: authStore.loadToken(),
+        userRole: authStore.loadRole(),
         isLoggedIn: authStore.isLoggedIn,
     })
 
@@ -170,6 +170,7 @@ onMounted(async () => {
                 .slice(0, 4 - recommended.length)
 
             recommendedProjects.value = [...recommended, ...extra]
+            console.log('추천 프로젝트:', recommendRes.data)
         } else {
             // 로그인 안 했을 때는 그냥 랜덤 4개
             recommendedProjects.value = allProjects.slice(0, 4)

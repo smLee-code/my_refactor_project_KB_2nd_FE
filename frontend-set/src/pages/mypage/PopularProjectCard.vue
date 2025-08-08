@@ -2,7 +2,7 @@
     <Card :title="title" :icon="icon" :iconColor="iconColor">
         <div class="space-y-2">
             <TodayProjectRanking
-                v-for="(project, index) in topProjects"
+                v-for="(project, index) in topProjects.slice(0, 100)"
                 :key="project.projectId"
                 :rank="index + 1"
                 :title="project.title"
@@ -40,13 +40,6 @@ onMounted(async () => {
         console.error(`❌ 프로젝트 인기목록 실패:`, err)
     }
 })
-
-function rankStyle(index) {
-    if (index === 0) return 'bg-yellow-400 text-white shadow-md'
-    if (index === 1) return 'bg-gray-300 text-gray-900 shadow-md'
-    if (index === 2) return 'bg-amber-600 text-white shadow-md'
-    return 'bg-gray-200 text-gray-800'
-}
 
 function goToProject(projectId) {
     window.location.href = `/project/detail/${projectId}`

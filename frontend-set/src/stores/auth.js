@@ -45,7 +45,7 @@ export const useAuthStore = defineStore('auth', () => {
             token.value = savedToken
             isLoggedIn.value = true
         }
-        return token
+        return token.value
     }
 
     function loadRole() {
@@ -53,7 +53,7 @@ export const useAuthStore = defineStore('auth', () => {
         if (savedRole) {
             userRole.value = savedRole
         }
-        return userRole
+        return userRole.value
     }
 
     function loadUserId() {
