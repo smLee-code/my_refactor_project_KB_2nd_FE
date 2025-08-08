@@ -81,12 +81,23 @@
               </div>
               <div class="text-gray-500">마감일: 2025년 8월 6일</div>
             </div>
+            <!-- ROLE_NORMAL 사용자만 참여 가능 -->
             <button
+              v-if="authStore.userRole === 'ROLE_NORMAL'"
               @click="goToFundingJoin"
               class="w-full sm:w-auto bg-yellow-400 text-gray-900 px-8 py-3 !rounded-button font-bold hover:bg-yellow-500 cursor-pointer whitespace-nowrap shadow-lg hover:shadow-xl transition-all transform hover:-translate-y-0.5"
             >
               펀딩 참여하기
             </button>
+            <!-- 다른 역할 사용자 안내 메시지 -->
+            <div v-else-if="authStore.userRole === 'ROLE_FINANCE'" class="text-sm text-gray-600 bg-gray-100 px-4 py-2 rounded-lg">
+              <i class="fas fa-info-circle mr-2"></i>
+              금융사 회원은 펀딩에 참여할 수 없습니다
+            </div>
+            <div v-else-if="authStore.userRole === 'ROLE_ADMIN'" class="text-sm text-gray-600 bg-gray-100 px-4 py-2 rounded-lg">
+              <i class="fas fa-info-circle mr-2"></i>
+              관리자 계정은 펀딩에 참여할 수 없습니다
+            </div>
           </div>
         </div>
       </section>
@@ -371,9 +382,11 @@
 import { ref, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import api from '@/api'
+import { useAuthStore } from '@/stores/auth'
 
 const route = useRoute()
 const router = useRouter()
+const authStore = useAuthStore()
 const fundingId = route.params.id
 
 // 펀딩 정보
@@ -426,6 +439,10 @@ const goToFundingJoin = () => {
 }
 
 onMounted(() => {
+  // role 정보 로드
+  authStore.loadRole()
+  console.log('현재 유저 role:', authStore.userRole)
+  
   fetchFundingDetail()
 })
 
