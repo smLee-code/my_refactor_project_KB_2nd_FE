@@ -76,9 +76,10 @@
                 </div>
                 <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
                     <ProjectCard
-                        v-for="item in recommendedProjects"
+                        v-for="item in recommendedProjects.slice(0, 4)"
                         :key="item.id"
                         :project="item"
+                        @click="goToProject(item.projectId)"
                     />
                 </div>
             </div>
@@ -121,9 +122,6 @@ import axios from 'axios'
 import { useAuthStore } from '@/stores/auth'
 
 const authStore = useAuthStore()
-
-authStore.loadToken()
-
 
 const router = useRouter()
 const topProjects = ref([])
@@ -171,6 +169,7 @@ onMounted(async () => {
                 .slice(0, 4 - recommended.length)
 
             recommendedProjects.value = [...recommended, ...extra]
+            console.log('추천 프로젝트:', recommendRes.data)
         } else {
             // 로그인 안 했을 때는 그냥 랜덤 4개
             recommendedProjects.value = allProjects.slice(0, 4)
@@ -178,7 +177,6 @@ onMounted(async () => {
     } catch (err) {
         console.error('❌ 추천 프로젝트 로딩 실패:', err)
     }
-
 })
 
 const goToProjectList = () => {
