@@ -370,7 +370,7 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import axios from 'axios'
+import api from '@/api'
 
 const route = useRoute()
 const router = useRouter()
@@ -388,8 +388,10 @@ const progressPercentage = ref(75)
 // 펀딩 정보 조회
 const fetchFundingDetail = async () => {
   try {
-    const response = await axios.get(`/api/fund/detail/${fundingId}`)
+    const response = await api.get(`/fund/${fundingId}`)
     fundingData.value = response.data
+    
+    console.log('펀딩 상세 정보:', response.data)
     
     // 실제 데이터로 업데이트
     if (response.data) {

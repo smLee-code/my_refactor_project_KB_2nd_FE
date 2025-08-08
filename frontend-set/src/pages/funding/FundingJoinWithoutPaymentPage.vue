@@ -331,7 +331,7 @@ const submitApplication = async () => {
         
         if (response.data.success) {
             alert(`${fundingType.value === 'loan' ? '대출' : '적금'} 신청이 완료되었습니다!\n심사 결과는 영업일 기준 2-3일 내 안내드립니다.`)
-            router.push('/mypage')
+            router.push(`/funding/detail/${fundingId}`)
         } else {
             alert('신청 처리 중 오류가 발생했습니다.')
         }

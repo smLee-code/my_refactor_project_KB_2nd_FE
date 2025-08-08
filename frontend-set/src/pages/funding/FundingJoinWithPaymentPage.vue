@@ -17,28 +17,28 @@
             <!-- 펀딩 참여 헤더 -->
             <div class="mb-8">
                 <h1 class="text-3xl font-bold text-gray-900 mb-2">{{ fundingTitle }} 참여하기</h1>
-                <p class="text-lg text-gray-600">{{ fundingType === 'challenge' ? '챌린지' : '기부' }} 프로젝트</p>
+                <p class="text-lg text-gray-600">{{ fundingType === 'Challenge' ? '챌린지' : '기부' }} 프로젝트</p>
             </div>
 
-            <!-- 챌린지 참여 금액 고정 안내 (챌린지일 경우에만 표시) -->
-            <section v-if="fundingType === 'challenge'" class="mb-8">
+            <!-- 챌린지 보증금 안내 (챌린지일 경우에만 표시) -->
+            <section v-if="fundingType === 'Challenge'" class="mb-8">
                 <div class="bg-white rounded-xl shadow-lg p-6 border border-gray-100">
                     <div class="flex items-center mb-6">
-                        <i class="fas fa-coins text-yellow-500 text-xl mr-3"></i>
-                        <h3 class="text-xl font-bold text-gray-900">참가비</h3>
+                        <i class="fas fa-shield-alt text-blue-500 text-xl mr-3"></i>
+                        <h3 class="text-xl font-bold text-gray-900">챌린지 보증금</h3>
                     </div>
-                    <div class="bg-yellow-50 border-2 border-yellow-400 rounded-lg p-6 text-center">
-                        <div class="text-3xl font-bold text-gray-900 mb-2">{{ formatCurrency(fixedAmount) }}</div>
-                        <div class="text-gray-600">고정 참가비</div>
+                    <div class="bg-blue-50 border-2 border-blue-400 rounded-lg p-6 text-center">
+                        <div class="text-3xl font-bold text-gray-900 mb-2">{{ formatCurrency(3000) }}</div>
+                        <div class="text-gray-600">보증금</div>
                         <div class="mt-4 text-sm text-gray-500">
-                            챌린지는 고정 금액으로 운영되며, 금액 변경이 불가능합니다.
+                            챌린지 완주 시 보증금은 전액 환급됩니다.
                         </div>
                     </div>
                 </div>
             </section>
 
             <!-- 기부 금액 선택 (기부일 경우에만 표시) -->
-            <section v-if="fundingType === 'donation'" class="mb-8">
+            <section v-if="fundingType === 'Donation'" class="mb-8">
                 <div class="bg-white rounded-xl shadow-lg p-6 border border-gray-100">
                     <div class="flex items-center mb-6">
                         <i class="fas fa-hand-holding-heart text-pink-500 text-xl mr-3"></i>
@@ -108,22 +108,6 @@
                 </div>
             </section>
 
-            <!-- 챌린지 보증금 안내 (챌린지일 경우에만 표시) -->
-            <section v-if="fundingType === 'challenge'" class="mb-8">
-                <div class="bg-white rounded-xl shadow-lg p-6 border border-gray-100">
-                    <div class="flex items-center mb-6">
-                        <i class="fas fa-trophy text-orange-500 text-xl mr-3"></i>
-                        <h3 class="text-xl font-bold text-gray-900">챌린지 보증금</h3>
-                    </div>
-                    <div class="bg-orange-50 border-2 border-orange-400 rounded-lg p-6 text-center">
-                        <div class="text-3xl font-bold text-gray-900 mb-2">{{ formatCurrency(fixedAmount) }}</div>
-                        <div class="text-gray-600 mb-2">챌린지 보증금</div>
-                        <div class="text-sm text-gray-500">
-                            챌린지 완주 시 보증금이 환급됩니다.
-                        </div>
-                    </div>
-                </div>
-            </section>
 
             <!-- 결제 수단 선택 -->
             <section class="mb-8">
@@ -276,31 +260,48 @@ const fundingId = route.params.id
 // 펀딩 정보
 const fundingData = ref(null)
 const fundingTitle = ref('소외계층 아동 교육 지원')
-const fundingType = ref('donation') // 임시로 모두 기부로 처리
+const fundingType = ref('') // 'Challenge' | 'Donation' | 'Loan' | 'Savings'
 const fixedAmount = ref(50000) // 챌린지 고정 금액
 const minAmount = ref(1000) // 기부 최소 금액
 const maxAmount = ref(1000000) // 기부 최대 금액
 
-// 임시로 API 호출 없이 기본값 설정
+// 펀딩 정보 조회
 const fetchFundingInfo = async () => {
     try {
-        console.log(`🔍 펀딩 ID ${fundingId} - 임시로 기부형으로 처리`)
+        console.log(`🔍 펀딩 ID ${fundingId} 정보 조회 중...`)
         
-        // 임시로 모든 펀딩을 기부형으로 처리
-        fundingTitle.value = `펀딩 ${fundingId} 참여하기`
-        fundingType.value = 'donation'
+        const response = await api.get(`/fund/${fundingId}`)
+        fundingData.value = response.data
+        
+        console.log('펀딩 상세 정보:', response.data)
+        
+        if (response.data) {
+            fundingTitle.value = response.data.fundName || `펀딩 ${fundingId}`
+            fundingType.value = response.data.fundType || 'Donation'
+            
+            // 챌린지는 보증금 3000원 고정
+            if (response.data.fundType === 'Challenge') {
+                fixedAmount.value = 3000
+                selectedAmount.value = 3000
+            } else if (response.data.fundType === 'Donation') {
+                minAmount.value = response.data.minAmount || 1000
+                maxAmount.value = response.data.maxAmount || 1000000
+                selectedAmount.value = 0
+            }
+        }
+        
+    } catch (error) {
+        console.error('펀딩 정보 조회 실패:', error)
+        // 실패시 기본값 설정
+        fundingTitle.value = `펀딩 ${fundingId}`
+        fundingType.value = 'Donation'
         minAmount.value = 1000
         maxAmount.value = 1000000
-        selectedAmount.value = 0
-        
-        console.log('🔍 기본값으로 설정 완료')
-    } catch (error) {
-        console.error('펀딩 정보 설정 실패:', error)
     }
 }
 
 // 금액 관련
-const selectedAmount = ref(fundingType.value === 'challenge' ? fixedAmount.value : 0)
+const selectedAmount = ref(0)
 const customAmount = ref('')
 const selectedPaymentMethod = ref('kakaopay')
 
@@ -457,7 +458,7 @@ const processPayment = async () => {
         {
             ...pgConfig,
             merchant_uid: orderData.merchant_uid,
-            name: `${fundingTitle.value} ${fundingType.value === 'challenge' ? '참가비' : '기부'}`,
+            name: `${fundingTitle.value} ${fundingType.value === 'Challenge' ? '보증금' : '기부'}`,
             amount: orderData.amount,
             buyer_email: "user@example.com",
             buyer_name: "참여자",
@@ -518,8 +519,8 @@ const sendPaymentToBackend = async (paymentData: any) => {
         
         if (response.data.success) {
             alert('결제가 완료되었습니다!')
-            // 결제 완료 후 페이지 이동 등 처리
-            // router.push('/mypage')
+            // 결제 완료 후 펀딩 상세 페이지로 이동
+            router.push(`/funding/detail/${fundingId}`)
         } else {
             alert('결제 검증 실패: ' + response.data.message)
         }
