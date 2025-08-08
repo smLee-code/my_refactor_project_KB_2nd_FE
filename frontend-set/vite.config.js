@@ -17,7 +17,7 @@ export default defineConfig({
     server: {
         proxy: {
             '/api': {
-                target: 'http://localhost:8080',
+                target: 'https://fund-ing.store',
                 changeOrigin: true,
                 secure: false,
                 configure: (proxy, options) => {
@@ -28,11 +28,11 @@ export default defineConfig({
             },
             '/chat': {
                 // 추가
-                target: 'http://localhost:8080',
+                target: 'https://fund-ing.store',
                 changeOrigin: true,
             },
             '/chat-app': {
-                target: 'http://localhost:8080',
+                target: 'https://fund-ing.store',
                 changeOrigin: true,
                 ws: true,
             },
