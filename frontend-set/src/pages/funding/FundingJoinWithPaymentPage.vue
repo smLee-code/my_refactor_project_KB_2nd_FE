@@ -485,11 +485,12 @@ const createOrder = async () => {
     console.log('🔍 주문 생성 시작')
     console.log('selectedAmount:', selectedAmount.value)
     console.log('customAmount:', customAmount.value)
+    console.log('fundingId:', fundingId, 'type:', typeof fundingId)
     
     try {
         const requestData = {
-            fundId: fundingId,
-            amount: selectedAmount.value,
+            fundId: parseInt(fundingId),
+            amount: parseInt(selectedAmount.value),
             metadata: { 
                 anonymous: agreements.value.anonymous,
                 fundingType: fundingType.value
