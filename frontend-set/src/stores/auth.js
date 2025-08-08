@@ -5,6 +5,7 @@ export const useAuthStore = defineStore('auth', () => {
     const isLoggedIn = ref(false)
     const token = ref('')
     const userRole = ref('')
+    const userId = ref(null)
 
     function login(receivedAuthData) {
         console.log('✅receivedAuthData:', receivedAuthData)
@@ -17,6 +18,13 @@ export const useAuthStore = defineStore('auth', () => {
         userRole.value = receivedAuthData.userRole
         console.log('✅userRole:', receivedAuthData.userRole)
 
+        // userId가 있으면 저장
+        if (receivedAuthData.user && receivedAuthData.user.userId) {
+            userId.value = receivedAuthData.user.userId
+            localStorage.setItem('userId', receivedAuthData.user.userId)
+            console.log('✅userId:', receivedAuthData.user.userId)
+        }
+
         localStorage.setItem('jwt', receivedAuthData.token)
         localStorage.setItem('role', receivedAuthData.userRole)
     }
@@ -25,8 +33,10 @@ export const useAuthStore = defineStore('auth', () => {
         isLoggedIn.value = false
         token.value = ''
         userRole.value = ''
+        userId.value = null
         localStorage.removeItem('jwt')
         localStorage.removeItem('role')
+        localStorage.removeItem('userId')
     }
 
     function loadToken() {
@@ -46,6 +56,14 @@ export const useAuthStore = defineStore('auth', () => {
         return userRole
     }
 
+    function loadUserId() {
+        const savedUserId = localStorage.getItem('userId')
+        if (savedUserId) {
+            userId.value = parseInt(savedUserId)
+        }
+        return userId
+    }
+
     function isFinanceRole() {
         return userRole.value === 'ROLE_FINANCE'
     }
@@ -54,10 +72,12 @@ export const useAuthStore = defineStore('auth', () => {
         isLoggedIn,
         token,
         userRole,
+        userId,
         login,
         logout,
         loadToken,
         loadRole,
+        loadUserId,
         isFinanceRole,
     }
 })
