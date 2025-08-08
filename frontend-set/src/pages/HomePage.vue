@@ -92,6 +92,7 @@
                         <FundingUrgentCard
                             v-for="item in visibleUrgentFundings"
                             :key="item.id"
+                            :id="item.id"
                             :image="item.image"
                             :title="item.title"
                             :timeLeft="item.timeLeft"
