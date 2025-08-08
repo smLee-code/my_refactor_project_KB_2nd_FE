@@ -49,7 +49,7 @@
                     </template>
                     <template v-else>
                         <div class="flex items-center space-x-4">
-                            <div class="relative">
+                            <!-- <div class="relative">
                                 <button
                                     class="relative p-2 text-gray-600 hover:text-gray-900 cursor-pointer transition-colors"
                                     @click="toggleNotificationDropdown"
@@ -82,7 +82,7 @@
                                         </div>
                                     </template>
                                 </div>
-                            </div>
+                            </div> -->
                             <div class="relative">
                                 <button
                                     id="user-menu-button"

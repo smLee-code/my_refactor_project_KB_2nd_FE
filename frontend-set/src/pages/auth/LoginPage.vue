@@ -87,20 +87,12 @@
             <div class="mt-8">
                 <!-- 비밀번호 찾기 / 회원가입 링크 -->
                 <div class="flex items-center justify-end gap-2 text-sm">
-                    <a
-                        href="#"
-                        class="text-blue-600 hover:text-blue-800 cursor-pointer transition-colors"
-                    >
-                        비밀번호 찾기
-                    </a>
-                    <span class="text-gray-400">|</span>
-                    <a
-                        href="https://readdy.ai/home/cb2c7bc4-bc93-4247-9521-a5e098400181/176a112f-751d-4869-b1c5-244ebb7d5f93"
-                        data-readdy="true"
+                    <router-link
+                        to="/auth/join"
                         class="text-blue-600 hover:text-blue-800 cursor-pointer transition-colors"
                     >
                         회원가입
-                    </a>
+                    </router-link>
                 </div>
             </div>
         </div>
@@ -111,7 +103,7 @@
 import { useAuthStore } from '@/stores/auth'
 import { ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
-import axios from 'axios'
+import api from '@/api'
 
 const email = ref('')
 const password = ref('')
@@ -165,7 +157,7 @@ const handleLogin = async () => {
     try {
         // 실제 로그인 로직은 여기에 구현
         // await new Promise((resolve) => setTimeout(resolve, 1500))
-        await axios
+        await api
             .post('/member/login', {
                 email: email.value,
                 password: password.value,
@@ -174,11 +166,11 @@ const handleLogin = async () => {
                 console.log('✅res.data:', res.data)
 
                 console.log('여기까진 됨')
-                authStore.login(res.data)
+                // 서버 응답 구조에 맞게 수정: { token, userRole }
+                authStore.login(res.data.token)
 
                 console.log('여기부터 안나옴')
                 console.log('✅authStore token:', authStore.loadToken())
-                console.log('✅authStore role:', authStore.loadRole())
             })
 
         // 로그인 성공 시 리다이렉트 또는 상태 변경
