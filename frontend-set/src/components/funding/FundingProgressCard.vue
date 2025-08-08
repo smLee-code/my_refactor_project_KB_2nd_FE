@@ -51,12 +51,29 @@
                     </div>
                     <div class="text-gray-500">마감일: {{ endDate }}</div>
                 </div>
+                <!-- ROLE_NORMAL 사용자만 참여 가능 -->
                 <button
+                    v-if="userRole === 'ROLE_NORMAL'"
                     @click="$emit('participate')"
                     class="w-full sm:w-auto bg-yellow-400 text-gray-900 px-8 py-3 !rounded-button font-bold hover:bg-yellow-500 cursor-pointer whitespace-nowrap shadow-lg hover:shadow-xl transition-all transform hover:-translate-y-0.5"
                 >
                     펀딩 참여하기
                 </button>
+                <!-- 다른 역할 사용자 안내 메시지 -->
+                <div
+                    v-else-if="userRole === 'ROLE_FINANCE'"
+                    class="text-sm text-gray-600 bg-gray-100 px-4 py-2 rounded-lg"
+                >
+                    <i class="fas fa-info-circle mr-2"></i>
+                    금융사 회원은 펀딩에 참여할 수 없습니다
+                </div>
+                <div
+                    v-else-if="userRole === 'ROLE_ADMIN'"
+                    class="text-sm text-gray-600 bg-gray-100 px-4 py-2 rounded-lg"
+                >
+                    <i class="fas fa-info-circle mr-2"></i>
+                    관리자 계정은 펀딩에 참여할 수 없습니다
+                </div>
             </div>
         </div>
     </section>
@@ -70,6 +87,7 @@
 // @param {number} participantCount - 참여 인원 수
 // @param {number} daysLeft - 남은 일수
 // @param {string} endDate - 마감일 (YYYY년 MM월 DD일 형식)
+// @param {string} userRole - 사용자 역할 (ROLE_NORMAL, ROLE_FINANCE, ROLE_ADMIN)
 
 const props = defineProps({
     targetAmount: {
@@ -95,6 +113,10 @@ const props = defineProps({
     endDate: {
         type: String,
         required: true,
+    },
+    userRole: {
+        type: String,
+        default: 'ROLE_NORMAL',
     },
 })
 
