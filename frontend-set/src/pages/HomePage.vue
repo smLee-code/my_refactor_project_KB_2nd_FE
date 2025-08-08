@@ -123,7 +123,6 @@ const authStore = useAuthStore()
 
 authStore.loadToken()
 
-
 const router = useRouter()
 const topProjects = ref([])
 const recommendedProjects = ref([])
@@ -170,6 +169,7 @@ onMounted(async () => {
                 .slice(0, 4 - recommended.length)
 
             recommendedProjects.value = [...recommended, ...extra]
+            console.log('추천 프로젝트:', recommendRes.data)
         } else {
             // 로그인 안 했을 때는 그냥 랜덤 4개
             recommendedProjects.value = allProjects.slice(0, 4)
@@ -177,7 +177,6 @@ onMounted(async () => {
     } catch (err) {
         console.error('❌ 추천 프로젝트 로딩 실패:', err)
     }
-
 })
 
 const goToProjectList = () => {
