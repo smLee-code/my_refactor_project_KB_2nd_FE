@@ -55,31 +55,43 @@
 </template>
 
 <script setup>
-import { ref, onMounted, watch } from 'vue'
+import { ref, onMounted, onBeforeUnmount, watch, nextTick } from 'vue'
 import Stomp from 'stompjs'
-import api from '@/api'
 import axios from 'axios'
+import { useAuthStore } from '@/stores/auth'
 
+// ==== Props ====
 const props = defineProps({
     roomId: Number,
 })
 
-const mySenderId = ref('')
+// ==== Stores / Auth ====
+const authStore = useAuthStore()
+const token = authStore.loadToken()
 
+// ==== State ====
+const mySenderId = ref('') // 서버가 CONNECT 헤더의 토큰으로 유저 식별한다면, 백엔드에서 내려주는 내 닉/아이디를 이후에 세팅
 const inputMessage = ref('')
 const messages = ref([])
 const stompClient = ref(null)
+const scrollBox = ref(null)
 
-// const loadHistory = async () => {
-//   try {
-//     const res = await axios.get(`/chat/history/${props.roomId}`)
-//     messages.value = res.data
-//     console.log('불러온 메시지:', res.data)
-//   } catch (error) {
-//     console.error('채팅 내역 불러오기 실패:', error)
-//   }
-// }
+// ==== Helpers ====
+const nowHHmm = (dateLike) => {
+    const d = dateLike ? new Date(dateLike) : new Date()
+    const h = String(d.getHours()).padStart(2, '0')
+    const m = String(d.getMinutes()).padStart(2, '0')
+    return `${h}:${m}`
+}
 
+const scrollToBottom = async () => {
+    await nextTick()
+    if (scrollBox.value) {
+        scrollBox.value.scrollTop = scrollBox.value.scrollHeight
+    }
+}
+
+// ==== History ====
 const loadHistory = async () => {
     try {
         const res = await axios.get(`/chat/history/${props.roomId}`)
@@ -101,6 +113,7 @@ const loadHistory = async () => {
     }
 }
 
+// ==== WebSocket ====
 const connectWebSocket = () => {
     console.log('🧪 WebSocket 연결 시도 중...') // 👈 여기도 로그 추가
 
@@ -135,34 +148,19 @@ const connectWebSocket = () => {
     )
 }
 
-// const sendMessage = () => {
-//   if (inputMessage.value.trim() !== '') {
-//     const chatMessage = {
-//       sender: '사용자', // TODO: 로그인 사용자 정보로 대체
-//       content: inputMessage.value,
-//     }
-//     stompClient.value.send(`/app/chat/${props.roomId}`, {}, JSON.stringify(chatMessage))
-//     inputMessage.value = ''
-//   }
-// }
+const disconnectWebSocket = () => {
+    try {
+        if (stompClient.value && stompClient.value.connected) {
+            stompClient.value.disconnect(() => console.log('🔌 STOMP 연결 종료'))
+        }
+    } catch (e) {
+        console.warn('STOMP 종료 중 오류', e)
+    } finally {
+        stompClient.value = null
+    }
+}
 
-// const sendMessage = () => {
-//   if (!stompClient.value || !stompClient.value.connected) {
-//     console.warn('❗ WebSocket 연결이 아직 완료되지 않았습니다.')
-//     return
-//   }
-
-// if (inputMessage.value.trim() !== '') {
-//   const chatMessage = {
-//     // sender: localStorage.getItem('username') || '사용자',
-//     sender: mySenderId.value,
-//     content: inputMessage.value,
-//   }
-//   stompClient.value.send(`/app/chat/${props.roomId}`, {}, JSON.stringify(chatMessage))
-//   inputMessage.value = ''
-// }
-// }
-
+// ==== Send ====
 const sendMessage = () => {
     if (!stompClient.value || !stompClient.value.connected) {
         console.warn('❗ WebSocket 연결이 아직 완료되지 않았습니다.')
@@ -196,6 +194,7 @@ const sendMessage = () => {
     }
 }
 
+// ==== Watchers ====
 watch(
     () => props.roomId,
     (newVal, oldVal) => {
@@ -208,6 +207,7 @@ watch(
     { immediate: true },
 )
 
+// 내 senderId가 바뀌면 isSelf 재계산
 watch(mySenderId, (newId) => {
     messages.value = messages.value.map((msg) => ({
         ...msg,

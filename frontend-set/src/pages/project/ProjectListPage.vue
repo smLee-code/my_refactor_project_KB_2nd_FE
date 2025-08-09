@@ -31,6 +31,7 @@
                     @click="goToDetail(project)"
                 />
             </div>
+
             <!-- 새 프로젝트 등록 버튼 -->
             <div class="fixed bottom-8 right-8">
                 <button
@@ -41,6 +42,7 @@
                 </button>
             </div>
         </div>
+
         <!-- 푸터 -->
         <Footer></Footer>
     </div>
@@ -52,14 +54,14 @@ import { useRouter } from 'vue-router'
 import axios from 'axios'
 import SearchBox from '@/components/common/SearchBox.vue'
 
-//컴포넌트 import
+// 컴포넌트 import
 import TabMenu from '@/components/common/TabMenu.vue'
 import CategoryFilter from '@/components/common/CategoryFilter.vue'
 import SortSelect from '@/components/common/SortSelect.vue'
 import ProjectCard from '@/components/project/list/ProjectCard.vue'
 import Footer from '@/components/layout/Footer.vue'
 
-//style import
+// style import
 import '@/assets/styles/projectList.css'
 import { useAuthStore } from '@/stores/auth'
 
@@ -69,20 +71,19 @@ authStore.loadToken()
 const projects = ref([])
 const router = useRouter()
 
-//라우터
+/* ---------- 라우터 ---------- */
 const goToCreatePage = () => {
-    router.push(`/project/create`) // 원하는 페이지 경로
+    router.push(`/project/create`)
 }
 
 const goToDetail = (project) => {
     router.push({
         path: `project/detail/${project.id}`,
-        state: {
-            project,
-        },
+        state: { project },
     })
 }
 
+/* ---------- 탭/필터/정렬 상태 ---------- */
 const tabOptions = [
     { value: 'all', label: '전체' },
     { value: 'liked', label: '좋아요한 프로젝트' },
@@ -98,14 +99,6 @@ const sortOptions = {
     likes: '좋아요순',
 }
 
-const categoriesFromProjects = computed(() => {
-    const base = ['전체']
-    const uniqueTypes = [...new Set(projects.value.map((p) => p.type))]
-    // 한글 변환 + 중복 제거
-    const translated = uniqueTypes.map((type) => categoryMap[type] || type)
-    return base.concat(translated)
-})
-
 const categoryMap = {
     Savings: '저축형',
     Loan: '대출형',
@@ -113,61 +106,93 @@ const categoryMap = {
     Donation: '기부형',
 }
 
-const categories = ['전체', '저축형', '대출형', '기부형', '챌린지형']
+const categoriesFromProjects = computed(() => {
+    const base = ['전체']
+    const uniqueTypes = [...new Set(projects.value.map((p) => p.type))]
+    const translated = uniqueTypes.map((type) => categoryMap[type] || type)
+    return base.concat(translated)
+})
 
-const statusOptions = ['진행중', '완료', '중단']
+/* ---------- 헬퍼들 ---------- */
+// 날짜 배열([yyyy, M, d, hh, mm, ss]) → Date
+const toDate = (v) => {
+    if (!v) return null
+    if (v instanceof Date) return v
+    if (Array.isArray(v)) {
+        const [y, m, d, hh = 0, mm = 0, ss = 0] = v
+        return new Date(y, (m ?? 1) - 1, d ?? 1, hh, mm, ss)
+    }
+    return new Date(v)
+}
 
+// 화면용 날짜 포맷(배열/Date 둘 다 지원)
+const formatDate = (val) => {
+    const dt = toDate(val)
+    if (!dt || isNaN(dt)) return ''
+    const y = dt.getFullYear()
+    const m = String(dt.getMonth() + 1).padStart(2, '0')
+    const d = String(dt.getDate()).padStart(2, '0')
+    return `${y}-${m}-${d}`
+}
+
+// 이미지 우선순위: thumbnailImage > images(Project) > images[0] > 기본값
+const pickImageUrl = (item) => {
+    if (item.thumbnailImage) return item.thumbnailImage
+    if (Array.isArray(item.images) && item.images.length > 0) {
+        const projectImg = item.images.find((img) => img.imageType === 'Project')
+        return (projectImg?.imageUrl || item.images[0]?.imageUrl) ?? '/default-thumbnail.png'
+    }
+    return '/default-thumbnail.png'
+}
+
+/* ---------- 파생 데이터 ---------- */
 const filteredProjects = computed(() => {
-    let filtered = projects.value
+    let filtered = projects.value.slice()
 
     // 탭 필터링
     if (activeTab.value === 'liked') {
         filtered = filtered.filter((p) => p.isLiked)
     }
 
-    // 카테고리 필터링 (단일 선택)
+    // 카테고리 필터링
     if (selectedCategory.value && selectedCategory.value !== '전체') {
-        filtered = filtered.filter((p) => categoryMap[p.type] === selectedCategory.value)
+        filtered = filtered.filter(
+            (p) => (categoryMap[p.type] || p.type) === selectedCategory.value,
+        )
     }
 
-    // 마감된 프로젝트 필터링
+    // 마감된 프로젝트 제외
     if (!includeEnded.value) {
         filtered = filtered.filter((p) => p.status !== '완료' && p.status !== '중단')
     }
 
-    // 검색 필터링
+    // 검색
     if (searchQuery.value) {
+        const q = searchQuery.value.toLowerCase()
         filtered = filtered.filter(
             (p) =>
-                p.title.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
-                p.description.toLowerCase().includes(searchQuery.value.toLowerCase()),
+                p.title.toLowerCase().includes(q) ||
+                (p.description || '').toLowerCase().includes(q),
         )
     }
 
     // 정렬
     if (selectedSort.value === 'likes') {
-        filtered = filtered.sort((a, b) => b.likes - a.likes)
+        filtered.sort((a, b) => b.likes - a.likes)
     } else {
-        filtered = filtered.sort(
-            (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
-        )
+        // 최신순: createdAt(Date) 기준
+        filtered.sort((a, b) => (b.createdAt?.getTime?.() || 0) - (a.createdAt?.getTime?.() || 0))
     }
 
     return filtered
 })
 
+/* ---------- 좋아요 토글 ---------- */
 const toggleLike = async (projectId) => {
-    console.log('⏹️toggleLike() 실행')
-
-    console.log('⏹️projectId:', projectId)
-
     const project = projects.value.find((p) => p.id === projectId)
     if (!project) return
 
     const token = authStore.loadToken()
-
-    console.log('⏹️token:', token)
-
     if (!token) {
         console.warn('❗ 토큰 없음, 로그인 필요')
         return
@@ -175,20 +200,18 @@ const toggleLike = async (projectId) => {
 
     try {
         await axios.post(`/votes/${projectId}`, null, {
-            headers: {
-                Authorization: `Bearer ${token}`,
-            },
+            headers: { Authorization: `Bearer ${token}` },
         })
 
         if (project.isLiked) project.likes--
         else project.likes++
-
         project.isLiked = !project.isLiked
     } catch (err) {
         console.error('❌ 좋아요 토글 실패:', err)
     }
 }
 
+/* ---------- 데이터 로딩 ---------- */
 onMounted(async () => {
     try {
         const res = await axios.get('/project/list', {
@@ -197,47 +220,61 @@ onMounted(async () => {
             },
         }) // DB에서 받아온 응답
 
-        projects.value = res.data.map((item) => ({
-            id: item.projectId,
-            title: item.title,
-            deadline: item.deadline,
-            createAt: item.createAt,
-            proposer: item.userId,
-            type: item.projectType || '기타',
-            image: item.imageUrl || '/default-thumbnail.png', // <- S3ImageVO 객체로 변경
-            description: item.promotion || '설명이 없습니다.',
-            proposer: `작성자 ${item.userId}`,
-            createdAt: formatDate(item.createAt),
-            likes: item.likes || 0,
-            isLiked: item.isLiked || false,
-            status:
-                item.progress === 'Active'
-                    ? '진행중'
-                    : item.progress === 'Close'
-                      ? '마감'
-                      : '알수없음',
-        }))
+        projects.value = res.data.map((item) => {
+            const createdAt = toDate(item.createAt)
+            const deadline = toDate(item.deadline)
+
+            return {
+                id: item.projectId,
+                title: item.title,
+                // Date 객체 그대로 보관
+                createdAt,
+                deadline,
+
+                // 표시용 텍스트(필요 시 카드 컴포넌트에서 사용)
+                createdAtText: formatDate(createdAt),
+                deadlineText: formatDate(deadline),
+
+                proposerId: item.userId,
+                proposer: `작성자 ${item.userId}`,
+
+                type: item.projectType || '기타',
+                image: pickImageUrl(item),
+                description: item.promotion || '설명이 없습니다.',
+
+                likes: item.likes ?? 0,
+                isLiked: !item.isLiked,
+
+                status:
+                    item.progress === 'Active'
+                        ? '진행중'
+                        : item.progress === 'Close'
+                          ? '마감'
+                          : '알수없음',
+            }
+        })
 
         console.log('⏹️res data: ', res.data)
         console.log('⏹️projects value: ', projects.value)
-        // console.log(
-        //     'status:',
-        //     projects.value.map((p) => p.status),
-        // )
     } catch (err) {
         console.error('❌ 프로젝트 불러오기 실패:', err)
     }
 })
 
-const formatDate = (arr) => {
-    if (!arr) return ''
-    const [y, m, d] = arr
-    return `${y}-${String(m).padStart(2, '0')}-${String(d).padStart(2, '0')}`
-}
-
-const getStatus = (deadlineArr) => {
-    if (!deadlineArr) return '진행중'
-    const deadline = new Date(...deadlineArr)
-    return deadline > new Date() ? '진행중' : '완료'
+/* ---------- 이벤트 핸들러(검색 박스용) ---------- */
+const handleSearch = () => {
+    // SearchBox에서 엔터/버튼 클릭 시 호출되는 훅 (필요 시 추가 동작)
 }
 </script>
+
+<style scoped>
+/* .!rounded-button {
+    border-radius: 8px;
+} */
+
+@media (max-width: 768px) {
+    .grid-cols-2 {
+        grid-template-columns: 1fr;
+    }
+}
+</style>

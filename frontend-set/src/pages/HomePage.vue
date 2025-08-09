@@ -122,7 +122,7 @@ import axios from 'axios'
 import { useAuthStore } from '@/stores/auth'
 
 const authStore = useAuthStore()
-authStore.loadToken()
+const token = authStore.loadToken()
 
 const router = useRouter()
 const topProjects = ref([])
@@ -133,13 +133,13 @@ const goToProject = (id) => {
 }
 
 onMounted(async () => {
-    console.log('token:', authStore.loadToken) // ✅ JWT 문자열 출력돼야 함
+    console.log('token123123:', token) // ✅ JWT 문자열 출력돼야 함
 
-    console.log('토큰 상태:', {
-        token: authStore.loadToken(),
-        userRole: authStore.loadRole(),
-        isLoggedIn: authStore.isLoggedIn,
-    })
+    // console.log('토큰 상태:', {
+    //     token: authStore.loadToken(),
+    //     userRole: authStore.loadRole(),
+    //     isLoggedIn: authStore.isLoggedIn,
+    // })
 
     try {
         const res = await axios.get('/project/top')
@@ -150,17 +150,21 @@ onMounted(async () => {
     }
 
     try {
-        const allRes = await axios.get('/project/list') // 전체 프로젝트
+        const allRes = await axios.get('/project/list', {
+            headers: {
+                Authorization: `Bearer ${token}`,
+            },
+        }) // 전체 프로젝트
 
         const allProjects = allRes.data.sort(() => Math.random() - 0.5) // 랜덤 섞기
 
-        if (authStore.isLoggedIn && authStore.token) {
+        if (authStore.isLoggedIn && token) {
             const recommendRes = await axios.get('/project/list/keyword', {
                 headers: {
-                    Authorization: `Bearer ${authStore.token}`,
+                    Authorization: `Bearer ${token}`,
                 },
             })
-
+            console.log('dasfewaf', token)
             const recommended = recommendRes.data || []
             const recommendedIds = recommended.map((p) => p.projectId)
 

@@ -7,23 +7,30 @@
                 <!-- 좌측 콘텐츠 영역 -->
                 <div class="lg:col-span-2 space-y-6">
                     <!-- 프로젝트 헤더 (사진 부분) -->
-                    <DetailHeader></DetailHeader>
+                    <DetailHeader
+                        :imageList="data.imageList"
+                        :title="data.basicInfo?.title"
+                        fallbackImage="/images/placeholder.png"
+                    />
+
                     <!-- 프로젝트 정보 -->
-                    <ProjectInfo :project="projectData" />
+                    <ProjectInfo v-if="projectData" :project="projectData" />
+
                     <!-- 실시간 채팅 섹션 -->
-                    <ChatComponent :roomId="projectId"></ChatComponent>
+                    <ChatComponent :roomId="projectId" />
                 </div>
 
                 <!-- 우측 정보 영역 -->
                 <div class="space-y-6">
                     <!-- 기본 정보 -->
                     <summary-basic-info
+                        v-if="projectData"
                         :detail="projectData"
                         :voteCount="voteCount"
-                    ></summary-basic-info>
+                    />
 
                     <!-- 작성자 정보 -->
-                    <writer-info :detail="projectData"></writer-info>
+                    <writer-info v-if="projectData" :detail="projectData" />
 
                     <!-- 좋아요 -->
                     <project-vote
@@ -40,13 +47,15 @@
 
             <!-- 관련 프로젝트 추천 -->
             <RecommendRelated
+                v-if="relatedProjects.length"
                 :projects="relatedProjects"
                 :userId="userId"
                 key="recommend-related"
-            ></RecommendRelated>
+            />
         </div>
+
         <!-- 푸터 -->
-        <Footer></Footer>
+        <Footer />
     </div>
 </template>
 
@@ -71,19 +80,29 @@ import DetailHeader from '@/components/project/detail/DetailHeader.vue'
 const authStore = useAuthStore()
 const userId = ref(5)
 const route = useRoute()
-const projectId = ref(route.params.id)
+const projectId = ref(String(route.params.id || ''))
 
 const projectData = ref(null)
-const isLoggedIn = ref(false)
 const isLiked = ref(false)
-const likeCount = ref()
 const voteCount = ref(0)
 const relatedProjects = ref([])
 const loading = ref(false)
 
+// ✅ 템플릿에서 쓰던 data alias (안전 기본값 포함)
+const data = computed(() => {
+    return (
+        projectData.value ?? {
+            basicInfo: null,
+            detailInfo: null,
+            imageList: [], // DetailHeader가 비어 있어도 안전
+        }
+    )
+})
+
+// 좋아요 토글 시 상단 카운트 반영
 const handleUpdateLike = (newState) => {
     isLiked.value = newState
-    likeCount.value += newState ? 1 : -1
+    voteCount.value += newState ? 1 : -1
 }
 
 const fetchProjectData = async (projectId) => {
@@ -94,7 +113,7 @@ const fetchProjectData = async (projectId) => {
 
     if (!projectId) return
     loading.value = true
-    projectData.value = null // 기존 데이터 제거
+    projectData.value = null
 
     try {
         const res = await axios.get(`/project/list/detail/${projectId}/full`)
@@ -102,6 +121,7 @@ const fetchProjectData = async (projectId) => {
 
         const relatedRes = await axios.get(`/project/related/${projectId}`)
         relatedProjects.value = relatedRes.data
+        isLiked.value = !!likeRes.data
 
         const isLikedRes = await axios.get(`/votes/${projectId}`, {
             headers: {
@@ -132,29 +152,19 @@ watch(
             const res = await axios.get(`/votes/${projectId.value}/count`)
             voteCount.value = res.data
         } catch (err) {
-            console.error(`❌ 프로젝트 좋아요 수 데이터 조회 실패:`, err)
+            console.error('❌ 프로젝트 좋아요 수 데이터 조회 실패:', err)
         }
     },
 )
 
-// 라우트 id 변화 감시 (프로젝트 데이터 다시 로드)
-
-// URL 변경 감시
+// URL의 id가 바뀌면 다시 로드
 watch(
-    () => route.params.id, // 여기서 id만 감시
+    () => route.params.id,
     (newId, oldId) => {
-        console.log('watch route.params.id 호출', route.params.id)
         if (newId && newId !== oldId) {
-            projectId.value = newId
-            fetchProjectData(newId)
+            projectId.value = String(newId)
+            fetchProjectData(projectId.value)
         }
     },
 )
-
-// onBeforeRouteUpdate((to, from) => {
-//     const newId = to.params.id
-//     console.log('onBeforeRouteUpdate 호출됨:', newId)
-//     projectId.value = newId
-//     fetchProjectData(newId)
-// })
 </script>
