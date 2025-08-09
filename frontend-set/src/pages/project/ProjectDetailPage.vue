@@ -55,6 +55,7 @@ import axios from 'axios'
 import { useRoute, useRouter, onBeforeRouteUpdate } from 'vue-router'
 import { ref, nextTick, onMounted, watch } from 'vue'
 import { watchEffect } from 'vue'
+import { useAuthStore } from '@/stores/auth'
 
 import ProjectInfo from '@/components/project/detail/ProjectInfo.vue'
 import SummaryBasicInfo from '@/components/project/detail/SummaryBasicInfo.vue'
@@ -67,6 +68,7 @@ import Footer from '@/components/layout/Footer.vue'
 import RecommendRelated from '@/components/project/detail/RecommendRelated.vue'
 import DetailHeader from '@/components/project/detail/DetailHeader.vue'
 
+const authStore = useAuthStore()
 const userId = ref(5)
 const route = useRoute()
 const projectId = ref(route.params.id)
@@ -84,24 +86,32 @@ const handleUpdateLike = (newState) => {
     likeCount.value += newState ? 1 : -1
 }
 
-const fetchProjectData = async (id) => {
+const fetchProjectData = async (projectId) => {
     console.log('fetchProjectData 호출!')
 
-    if (!id) return
+    const token = authStore.loadToken()
+    console.log('token:', token)
+
+    if (!projectId) return
     loading.value = true
     projectData.value = null // 기존 데이터 제거
 
     try {
-        const res = await axios.get(`/project/list/detail/${id}/full`)
+        const res = await axios.get(`/project/list/detail/${projectId}/full`)
         projectData.value = res.data
 
-        const relatedRes = await axios.get(`/project/related/${id}`)
+        const relatedRes = await axios.get(`/project/related/${projectId}`)
         relatedProjects.value = relatedRes.data
 
-        const likeRes = await axios.get(`/votes?userId=${userId.value}&projectId=${id}`)
-        isLiked.value = likeRes.data
+        const isLikedRes = await axios.get(`/votes/${projectId}`, {
+            headers: {
+                Authorization: `Bearer ${token}`,
+            },
+        })
 
-        const countRes = await axios.get('/votes/count', { params: { projectId: id } })
+        isLiked.value = isLikedRes.data
+
+        const countRes = await axios.get(`/votes/${projectId}/count`)
         voteCount.value = countRes.data
     } catch (e) {
         console.error('❌ 프로젝트 데이터 갱신 실패:', e)
@@ -111,26 +121,16 @@ const fetchProjectData = async (id) => {
 }
 
 onMounted(async () => {
-    console.log('onMounted 호출!')
+    console.log('⏹️ onMounted 호출!')
     fetchProjectData(projectId.value)
-    // // 사용자 정보는 별도 처리 (로그인 안 된 경우 대비)
-    // try {
-    //   const userRes = await axios.get('/user/me')
-    //   userId.value = userRes.data.id
-    //   console.log('✅ 사용자 API 응답:', userId.value)
-    // } catch (e) {
-    //   console.warn('⚠ 사용자 정보 요청 실패 (비로그인 상태일 수 있음):', e)
-    //   // userId.value = 2
-    // }
 })
 
 watch(
     () => isLiked.value,
     async () => {
         try {
-            const res = await axios.get(`/votes/count?projectId=${projectId.value}`)
+            const res = await axios.get(`/votes/${projectId.value}/count`)
             voteCount.value = res.data
-            console.log('✅ 프로젝트 좋아요 수 API 응답:', res.data)
         } catch (err) {
             console.error(`❌ 프로젝트 좋아요 수 데이터 조회 실패:`, err)
         }

@@ -187,54 +187,13 @@ const toggleLike = async (projectId) => {
     } catch (err) {
         console.error('❌ 좋아요 토글 실패:', err)
     }
-
-    // console.log('👍 좋아요 요청 보낼 데이터:', {
-    //     userId: userId.value,
-    //     projectId: projectId,
-    // })
-
-    // try {
-    //     if (project.isLiked) {
-    //         await axios.post(
-    //             '/votes',
-    //             { userId: userId.value, projectId },
-    //             {
-    //                 headers: {
-    //                     Authorization: `Bearer ${token}`, // <-- 헤더에 JWT 토큰 추가
-    //                 },
-    //             },
-    //         )
-    //         project.likes--
-    //     } else {
-    //         await axios.post(
-    //             '/votes',
-    //             { userId: userId.value, projectId },
-    //             {
-    //                 headers: {
-    //                     Authorization: `Bearer ${token}`, // <-- 헤더에 JWT 토큰 추가
-    //                 },
-    //             },
-    //         )
-    //         project.likes++
-    //     }
-    //     project.isLiked = !project.isLiked
-    // } catch (err) {
-    //     console.error('❌ 좋아요 토글 실패:', err)
-    //     console.log(token)
-    // }
 }
 
 onMounted(async () => {
-    // console.log('토큰 상태:', {
-    //     token: authStore.token,
-    //     tokenValue: authStore.token.value,
-    //     isLoggedIn: authStore.isLoggedIn,
-    // })
-
     try {
         const res = await axios.get('/project/list', {
             headers: {
-                Authorization: `Bearer ${authStore.token}`,
+                Authorization: `Bearer ${authStore.loadToken()}`,
             },
         }) // DB에서 받아온 응답
 
