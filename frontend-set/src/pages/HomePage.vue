@@ -133,12 +133,30 @@ const token = authStore.loadToken()
 const router = useRouter()
 const topProjects = ref([])
 const recommendedProjects = ref([])
+const latestFundings = ref([]) // 최신 펀딩 데이터
 
 const goToProject = (id) => {
     router.push(`project/detail/${id}`)
 }
 
 onMounted(async () => {
+    // 최신 펀딩 데이터 가져오기
+    try {
+        const fundRes = await axios.get('/fund/list', { params: { progress: 'Launch' } })
+        const sortedFunds = fundRes.data
+            .sort((a, b) => new Date(b.launchAt) - new Date(a.launchAt)) // 최신순 정렬
+            .slice(0, 3) // 상위 3개만
+        
+        latestFundings.value = sortedFunds
+        
+        // 펀딩 데이터가 있으면 캐러셀 배너 업데이트
+        if (latestFundings.value.length > 0) {
+            updateBannersWithFundings()
+        }
+    } catch (err) {
+        console.error('❌ 최신 펀딩 로딩 실패:', err)
+    }
+    
     // 자동 슬라이드 시작
     startAutoSlide()
     
@@ -197,20 +215,55 @@ const goToProjectList = () => {
     router.push('/project')
 }
 
-const mainBanners = [
+const goToFunding = (id) => {
+    router.push(`/funding/detail/${id}`)
+}
+
+const mainBanners = ref([
     {
         title: '첫번째 배너 타이틀',
         image: '/images/logo.png',
+        fundId: null,
+        description: '',
+        progress: 0,
+        daysLeft: 0,
     },
     {
         title: '두번째 배너 타이틀',
         image: '/images/logo.png',
+        fundId: null,
+        description: '',
+        progress: 0,
+        daysLeft: 0,
     },
     {
         title: '세번째 배너 타이틀',
         image: '/images/logo.png',
+        fundId: null,
+        description: '',
+        progress: 0,
+        daysLeft: 0,
     },
-]
+])
+
+// 펀딩 데이터로 배너 업데이트
+const updateBannersWithFundings = () => {
+    mainBanners.value = latestFundings.value.map(fund => ({
+        title: fund.name,
+        image: fund.thumbnailImage?.imageUrl || '/images/logo.png',
+        fundId: fund.fundId,
+        description: fund.financialInstitution || '금융기관 정보 없음',
+        progress: fund.progress || 0,
+        daysLeft: getDaysLeft(fund.endAt),
+    }))
+}
+
+const getDaysLeft = (endAt) => {
+    const end = new Date(endAt)
+    const today = new Date()
+    const diff = Math.ceil((end - today) / (1000 * 60 * 60 * 24))
+    return diff >= 0 ? diff : 0
+}
 const currentSlide = ref(0)
 
 // 자동 슬라이드 기능
@@ -221,11 +274,9 @@ const startAutoSlide = () => {
     if (slideInterval) {
         clearInterval(slideInterval)
     }
-    console.log('자동 슬라이드 시작')
     slideInterval = setInterval(() => {
-        console.log('슬라이드 변경:', currentSlide.value, '->', (currentSlide.value + 1) % mainBanners.length)
-        currentSlide.value = (currentSlide.value + 1) % mainBanners.length
-    }, 3000) // 3초마다 슬라이드 변경
+        currentSlide.value = (currentSlide.value + 1) % mainBanners.value.length
+    }, 6000) // 6초마다 슬라이드 변경
 }
 
 const stopAutoSlide = () => {
