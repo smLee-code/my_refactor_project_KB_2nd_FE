@@ -163,7 +163,7 @@
                                 >
                                     {{ ck.category.name }}
                                 </label>
-                                <div class="w-2/5 flex flex-wrap justify-between gap-2 mb-6">
+                                <div class="w-2/5 flex flex-wrap justify-start gap-2 mb-6">
                                     <button
                                         v-for="keyword in ck.keywords"
                                         :key="keyword.id"
@@ -504,11 +504,16 @@ const createProject = async () => {
         // })
 
         // 이미지 파일들 추가
-        if (form.value.images && form.value.images.length > 0) {
-            form.value.images.forEach((file) => {
-                formData.append('images', file)
-            })
-        }
+        // if (form.value.images && form.value.images.length > 0) {
+        //     form.value.images.forEach((file) => {
+        //         formData.append('images[]', file)
+        //     })
+        // }
+
+        // ✅ 수정
+        form.value.images.forEach((file) => {
+            formData.append('images', file, file.name) // 같은 키 'images'로 여러 번
+        })
 
         // FormData 내용을 콘솔에 출력
         console.log('=== FormData 내용임다 확인 부탁스딱스===')
@@ -531,7 +536,6 @@ const createProject = async () => {
 
         const response = await axios.post('/project', formData, {
             headers: {
-                // 'Content-Type': 'multipart/form-data', // FormData용 헤더
                 Authorization: `Bearer ${authStore.loadToken()}`,
             },
         })
