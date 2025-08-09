@@ -7,23 +7,30 @@
                 <!-- 좌측 콘텐츠 영역 -->
                 <div class="lg:col-span-2 space-y-6">
                     <!-- 프로젝트 헤더 (사진 부분) -->
-                    <DetailHeader></DetailHeader>
+                    <DetailHeader
+                        :imageList="data.imageList"
+                        :title="data.basicInfo?.title"
+                        fallbackImage="/images/placeholder.png"
+                    />
+
                     <!-- 프로젝트 정보 -->
-                    <ProjectInfo :project="projectData" />
+                    <ProjectInfo v-if="projectData" :project="projectData" />
+
                     <!-- 실시간 채팅 섹션 -->
-                    <ChatComponent :roomId="projectId"></ChatComponent>
+                    <ChatComponent :roomId="projectId" />
                 </div>
 
                 <!-- 우측 정보 영역 -->
                 <div class="space-y-6">
                     <!-- 기본 정보 -->
                     <summary-basic-info
+                        v-if="projectData"
                         :detail="projectData"
                         :voteCount="voteCount"
-                    ></summary-basic-info>
+                    />
 
                     <!-- 작성자 정보 -->
-                    <writer-info :detail="projectData"></writer-info>
+                    <writer-info v-if="projectData" :detail="projectData" />
 
                     <!-- 좋아요 -->
                     <project-vote
@@ -40,21 +47,22 @@
 
             <!-- 관련 프로젝트 추천 -->
             <RecommendRelated
+                v-if="relatedProjects.length"
                 :projects="relatedProjects"
                 :userId="userId"
                 key="recommend-related"
-            ></RecommendRelated>
+            />
         </div>
+
         <!-- 푸터 -->
-        <Footer></Footer>
+        <Footer />
     </div>
 </template>
 
 <script setup>
 import axios from 'axios'
-import { useRoute, useRouter, onBeforeRouteUpdate } from 'vue-router'
-import { ref, nextTick, onMounted, watch } from 'vue'
-import { watchEffect } from 'vue'
+import { useRoute } from 'vue-router'
+import { ref, computed, onMounted, watch } from 'vue'
 
 import ProjectInfo from '@/components/project/detail/ProjectInfo.vue'
 import SummaryBasicInfo from '@/components/project/detail/SummaryBasicInfo.vue'
@@ -69,40 +77,57 @@ import DetailHeader from '@/components/project/detail/DetailHeader.vue'
 
 const userId = ref(5)
 const route = useRoute()
-const projectId = ref(route.params.id)
+const projectId = ref(String(route.params.id || ''))
 
 const projectData = ref(null)
-const isLoggedIn = ref(false)
 const isLiked = ref(false)
-const likeCount = ref()
 const voteCount = ref(0)
 const relatedProjects = ref([])
 const loading = ref(false)
 
+// ✅ 템플릿에서 쓰던 data alias (안전 기본값 포함)
+const data = computed(() => {
+    return (
+        projectData.value ?? {
+            basicInfo: null,
+            detailInfo: null,
+            imageList: [], // DetailHeader가 비어 있어도 안전
+        }
+    )
+})
+
+// 좋아요 토글 시 상단 카운트 반영
 const handleUpdateLike = (newState) => {
     isLiked.value = newState
-    likeCount.value += newState ? 1 : -1
+    voteCount.value += newState ? 1 : -1
 }
 
 const fetchProjectData = async (id) => {
-    console.log('fetchProjectData 호출!')
-
     if (!id) return
     loading.value = true
-    projectData.value = null // 기존 데이터 제거
+    projectData.value = null
 
     try {
         const res = await axios.get(`/project/list/detail/${id}/full`)
         projectData.value = res.data
 
-        const relatedRes = await axios.get(`/project/related/${id}`)
+        // 응답 안에 voteCount가 이미 있으면 초기값 세팅 (없으면 아래에서 다시 가져옴)
+        if (typeof res.data?.voteCount === 'number') {
+            voteCount.value = res.data.voteCount
+        }
+
+        const [relatedRes, likeRes] = await Promise.all([
+            axios.get(`/project/related/${id}`),
+            axios.get(`/votes?userId=${userId.value}&projectId=${id}`),
+        ])
         relatedProjects.value = relatedRes.data
+        isLiked.value = !!likeRes.data
 
-        const likeRes = await axios.get(`/votes?userId=${userId.value}&projectId=${id}`)
-        isLiked.value = likeRes.data
-
-        const countRes = await axios.get('/votes/count', { params: { projectId: id } })
-        voteCount.value = countRes.data
+        // 응답에 voteCount 없으면 별도 카운트 API 호출
+        if (typeof res.data?.voteCount !== 'number') {
+            const countRes = await axios.get('/votes/count', { params: { projectId: id } })
+            voteCount.value = countRes.data
+        }
     } catch (e) {
         console.error('❌ 프로젝트 데이터 갱신 실패:', e)
     } finally {
@@ -110,51 +135,31 @@ const fetchProjectData = async (id) => {
     }
 }
 
-onMounted(async () => {
-    console.log('onMounted 호출!')
+onMounted(() => {
     fetchProjectData(projectId.value)
-    // // 사용자 정보는 별도 처리 (로그인 안 된 경우 대비)
-    // try {
-    //   const userRes = await axios.get('/user/me')
-    //   userId.value = userRes.data.id
-    //   console.log('✅ 사용자 API 응답:', userId.value)
-    // } catch (e) {
-    //   console.warn('⚠ 사용자 정보 요청 실패 (비로그인 상태일 수 있음):', e)
-    //   // userId.value = 2
-    // }
 })
 
+// 좋아요 상태 바뀌면 서버 카운트 동기화
 watch(
     () => isLiked.value,
     async () => {
         try {
-            const res = await axios.get(`/votes/count?projectId=${projectId.value}`)
+            const res = await axios.get(`/votes/count`, { params: { projectId: projectId.value } })
             voteCount.value = res.data
-            console.log('✅ 프로젝트 좋아요 수 API 응답:', res.data)
         } catch (err) {
-            console.error(`❌ 프로젝트 좋아요 수 데이터 조회 실패:`, err)
+            console.error('❌ 프로젝트 좋아요 수 데이터 조회 실패:', err)
         }
     },
 )
 
-// 라우트 id 변화 감시 (프로젝트 데이터 다시 로드)
-
-// URL 변경 감시
+// URL의 id가 바뀌면 다시 로드
 watch(
-    () => route.params.id, // 여기서 id만 감시
+    () => route.params.id,
     (newId, oldId) => {
-        console.log('watch route.params.id 호출', route.params.id)
         if (newId && newId !== oldId) {
-            projectId.value = newId
-            fetchProjectData(newId)
+            projectId.value = String(newId)
+            fetchProjectData(projectId.value)
         }
     },
 )
-
-// onBeforeRouteUpdate((to, from) => {
-//     const newId = to.params.id
-//     console.log('onBeforeRouteUpdate 호출됨:', newId)
-//     projectId.value = newId
-//     fetchProjectData(newId)
-// })
 </script>

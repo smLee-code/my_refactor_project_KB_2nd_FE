@@ -73,6 +73,22 @@ import PopularProjectCard from './PopularProjectCard.vue'
 import TableFundingStatus from '@/components/mypage/TableFundingStatus.vue'
 import PieChart from '@/components/mypage/PieChart.vue'
 import LineChart from '@/components/mypage/LineChart.vue'
+import { onMounted } from 'vue'
+import axios from 'axios'
+
+onMounted(async () => {
+    try {
+        const res = await axios.get('/fund/my/fund/all', {
+            headers: {
+                Authorization: `Bearer ${authStore.token}`,
+            },
+        })
+        myfund.value = res.data
+        console.log(`내 펀딩 관리: `, res.data)
+    } catch (err) {
+        console.log(`내 펀딩 실패:`, err)
+    }
+})
 </script>
 
 <style scoped>
