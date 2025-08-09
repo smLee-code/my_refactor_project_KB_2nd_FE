@@ -44,7 +44,7 @@ onMounted(async () => {
 
         // 변환
         chartData.value = [
-            { label: '적금', color: '#3B82F6', values: raw.Savings || [] },
+            { label: '저축', color: '#3B82F6', values: raw.Savings || [] },
             { label: '대출', color: '#10B981', values: raw.Loan || [] },
             { label: '기부', color: '#F59E0B', values: raw.Donation || [] },
             { label: '챌린지', color: '#8B5CF6', values: raw.Challenge || [] },

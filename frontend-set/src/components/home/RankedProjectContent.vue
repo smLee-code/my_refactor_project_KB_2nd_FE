@@ -30,10 +30,7 @@ const likes = ref(0)
 
 onMounted(async () => {
     try {
-        const res = await axios.get(`/votes/count/${props.projectId}`)
-        // , {
-        //     params: { projectId: props.projectId },
-        // })
+        const res = await axios.get(`/votes/${props.projectId}/count`)
         likes.value = res.data
         console.log(`프로젝트 ${props.projectId} 좋아요 수:`, likes.value)
     } catch (err) {

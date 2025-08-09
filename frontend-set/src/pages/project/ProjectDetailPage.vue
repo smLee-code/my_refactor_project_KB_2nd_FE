@@ -61,8 +61,10 @@
 
 <script setup>
 import axios from 'axios'
-import { useRoute } from 'vue-router'
-import { ref, computed, onMounted, watch } from 'vue'
+import { useRoute, useRouter, onBeforeRouteUpdate } from 'vue-router'
+import { ref, nextTick, onMounted, watch } from 'vue'
+import { watchEffect } from 'vue'
+import { useAuthStore } from '@/stores/auth'
 
 import ProjectInfo from '@/components/project/detail/ProjectInfo.vue'
 import SummaryBasicInfo from '@/components/project/detail/SummaryBasicInfo.vue'
@@ -75,6 +77,7 @@ import Footer from '@/components/layout/Footer.vue'
 import RecommendRelated from '@/components/project/detail/RecommendRelated.vue'
 import DetailHeader from '@/components/project/detail/DetailHeader.vue'
 
+const authStore = useAuthStore()
 const userId = ref(5)
 const route = useRoute()
 const projectId = ref(String(route.params.id || ''))
@@ -102,32 +105,34 @@ const handleUpdateLike = (newState) => {
     voteCount.value += newState ? 1 : -1
 }
 
-const fetchProjectData = async (id) => {
-    if (!id) return
+const fetchProjectData = async (projectId) => {
+    console.log('fetchProjectData 호출!')
+
+    const token = authStore.loadToken()
+    console.log('token:', token)
+
+    if (!projectId) return
     loading.value = true
     projectData.value = null
 
     try {
-        const res = await axios.get(`/project/list/detail/${id}/full`)
+        const res = await axios.get(`/project/list/detail/${projectId}/full`)
         projectData.value = res.data
 
-        // 응답 안에 voteCount가 이미 있으면 초기값 세팅 (없으면 아래에서 다시 가져옴)
-        if (typeof res.data?.voteCount === 'number') {
-            voteCount.value = res.data.voteCount
-        }
-
-        const [relatedRes, likeRes] = await Promise.all([
-            axios.get(`/project/related/${id}`),
-            axios.get(`/votes?userId=${userId.value}&projectId=${id}`),
-        ])
+        const relatedRes = await axios.get(`/project/related/${projectId}`)
         relatedProjects.value = relatedRes.data
         isLiked.value = !!likeRes.data
 
-        // 응답에 voteCount 없으면 별도 카운트 API 호출
-        if (typeof res.data?.voteCount !== 'number') {
-            const countRes = await axios.get('/votes/count', { params: { projectId: id } })
-            voteCount.value = countRes.data
-        }
+        const isLikedRes = await axios.get(`/votes/${projectId}`, {
+            headers: {
+                Authorization: `Bearer ${token}`,
+            },
+        })
+
+        isLiked.value = isLikedRes.data
+
+        const countRes = await axios.get(`/votes/${projectId}/count`)
+        voteCount.value = countRes.data
     } catch (e) {
         console.error('❌ 프로젝트 데이터 갱신 실패:', e)
     } finally {
@@ -135,16 +140,16 @@ const fetchProjectData = async (id) => {
     }
 }
 
-onMounted(() => {
+onMounted(async () => {
+    console.log('⏹️ onMounted 호출!')
     fetchProjectData(projectId.value)
 })
 
-// 좋아요 상태 바뀌면 서버 카운트 동기화
 watch(
     () => isLiked.value,
     async () => {
         try {
-            const res = await axios.get(`/votes/count`, { params: { projectId: projectId.value } })
+            const res = await axios.get(`/votes/${projectId.value}/count`)
             voteCount.value = res.data
         } catch (err) {
             console.error('❌ 프로젝트 좋아요 수 데이터 조회 실패:', err)

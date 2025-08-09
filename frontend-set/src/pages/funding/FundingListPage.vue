@@ -120,9 +120,9 @@ const sortOptions = {
     deadline: '마감임박순',
 }
 
-const categories = ref(['전체', '적금형', '대출형', '기부형', '챌린지형'])
+const categories = ref(['전체', '저축형', '대출형', '기부형', '챌린지형'])
 const fundTypeMap = {
-    Savings: '적금형',
+    Savings: '저축형',
     Loan: '대출형',
     Donation: '기부형',
     Challenge: '챌린지형',
@@ -133,26 +133,26 @@ const urgentFundings = computed(() => {
         .filter((fund) => new Date(fund.endAt) > new Date()) // 오늘 이후
         .sort((a, b) => {
             const dateDiff = new Date(a.endAt) - new Date(b.endAt)
-            
+
             // 마감일이 같으면 2차 정렬 기준 적용
             if (dateDiff === 0) {
                 // 1. 진행률이 높은 순 (목표 달성에 가까운 것 우선)
                 const progressDiff = (b.progress || 0) - (a.progress || 0)
                 if (progressDiff !== 0) return progressDiff
-                
+
                 // 2. 참여자(투표수)가 많은 순 (인기 있는 것 우선)
                 const votesDiff = (b.retryVotesCount || 0) - (a.retryVotesCount || 0)
                 if (votesDiff !== 0) return votesDiff
-                
+
                 // 3. 펀딩 ID 순서 (먼저 등록된 것 우선)
                 return a.fundId - b.fundId
             }
-            
+
             return dateDiff
         }) // 마감 빠른 순 + 2차 정렬
         .slice(0, 2) // 상위 2개만
         .map((fund) => ({
-            id: fund.fundId,  // fundId로 변경
+            id: fund.fundId, // fundId로 변경
             image: fund.thumbnailImage?.imageUrl || '/default.jpg',
             title: fund.name,
             timeLeft: getDaysLeft(fund.endAt),

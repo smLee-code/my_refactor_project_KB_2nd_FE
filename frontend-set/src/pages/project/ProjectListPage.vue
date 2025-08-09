@@ -100,7 +100,7 @@ const sortOptions = {
 }
 
 const categoryMap = {
-    Savings: '적금형',
+    Savings: '저축형',
     Loan: '대출형',
     Challenge: '챌린지형',
     Donation: '기부형',
@@ -215,8 +215,10 @@ const toggleLike = async (projectId) => {
 onMounted(async () => {
     try {
         const res = await axios.get('/project/list', {
-            headers: { Authorization: `Bearer ${authStore.token}` },
-        })
+            headers: {
+                Authorization: `Bearer ${authStore.loadToken()}`,
+            },
+        }) // DB에서 받아온 응답
 
         projects.value = res.data.map((item) => {
             const createdAt = toDate(item.createAt)
