@@ -6,7 +6,13 @@
                 <!-- 좌측: 메인 배너 + 당신이 좋아할만한 펀딩 -->
                 <div class="lg:col-span-2 space-y-6">
                     <!-- 메인 배너 슬라이더 -->
-                    <MainBannerSlider :banners="mainBanners" v-model:current="currentSlide" />
+                    <MainBannerSlider 
+                        :banners="mainBanners" 
+                        v-model:current="currentSlide"
+                        @mouseenter="stopAutoSlide"
+                        @mouseleave="startAutoSlide"
+                        @indicator-click="handleSlideChange"
+                    />
                     <!-- 당신이 좋아할만한 펀딩 -->
                     <div>
                         <div class="flex items-center justify-between mb-6">
@@ -111,7 +117,7 @@
 
 <script setup>
 import { useRouter } from 'vue-router'
-import { onMounted, ref } from 'vue'
+import { onMounted, onUnmounted, ref } from 'vue'
 import MainBannerSlider from '@/components/home/MainBannerSlider.vue'
 import FundingCard from '@/components/funding/FundingCard.vue'
 import ProjectRankingCard from '@/components/project/ProjectRankingCard.vue'
@@ -133,6 +139,9 @@ const goToProject = (id) => {
 }
 
 onMounted(async () => {
+    // 자동 슬라이드 시작
+    startAutoSlide()
+    
     console.log('token123123:', token) // ✅ JWT 문자열 출력돼야 함
 
     // console.log('토큰 상태:', {
@@ -203,6 +212,40 @@ const mainBanners = [
     },
 ]
 const currentSlide = ref(0)
+
+// 자동 슬라이드 기능
+let slideInterval = null
+
+const startAutoSlide = () => {
+    // 기존 interval이 있으면 먼저 정리
+    if (slideInterval) {
+        clearInterval(slideInterval)
+    }
+    console.log('자동 슬라이드 시작')
+    slideInterval = setInterval(() => {
+        console.log('슬라이드 변경:', currentSlide.value, '->', (currentSlide.value + 1) % mainBanners.length)
+        currentSlide.value = (currentSlide.value + 1) % mainBanners.length
+    }, 3000) // 3초마다 슬라이드 변경
+}
+
+const stopAutoSlide = () => {
+    if (slideInterval) {
+        clearInterval(slideInterval)
+        slideInterval = null
+    }
+}
+
+// 사용자가 인디케이터 점을 클릭했을 때 자동 슬라이드 리셋
+const handleSlideChange = (index) => {
+    currentSlide.value = index
+    stopAutoSlide()
+    startAutoSlide() // 타이머를 리셋하여 다시 시작
+}
+
+// 컴포넌트 언마운트 시 자동 슬라이드 정지
+onUnmounted(() => {
+    stopAutoSlide()
+})
 
 const popularFundings = [
     // FundingCard용 mock data
