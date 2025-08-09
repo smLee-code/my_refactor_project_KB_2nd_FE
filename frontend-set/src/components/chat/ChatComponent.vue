@@ -1,55 +1,57 @@
 <template>
-  <!-- 실시간 채팅 섹션 -->
-  <div class="bg-white rounded-xl shadow-lg p-6">
-    <h3 class="text-xl font-semibold text-gray-900 mb-4">실시간 채팅</h3>
-    <!-- 채팅 메시지 영역 -->
-    <div class="h-96 overflow-y-auto mb-4 bg-gray-50 rounded-lg p-4 space-y-4">
-      <div
-        v-for="msg in messages"
-        :key="msg.id"
-        :class="[
-          'flex items-start space-x-3',
-          msg.isSelf ? 'flex-row-reverse space-x-reverse' : '',
-        ]"
-      >
-        <div class="flex-shrink-0">
-          <div class="w-8 h-8 bg-gray-300 rounded-full flex items-center justify-center">
-            <i class="fas fa-user text-gray-600 text-sm"></i>
-          </div>
+    <!-- 실시간 채팅 섹션 -->
+    <div class="bg-white rounded-xl shadow-lg p-6">
+        <h3 class="text-xl font-semibold text-gray-900 mb-4">실시간 채팅</h3>
+        <!-- 채팅 메시지 영역 -->
+        <div class="h-96 overflow-y-auto mb-4 bg-gray-50 rounded-lg p-4 space-y-4">
+            <div
+                v-for="msg in messages"
+                :key="msg.id"
+                :class="[
+                    'flex items-start space-x-3',
+                    msg.isSelf ? 'flex-row-reverse space-x-reverse' : '',
+                ]"
+            >
+                <div class="flex-shrink-0">
+                    <div class="w-8 h-8 bg-gray-300 rounded-full flex items-center justify-center">
+                        <i class="fas fa-user text-gray-600 text-sm"></i>
+                    </div>
+                </div>
+                <div :class="['max-w-[70%]', msg.isSelf ? 'items-end' : 'items-start']">
+                    <div class="flex items-center space-x-2 mb-1">
+                        <span class="font-medium text-gray-900">{{ msg.author }}</span>
+                        <span class="text-gray-500 text-xs">{{ msg.time }}</span>
+                    </div>
+                    <div
+                        :class="[
+                            'p-3 rounded-lg break-words',
+                            msg.isSelf
+                                ? 'bg-blue-500 text-white'
+                                : 'bg-white border border-gray-200',
+                        ]"
+                    >
+                        {{ msg.content }}
+                    </div>
+                </div>
+            </div>
         </div>
-        <div :class="['max-w-[70%]', msg.isSelf ? 'items-end' : 'items-start']">
-          <div class="flex items-center space-x-2 mb-1">
-            <span class="font-medium text-gray-900">{{ msg.author }}</span>
-            <span class="text-gray-500 text-xs">{{ msg.time }}</span>
-          </div>
-          <div
-            :class="[
-              'p-3 rounded-lg break-words',
-              msg.isSelf ? 'bg-blue-500 text-white' : 'bg-white border border-gray-200',
-            ]"
-          >
-            {{ msg.content }}
-          </div>
+        <!-- 메시지 입력 영역 -->
+        <div class="relative">
+            <input
+                v-model="inputMessage"
+                type="text"
+                placeholder="메시지를 입력하세요..."
+                class="w-full pl-4 pr-16 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                @keyup.enter="sendMessage"
+            />
+            <button
+                @click="sendMessage"
+                class="absolute right-2 top-1/2 transform -translate-y-1/2 bg-blue-600 text-white px-4 py-1.5 !rounded-button font-medium hover:bg-blue-700 cursor-pointer whitespace-nowrap transition-all"
+            >
+                <i class="fas fa-paper-plane"></i><span>전송</span>
+            </button>
         </div>
-      </div>
     </div>
-    <!-- 메시지 입력 영역 -->
-    <div class="relative">
-      <input
-        v-model="inputMessage"
-        type="text"
-        placeholder="메시지를 입력하세요..."
-        class="w-full pl-4 pr-16 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-        @keyup.enter="sendMessage"
-      />
-      <button
-        @click="sendMessage"
-        class="absolute right-2 top-1/2 transform -translate-y-1/2 bg-blue-600 text-white px-4 py-1.5 !rounded-button font-medium hover:bg-blue-700 cursor-pointer whitespace-nowrap transition-all"
-      >
-        <i class="fas fa-paper-plane"></i><span>전송</span>
-      </button>
-    </div>
-  </div>
 </template>
 
 <script setup>
@@ -59,7 +61,7 @@ import api from '@/api'
 import axios from 'axios'
 
 const props = defineProps({
-  roomId: Number,
+    roomId: Number,
 })
 
 const mySenderId = ref('')
@@ -79,58 +81,58 @@ const stompClient = ref(null)
 // }
 
 const loadHistory = async () => {
-  try {
-    const res = await axios.get(`/chat/history/${props.roomId}`)
-    messages.value = res.data.map((msg) => {
-      const now = new Date(msg.timestamp) // Assuming msg.timestamp is available from backend
-      const hours = String(now.getHours()).padStart(2, '0')
-      const minutes = String(now.getMinutes()).padStart(2, '0')
-      const currentTime = `${hours}:${minutes}`
-      return {
-        ...msg,
-        isSelf: msg.sender === mySenderId.value,
-        author: msg.sender, // UI 표시용
-        time: currentTime, // UI 표시용
-      }
-    })
-    console.log('불러온 메시지:', messages.value)
-  } catch (error) {
-    console.error('채팅 내역 불러오기 실패:', error)
-  }
+    try {
+        const res = await axios.get(`/chat/history/${props.roomId}`)
+        messages.value = res.data.map((msg) => {
+            const now = new Date(msg.timestamp) // Assuming msg.timestamp is available from backend
+            const hours = String(now.getHours()).padStart(2, '0')
+            const minutes = String(now.getMinutes()).padStart(2, '0')
+            const currentTime = `${hours}:${minutes}`
+            return {
+                ...msg,
+                isSelf: msg.sender === mySenderId.value,
+                author: msg.sender, // UI 표시용
+                time: currentTime, // UI 표시용
+            }
+        })
+        console.log('불러온 메시지:', messages.value)
+    } catch (error) {
+        console.error('채팅 내역 불러오기 실패:', error)
+    }
 }
 
 const connectWebSocket = () => {
-  console.log('🧪 WebSocket 연결 시도 중...') // 👈 여기도 로그 추가
+    console.log('🧪 WebSocket 연결 시도 중...') // 👈 여기도 로그 추가
 
-  const wsUrl = 'ws://localhost:8080/chat-app'
-  stompClient.value = Stomp.client(wsUrl)
+    const wsUrl = 'ws://localhost:8080/chat-app'
+    stompClient.value = Stomp.client(wsUrl)
 
-  stompClient.value.debug = (msg) => console.log('[STOMP]', msg)
+    stompClient.value.debug = (msg) => console.log('[STOMP]', msg)
 
-  stompClient.value.connect(
-    {},
-    () => {
-      console.log('✅ 연결 성공')
-      stompClient.value.subscribe(`/topic/chat/${props.roomId}`, (msg) => {
-        const chatMessage = JSON.parse(msg.body)
-        const now = new Date()
-        const hours = String(now.getHours()).padStart(2, '0')
-        const minutes = String(now.getMinutes()).padStart(2, '0')
-        const currentTime = `${hours}:${minutes}`
+    stompClient.value.connect(
+        {},
+        () => {
+            console.log('✅ 연결 성공')
+            stompClient.value.subscribe(`/topic/chat/${props.roomId}`, (msg) => {
+                const chatMessage = JSON.parse(msg.body)
+                const now = new Date()
+                const hours = String(now.getHours()).padStart(2, '0')
+                const minutes = String(now.getMinutes()).padStart(2, '0')
+                const currentTime = `${hours}:${minutes}`
 
-        const processedMessage = {
-          ...chatMessage,
-          isSelf: chatMessage.sender === mySenderId.value,
-          author: chatMessage.sender, // UI 표시용
-          time: currentTime, // UI 표시용
-        }
-        // messages.value.push(processedMessage)
-      })
-    },
-    (error) => {
-      console.error('❌연결 실패', error)
-    },
-  )
+                const processedMessage = {
+                    ...chatMessage,
+                    isSelf: chatMessage.sender === mySenderId.value,
+                    author: chatMessage.sender, // UI 표시용
+                    time: currentTime, // UI 표시용
+                }
+                // messages.value.push(processedMessage)
+            })
+        },
+        (error) => {
+            console.error('❌연결 실패', error)
+        },
+    )
 }
 
 // const sendMessage = () => {
@@ -162,54 +164,60 @@ const connectWebSocket = () => {
 // }
 
 const sendMessage = () => {
-  if (!stompClient.value || !stompClient.value.connected) {
-    console.warn('❗ WebSocket 연결이 아직 완료되지 않았습니다.')
-    return
-  }
-
-  if (inputMessage.value.trim() !== '') {
-    const now = new Date()
-    const hours = String(now.getHours()).padStart(2, '0')
-    const minutes = String(now.getMinutes()).padStart(2, '0')
-    const currentTime = `${hours}:${minutes}`
-
-    const chatMessage = {
-      sender: mySenderId.value,
-      content: inputMessage.value.trim(),
+    if (!stompClient.value || !stompClient.value.connected) {
+        console.warn('❗ WebSocket 연결이 아직 완료되지 않았습니다.')
+        return
     }
 
-    // 1. 메시지 전송
-    stompClient.value.send(`/app/chat/${props.roomId}`, {}, JSON.stringify(chatMessage))
+    if (inputMessage.value.trim() !== '') {
+        const now = new Date()
+        const hours = String(now.getHours()).padStart(2, '0')
+        const minutes = String(now.getMinutes()).padStart(2, '0')
+        const currentTime = `${hours}:${minutes}`
 
-    // 2. 메시지 화면에 반영
-    messages.value.push({
-      ...chatMessage,
-      isSelf: true,
-      author: mySenderId.value,
-      time: currentTime,
-    })
+        const chatMessage = {
+            sender: mySenderId.value,
+            content: inputMessage.value.trim(),
+        }
 
-    // 3. 입력창 비우기
-    inputMessage.value = ''
-  }
+        // 1. 메시지 전송
+        stompClient.value.send(`/app/chat/${props.roomId}`, {}, JSON.stringify(chatMessage))
+
+        // 2. 메시지 화면에 반영
+        messages.value.push({
+            ...chatMessage,
+            isSelf: true,
+            author: mySenderId.value,
+            time: currentTime,
+        })
+
+        // 3. 입력창 비우기
+        inputMessage.value = ''
+    }
 }
 
 watch(
-  () => props.roomId,
-  (newVal, oldVal) => {
-    console.log('📌 roomId 감지됨:', newVal, oldVal)
-    if (newVal) {
-      loadHistory()
-      connectWebSocket()
-    }
-  },
-  { immediate: true },
+    () => props.roomId,
+    (newVal, oldVal) => {
+        console.log('📌 roomId 감지됨:', newVal, oldVal)
+        if (newVal) {
+            loadHistory()
+            connectWebSocket()
+        }
+    },
+    { immediate: true },
 )
 
 watch(mySenderId, (newId) => {
-  messages.value = messages.value.map((msg) => ({
-    ...msg,
-    isSelf: msg.sender === newId,
-  }))
+    messages.value = messages.value.map((msg) => ({
+        ...msg,
+        isSelf: msg.sender === newId,
+    }))
 })
 </script>
+
+<style scoped>
+.\!rounded-button {
+    border-radius: 8px;
+}
+</style>

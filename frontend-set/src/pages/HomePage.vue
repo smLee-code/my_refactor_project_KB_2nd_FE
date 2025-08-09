@@ -122,6 +122,7 @@ import axios from 'axios'
 import { useAuthStore } from '@/stores/auth'
 
 const authStore = useAuthStore()
+authStore.loadToken()
 
 const router = useRouter()
 const topProjects = ref([])
@@ -207,7 +208,7 @@ const popularFundings = [
         title: '인기 펀딩 1',
         description: '설명1',
         daysLeft: 10,
-        category: '적금형',
+        category: '저축형',
         likes: 100,
         progress: 80,
         link: '#',

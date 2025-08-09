@@ -40,7 +40,7 @@
                 </div>
                 <div class="bg-indigo-50 rounded-lg p-3">
                     <div class="text-xs text-indigo-700 mb-1">이번 달 베스트</div>
-                    <div class="text-sm font-medium text-indigo-800">청년 적금 플러스</div>
+                    <div class="text-sm font-medium text-indigo-800">청년 저축 플러스</div>
                 </div>
             </div>
             <!-- <div

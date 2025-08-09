@@ -69,3 +69,9 @@ defineProps({
     data: { type: Array, required: true },
 })
 </script>
+
+<style scoped>
+.\!rounded-button {
+    border-radius: 8px;
+}
+</style>

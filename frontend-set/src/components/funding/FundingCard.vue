@@ -100,7 +100,7 @@ const handleCardClick = () => {
 const categoryClass = computed(() => {
     return [
         'px-2 py-1 rounded-full text-white',
-        props.category === '적금형'
+        props.category === '저축형'
             ? 'bg-blue-500'
             : props.category === '대출형'
               ? 'bg-green-500'

@@ -1,4 +1,4 @@
-<!-- 결제가 없는 펀딩 참여 페이지 (대출, 적금) -->
+<!-- 결제가 없는 펀딩 참여 페이지 (대출, 저축) -->
 <template>
     <div class="min-h-screen bg-gray-50 w-full">
         <!-- 메인 콘텐츠 영역 -->
@@ -16,29 +16,46 @@
             </div>
             <!-- 펀딩 참여 헤더 -->
             <div class="mb-8">
-                <h1 class="text-3xl font-bold text-gray-900 mb-2">{{ fundingTitle || '로딩중...' }} 신청하기</h1>
-                <p v-if="fundingType" class="text-lg text-gray-600">{{ fundingType === 'loan' ? '대출' : '적금' }} 상품</p>
+                <h1 class="text-3xl font-bold text-gray-900 mb-2">
+                    {{ fundingTitle || '로딩중...' }} 신청하기
+                </h1>
+                <p v-if="fundingType" class="text-lg text-gray-600">
+                    {{ fundingType === 'loan' ? '대출' : '저축' }} 상품
+                </p>
             </div>
 
             <!-- 상품 정보 요약 -->
             <section class="mb-8">
                 <div class="bg-white rounded-xl shadow-lg p-6 border border-gray-100">
                     <div class="flex items-center mb-6">
-                        <i :class="fundingType === 'loan' ? 'fas fa-hand-holding-usd text-blue-500' : 'fas fa-piggy-bank text-green-500'" class="text-xl mr-3"></i>
+                        <i
+                            :class="
+                                fundingType === 'loan'
+                                    ? 'fas fa-hand-holding-usd text-blue-500'
+                                    : 'fas fa-piggy-bank text-green-500'
+                            "
+                            class="text-xl mr-3"
+                        ></i>
                         <h3 class="text-xl font-bold text-gray-900">상품 정보</h3>
                     </div>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div v-if="fundingType === 'loan'" class="bg-blue-50 p-4 rounded-lg">
                             <p class="text-sm text-gray-600 mb-1">대출 한도</p>
-                            <p class="text-lg font-bold text-gray-900">{{ formatCurrency(loanLimit) }}</p>
+                            <p class="text-lg font-bold text-gray-900">
+                                {{ formatCurrency(loanLimit) }}
+                            </p>
                         </div>
                         <div v-if="fundingType === 'loan'" class="bg-blue-50 p-4 rounded-lg">
                             <p class="text-sm text-gray-600 mb-1">금리</p>
-                            <p class="text-lg font-bold text-gray-900">{{ minInterestRate }}% ~ {{ maxInterestRate }}%</p>
+                            <p class="text-lg font-bold text-gray-900">
+                                {{ minInterestRate }}% ~ {{ maxInterestRate }}%
+                            </p>
                         </div>
                         <div v-if="fundingType === 'savings'" class="bg-green-50 p-4 rounded-lg">
                             <p class="text-sm text-gray-600 mb-1">목표 금액</p>
-                            <p class="text-lg font-bold text-gray-900">{{ formatCurrency(targetAmount) }}</p>
+                            <p class="text-lg font-bold text-gray-900">
+                                {{ formatCurrency(targetAmount) }}
+                            </p>
                         </div>
                         <div v-if="fundingType === 'savings'" class="bg-green-50 p-4 rounded-lg">
                             <p class="text-sm text-gray-600 mb-1">연 이자율</p>
@@ -105,9 +122,14 @@
                                     placeholder="희망 대출 금액을 입력하세요"
                                     required
                                 />
-                                <span class="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-500">원</span>
+                                <span
+                                    class="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-500"
+                                    >원</span
+                                >
                             </div>
-                            <p class="mt-1 text-sm text-gray-500">최대 한도: {{ formatCurrency(loanLimit) }}</p>
+                            <p class="mt-1 text-sm text-gray-500">
+                                최대 한도: {{ formatCurrency(loanLimit) }}
+                            </p>
                         </div>
                         <div v-if="fundingType === 'savings'">
                             <label class="block text-sm font-medium text-gray-700 mb-2">
@@ -122,7 +144,10 @@
                                     placeholder="매월 납입할 금액을 입력하세요"
                                     required
                                 />
-                                <span class="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-500">원</span>
+                                <span
+                                    class="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-500"
+                                    >원</span
+                                >
                             </div>
                         </div>
                     </form>
@@ -162,8 +187,7 @@
                                 class="mt-1 w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
                             />
                             <span class="text-sm text-gray-700">
-                                <span class="font-medium">[필수]</span> 신용정보 조회에
-                                동의합니다
+                                <span class="font-medium">[필수]</span> 신용정보 조회에 동의합니다
                             </span>
                         </label>
                     </div>
@@ -171,13 +195,14 @@
                         @click="submitApplication"
                         :disabled="!canProceedApplication"
                         :class="{
-                            'bg-gradient-to-r from-blue-500 to-green-500 hover:from-blue-600 hover:to-green-600 text-white': canProceedApplication,
+                            'bg-gradient-to-r from-blue-500 to-green-500 hover:from-blue-600 hover:to-green-600 text-white':
+                                canProceedApplication,
                             'bg-gray-300 text-gray-500 cursor-not-allowed': !canProceedApplication,
                         }"
                         class="w-full py-4 !rounded-button font-bold text-lg transition-all shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 whitespace-nowrap"
                     >
                         <i class="fas fa-check-circle mr-2"></i>
-                        {{ fundingType === 'loan' ? '대출 신청하기' : '적금 가입하기' }}
+                        {{ fundingType === 'loan' ? '대출 신청하기' : '저축 가입하기' }}
                     </button>
                     <p class="text-xs text-gray-500 text-center mt-3">
                         신청 후 심사를 거쳐 최종 승인됩니다
@@ -205,33 +230,33 @@ const fundingType = ref('') // 'loan' 또는 'savings' - 초기값 없음
 const loanLimit = ref(50000000) // 대출 한도
 const minInterestRate = ref(2.5) // 최소 금리
 const maxInterestRate = ref(4.5) // 최대 금리
-const targetAmount = ref(10000000) // 적금 목표 금액
-const interestRate = ref(3.5) // 적금 이자율
+const targetAmount = ref(10000000) // 저축 목표 금액
+const interestRate = ref(3.5) // 저축 이자율
 
 // 펀딩 정보 조회 및 타입 확인
 const fetchFundingInfo = async () => {
     try {
         const response = await api.get(`/fund/${fundingId}`)
         fundingData.value = response.data
-        
+
         console.log('펀딩 정보:', response.data)
-        
+
         // 펀딩 타입 확인
         const type = response.data.fundType
-        
-        // 이 페이지는 결제가 없는 펀딩(대출/적금)만 처리
+
+        // 이 페이지는 결제가 없는 펀딩(대출/저축)만 처리
         if (type === 'Donation' || type === 'Challenge') {
             // 기부/챌린지인 경우 올바른 페이지로 리다이렉트
             router.replace(`/funding/join-payment/${fundingId}`)
             return
         }
-        
+
         // 펀딩 정보 업데이트
         fundingTitle.value = response.data.fundName || response.data.name || '펀딩 프로젝트'
         fundingType.value = type.toLowerCase() // 'Loan' -> 'loan', 'Savings' -> 'savings'
-        
+
         console.log('펀딩 타입:', fundingType.value)
-        
+
         if (type === 'Loan') {
             loanLimit.value = response.data.loanLimit || 50000000
             minInterestRate.value = response.data.minInterestRate || 2.5
@@ -258,7 +283,7 @@ const applicantInfo = ref({
     phone: '',
     email: '',
     requestedAmount: '', // 대출 희망 금액
-    monthlyDeposit: '', // 적금 월 납입액
+    monthlyDeposit: '', // 저축 월 납입액
 })
 
 // 약관 동의
@@ -300,14 +325,14 @@ const formatCurrency = (amount: number) => {
 
 // 신청 가능 여부
 const canProceedApplication = computed(() => {
-    const baseCondition = 
+    const baseCondition =
         applicantInfo.value.name &&
         applicantInfo.value.phone &&
         applicantInfo.value.email &&
         agreements.value.terms &&
         agreements.value.privacy &&
         agreements.value.creditCheck
-    
+
     if (fundingType.value === 'loan') {
         return baseCondition && applicantInfo.value.requestedAmount
     } else {
@@ -318,26 +343,30 @@ const canProceedApplication = computed(() => {
 // 신청 제출
 const submitApplication = async () => {
     if (!canProceedApplication.value) return
-    
+
     try {
         const requestData = {
             fundId: fundingId,
             applicantInfo: {
                 ...applicantInfo.value,
-                requestedAmount: fundingType.value === 'loan' 
-                    ? parseInt(applicantInfo.value.requestedAmount.replace(/,/g, '') || '0')
-                    : undefined,
-                monthlyDeposit: fundingType.value === 'savings'
-                    ? parseInt(applicantInfo.value.monthlyDeposit.replace(/,/g, '') || '0')
-                    : undefined,
+                requestedAmount:
+                    fundingType.value === 'loan'
+                        ? parseInt(applicantInfo.value.requestedAmount.replace(/,/g, '') || '0')
+                        : undefined,
+                monthlyDeposit:
+                    fundingType.value === 'savings'
+                        ? parseInt(applicantInfo.value.monthlyDeposit.replace(/,/g, '') || '0')
+                        : undefined,
             },
-            fundingType: fundingType.value
+            fundingType: fundingType.value,
         }
-        
+
         const response = await api.post('/fund/apply', requestData)
-        
+
         if (response.data.success) {
-            alert(`${fundingType.value === 'loan' ? '대출' : '적금'} 신청이 완료되었습니다!\n심사 결과는 영업일 기준 2-3일 내 안내드립니다.`)
+            alert(
+                `${fundingType.value === 'loan' ? '대출' : '저축'} 신청이 완료되었습니다!\n심사 결과는 영업일 기준 2-3일 내 안내드립니다.`,
+            )
             router.push(`/funding/detail/${fundingId}`)
         } else {
             alert('신청 처리 중 오류가 발생했습니다.')

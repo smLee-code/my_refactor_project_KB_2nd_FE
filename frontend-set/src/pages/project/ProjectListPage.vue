@@ -107,13 +107,13 @@ const categoriesFromProjects = computed(() => {
 })
 
 const categoryMap = {
-    Savings: '적금형',
+    Savings: '저축형',
     Loan: '대출형',
     Challenge: '챌린지형',
     Donation: '기부형',
 }
 
-const categories = ['전체', '적금형', '대출형', '기부형', '챌린지형']
+const categories = ['전체', '저축형', '대출형', '기부형', '챌린지형']
 
 const statusOptions = ['진행중', '완료', '중단']
 

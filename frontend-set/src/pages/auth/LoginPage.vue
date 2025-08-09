@@ -87,20 +87,19 @@
             <div class="mt-8">
                 <!-- 비밀번호 찾기 / 회원가입 링크 -->
                 <div class="flex items-center justify-end gap-2 text-sm">
-                    <a
+                    <!-- <a
                         href="#"
                         class="text-blue-600 hover:text-blue-800 cursor-pointer transition-colors"
                     >
                         비밀번호 찾기
                     </a>
-                    <span class="text-gray-400">|</span>
-                    <a
-                        href="https://readdy.ai/home/cb2c7bc4-bc93-4247-9521-a5e098400181/176a112f-751d-4869-b1c5-244ebb7d5f93"
-                        data-readdy="true"
+                    <span class="text-gray-400">|</span> -->
+                    <RouterLink
+                        to="/auth/join"
                         class="text-blue-600 hover:text-blue-800 cursor-pointer transition-colors"
                     >
                         회원가입
-                    </a>
+                    </RouterLink>
                 </div>
             </div>
         </div>
