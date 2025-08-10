@@ -72,12 +72,16 @@ import {
     getMyLoans,
     getMySavings,
 } from '@/api/mypageApi'
+import { useAuthStore } from '@/stores/auth'
 
 // 컴포넌트 import
 import TabNavigation from '@/components/mypage/TabNavigation.vue'
 import UserInfoCard from '@/components/mypage/UserInfoCard.vue'
 import LikedProjectsSection from '@/components/mypage/LikedProjectsSection.vue'
 import ParticipatingFundingsSection from '@/components/mypage/ParticipatingFundingsSection.vue'
+
+const authStore = useAuthStore()
+const token = authStore.loadToken()
 
 const activeTab = ref('info')
 const showUserMenu = ref(false)
@@ -112,7 +116,7 @@ const loadMyPageInfo = async () => {
     try {
         loading.value = true
         error.value = null
-        const data = await getMyPageInfo()
+        const data = await getMyPageInfo(token)
 
         // 사용자 정보 업데이트
         Object.assign(userInfo, data)

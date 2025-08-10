@@ -3,14 +3,24 @@ import api from '@/api'
 const BASE_URL = '/mypage'
 
 // 마이페이지 기본 정보 조회
-export const getMyPageInfo = async () => {
-    const response = await api.get(BASE_URL)
+export const getMyPageInfo = async (token) => {
+    console.log('✅token:', token)
+
+    const response = await api.get(BASE_URL, {
+        headers: {
+            Authorization: `Bearer ${token}`,
+        },
+    })
     return response.data
 }
 
 // 관심 키워드 조회
-export const getMyKeywords = async () => {
-    const response = await api.get(`${BASE_URL}/keywords`)
+export const getMyKeywords = async (token) => {
+    const response = await api.get(`${BASE_URL}/keywords`, {
+        headers: {
+            Authorization: `Bearer ${token}`,
+        },
+    })
     return response.data
 }
 
@@ -27,8 +37,12 @@ export const updateAccountInfo = async (accountInfo) => {
 }
 
 // 내 투표 조회
-export const getMyVotes = async () => {
-    const response = await api.get(`${BASE_URL}/votes`)
+export const getMyVotes = async (token) => {
+    const response = await api.get(`${BASE_URL}/votes`, {
+        headers: {
+            Authorization: `Bearer ${token}`,
+        },
+    })
     return response.data
 }
 
