@@ -38,11 +38,7 @@ export const updateAccountInfo = async (accountInfo) => {
 
 // 내 투표 조회
 export const getMyVotes = async (token) => {
-    const response = await api.get(`${BASE_URL}/votes`, {
-        headers: {
-            Authorization: `Bearer ${token}`,
-        },
-    })
+    const response = await api.get(`${BASE_URL}/votes`)
     return response.data
 }
 
