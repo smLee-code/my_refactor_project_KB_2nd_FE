@@ -243,7 +243,7 @@ onMounted(async () => {
                 description: item.promotion || '설명이 없습니다.',
 
                 likes: item.likes ?? 0,
-                isLiked: !item.isLiked,
+                isLiked: item.isLiked,
 
                 status:
                     item.progress === 'Active'
