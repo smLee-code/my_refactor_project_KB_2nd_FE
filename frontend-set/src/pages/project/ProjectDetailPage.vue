@@ -121,7 +121,6 @@ const fetchProjectData = async (projectId) => {
 
         const relatedRes = await axios.get(`/project/related/${projectId}`)
         relatedProjects.value = relatedRes.data
-        isLiked.value = !!likeRes.data
 
         const isLikedRes = await axios.get(`/votes/${projectId}`, {
             headers: {
