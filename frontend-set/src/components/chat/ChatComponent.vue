@@ -108,7 +108,6 @@ const loadHistory = async () => {
             const currentTime = `${hours}:${minutes}`
             return {
                 ...msg,
-                isSelf: msg.sender === mySenderId.value,
                 author: msg.sender, // UI 표시용
                 time: currentTime, // UI 표시용
             }
