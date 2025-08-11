@@ -177,6 +177,7 @@ const handleLogin = async () => {
 
                 console.log('여기부터 안나옴')
                 console.log('✅authStore token:', authStore.loadToken())
+                console.log('✅authStore userId:', authStore.loadUserId())
                 console.log('✅authStore role:', authStore.loadRole())
             })
 

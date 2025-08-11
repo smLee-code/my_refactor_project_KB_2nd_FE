@@ -4,7 +4,7 @@ import { defineStore } from 'pinia'
 export const useAuthStore = defineStore('auth', () => {
     const isLoggedIn = ref(false)
     const token = ref('')
-    const userRole = ref('')
+    const role = ref('')
     const userId = ref(null)
 
     function login(receivedAuthData) {
@@ -15,16 +15,13 @@ export const useAuthStore = defineStore('auth', () => {
         token.value = receivedAuthData.token
         console.log('✅token:', receivedAuthData.token)
 
-        userRole.value = receivedAuthData.userRole
+        role.value = receivedAuthData.userRole
         console.log('✅userRole:', receivedAuthData.userRole)
 
-        // userId가 있으면 저장
-        if (receivedAuthData.user && receivedAuthData.user.userId) {
-            userId.value = receivedAuthData.user.userId
-            localStorage.setItem('userId', receivedAuthData.user.userId)
-            console.log('✅userId:', receivedAuthData.user.userId)
-        }
+        userId.value = receivedAuthData.userId
+        console.log('✅userId:', receivedAuthData.userId)
 
+        localStorage.setItem('userId', receivedAuthData.userId.toString())
         localStorage.setItem('jwt', receivedAuthData.token)
         localStorage.setItem('role', receivedAuthData.userRole)
     }
@@ -32,7 +29,7 @@ export const useAuthStore = defineStore('auth', () => {
     function logout() {
         isLoggedIn.value = false
         token.value = ''
-        userRole.value = ''
+        role.value = ''
         userId.value = null
 
         // 모든 사용자 관련 localStorage 데이터 정리
@@ -61,9 +58,9 @@ export const useAuthStore = defineStore('auth', () => {
     function loadRole() {
         const savedRole = localStorage.getItem('role')
         if (savedRole) {
-            userRole.value = savedRole
+            role.value = savedRole
         }
-        return userRole.value
+        return role.value
     }
 
     function loadUserId() {
@@ -71,17 +68,17 @@ export const useAuthStore = defineStore('auth', () => {
         if (savedUserId) {
             userId.value = parseInt(savedUserId)
         }
-        return userId
+        return userId.value
     }
 
     function isFinanceRole() {
-        return userRole.value === 'ROLE_FINANCE'
+        return role.value === 'ROLE_FINANCE'
     }
 
     return {
         isLoggedIn,
         token,
-        userRole,
+        userRole: role,
         userId,
         login,
         logout,
