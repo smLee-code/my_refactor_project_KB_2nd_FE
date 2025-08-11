@@ -62,7 +62,7 @@
 <script setup>
 import axios from 'axios'
 import { useRoute, useRouter, onBeforeRouteUpdate } from 'vue-router'
-import { ref, nextTick, onMounted, watch } from 'vue'
+import { ref, nextTick, onMounted, watch, computed } from 'vue'
 import { watchEffect } from 'vue'
 import { useAuthStore } from '@/stores/auth'
 
@@ -121,7 +121,6 @@ const fetchProjectData = async (projectId) => {
 
         const relatedRes = await axios.get(`/project/related/${projectId}`)
         relatedProjects.value = relatedRes.data
-        isLiked.value = !!likeRes.data
 
         const isLikedRes = await axios.get(`/votes/${projectId}`, {
             headers: {

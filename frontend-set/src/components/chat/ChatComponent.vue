@@ -94,7 +94,13 @@ const scrollToBottom = async () => {
 // ==== History ====
 const loadHistory = async () => {
     try {
-        const res = await axios.get(`/chat/history/${props.roomId}`)
+        console.log('✅ token:', token)
+
+        const res = await axios.get(`/chat/history/${props.roomId}`, {
+            headers: {
+                Authorization: `Bearer ${token}`,
+            },
+        })
         messages.value = res.data.map((msg) => {
             const now = new Date(msg.timestamp) // Assuming msg.timestamp is available from backend
             const hours = String(now.getHours()).padStart(2, '0')
@@ -102,7 +108,6 @@ const loadHistory = async () => {
             const currentTime = `${hours}:${minutes}`
             return {
                 ...msg,
-                isSelf: msg.sender === mySenderId.value,
                 author: msg.sender, // UI 표시용
                 time: currentTime, // UI 표시용
             }
@@ -123,7 +128,7 @@ const connectWebSocket = () => {
     stompClient.value.debug = (msg) => console.log('[STOMP]', msg)
 
     stompClient.value.connect(
-        {},
+        { Authorization: `Bearer ${token}` }, // 웹소켓 연결시 최초 1번만 jwt 인증
         () => {
             console.log('✅ 연결 성공')
             stompClient.value.subscribe(`/topic/chat/${props.roomId}`, (msg) => {
@@ -162,6 +167,8 @@ const disconnectWebSocket = () => {
 
 // ==== Send ====
 const sendMessage = () => {
+    console.log('✅ sendMessage()!')
+
     if (!stompClient.value || !stompClient.value.connected) {
         console.warn('❗ WebSocket 연결이 아직 완료되지 않았습니다.')
         return

@@ -78,7 +78,7 @@
     </div>
 </template>
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, watch } from 'vue'
 import FundingUrgentCard from '@/components/funding/FundingUrgentCard.vue'
 import FundingCard from '@/components/funding/FundingCard.vue'
 import TabMenu from '@/components/common/TabMenu.vue'
@@ -110,7 +110,9 @@ const tabOptions = [
 const activeTab = ref('ongoing')
 const selectedCategory = ref('전체')
 const currentPage = ref(1)
-const totalPages = ref(5)
+const totalPages = computed(() => {
+    return Math.ceil(filteredFundingList.value.length / itemsPerPage) || 1
+})
 const searchQuery = ref('')
 const selectedSort = ref('latest')
 
@@ -161,7 +163,9 @@ const urgentFundings = computed(() => {
         }))
 })
 
-const displayedFundingList = computed(() => {
+const itemsPerPage = 6 // 페이지당 표시할 아이템 수
+
+const filteredFundingList = computed(() => {
     let filtered = [...filteredByTab.value]
 
     // 카테고리 필터링
@@ -192,6 +196,12 @@ const displayedFundingList = computed(() => {
     return filtered
 })
 
+const displayedFundingList = computed(() => {
+    const startIndex = (currentPage.value - 1) * itemsPerPage
+    const endIndex = startIndex + itemsPerPage
+    return filteredFundingList.value.slice(startIndex, endIndex)
+})
+
 function handleSearch() {
     currentPage.value = 1
 }
@@ -202,6 +212,11 @@ const getDaysLeft = (endAt) => {
     const diff = Math.ceil((end - today) / (1000 * 60 * 60 * 24))
     return diff >= 0 ? diff : 0
 }
+
+// 탭, 카테고리, 정렬이 변경되면 페이지를 1로 초기화
+watch([activeTab, selectedCategory, selectedSort], () => {
+    currentPage.value = 1
+})
 
 onMounted(async () => {
     try {

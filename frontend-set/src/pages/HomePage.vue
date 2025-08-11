@@ -6,7 +6,13 @@
                 <!-- 좌측: 메인 배너 + 당신이 좋아할만한 펀딩 -->
                 <div class="lg:col-span-2 space-y-6">
                     <!-- 메인 배너 슬라이더 -->
-                    <MainBannerSlider :banners="mainBanners" v-model:current="currentSlide" />
+                    <MainBannerSlider 
+                        :banners="mainBanners" 
+                        v-model:current="currentSlide"
+                        @mouseenter="stopAutoSlide"
+                        @mouseleave="startAutoSlide"
+                        @indicator-click="handleSlideChange"
+                    />
                     <!-- 당신이 좋아할만한 펀딩 -->
                     <div>
                         <div class="flex items-center justify-between mb-6">
@@ -111,7 +117,7 @@
 
 <script setup>
 import { useRouter } from 'vue-router'
-import { onMounted, ref } from 'vue'
+import { onMounted, onUnmounted, ref } from 'vue'
 import MainBannerSlider from '@/components/home/MainBannerSlider.vue'
 import FundingCard from '@/components/funding/FundingCard.vue'
 import ProjectRankingCard from '@/components/project/ProjectRankingCard.vue'
@@ -127,12 +133,33 @@ const token = authStore.loadToken()
 const router = useRouter()
 const topProjects = ref([])
 const recommendedProjects = ref([])
+const latestFundings = ref([]) // 최신 펀딩 데이터
 
 const goToProject = (id) => {
     router.push(`project/detail/${id}`)
 }
 
 onMounted(async () => {
+    // 최신 펀딩 데이터 가져오기
+    try {
+        const fundRes = await axios.get('/fund/list', { params: { progress: 'Launch' } })
+        const sortedFunds = fundRes.data
+            .sort((a, b) => new Date(b.launchAt) - new Date(a.launchAt)) // 최신순 정렬
+            .slice(0, 3) // 상위 3개만
+        
+        latestFundings.value = sortedFunds
+        
+        // 펀딩 데이터가 있으면 캐러셀 배너 업데이트
+        if (latestFundings.value.length > 0) {
+            updateBannersWithFundings()
+        }
+    } catch (err) {
+        console.error('❌ 최신 펀딩 로딩 실패:', err)
+    }
+    
+    // 자동 슬라이드 시작
+    startAutoSlide()
+    
     console.log('token123123:', token) // ✅ JWT 문자열 출력돼야 함
 
     // console.log('토큰 상태:', {
@@ -188,21 +215,88 @@ const goToProjectList = () => {
     router.push('/project')
 }
 
-const mainBanners = [
+const goToFunding = (id) => {
+    router.push(`/funding/detail/${id}`)
+}
+
+const mainBanners = ref([
     {
         title: '첫번째 배너 타이틀',
         image: '/images/logo.png',
+        fundId: null,
+        description: '',
+        progress: 0,
+        daysLeft: 0,
     },
     {
         title: '두번째 배너 타이틀',
         image: '/images/logo.png',
+        fundId: null,
+        description: '',
+        progress: 0,
+        daysLeft: 0,
     },
     {
         title: '세번째 배너 타이틀',
         image: '/images/logo.png',
+        fundId: null,
+        description: '',
+        progress: 0,
+        daysLeft: 0,
     },
-]
+])
+
+// 펀딩 데이터로 배너 업데이트
+const updateBannersWithFundings = () => {
+    mainBanners.value = latestFundings.value.map(fund => ({
+        title: fund.name,
+        image: fund.thumbnailImage?.imageUrl || '/images/logo.png',
+        fundId: fund.fundId,
+        description: fund.financialInstitution || '금융기관 정보 없음',
+        progress: fund.progress || 0,
+        daysLeft: getDaysLeft(fund.endAt),
+    }))
+}
+
+const getDaysLeft = (endAt) => {
+    const end = new Date(endAt)
+    const today = new Date()
+    const diff = Math.ceil((end - today) / (1000 * 60 * 60 * 24))
+    return diff >= 0 ? diff : 0
+}
 const currentSlide = ref(0)
+
+// 자동 슬라이드 기능
+let slideInterval = null
+
+const startAutoSlide = () => {
+    // 기존 interval이 있으면 먼저 정리
+    if (slideInterval) {
+        clearInterval(slideInterval)
+    }
+    slideInterval = setInterval(() => {
+        currentSlide.value = (currentSlide.value + 1) % mainBanners.value.length
+    }, 6000) // 6초마다 슬라이드 변경
+}
+
+const stopAutoSlide = () => {
+    if (slideInterval) {
+        clearInterval(slideInterval)
+        slideInterval = null
+    }
+}
+
+// 사용자가 인디케이터 점을 클릭했을 때 자동 슬라이드 리셋
+const handleSlideChange = (index) => {
+    currentSlide.value = index
+    stopAutoSlide()
+    startAutoSlide() // 타이머를 리셋하여 다시 시작
+}
+
+// 컴포넌트 언마운트 시 자동 슬라이드 정지
+onUnmounted(() => {
+    stopAutoSlide()
+})
 
 const popularFundings = [
     // FundingCard용 mock data
