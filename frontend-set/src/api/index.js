@@ -11,6 +11,10 @@ const api = axios.create({
 api.interceptors.request.use(
     (config) => {
         const authStore = useAuthStore()
+        // 토큰이 없으면 localStorage에서 로드
+        if (!authStore.token) {
+            authStore.loadToken()
+        }
         if (authStore.token) {
             config.headers.Authorization = `Bearer ${authStore.token}`
         }

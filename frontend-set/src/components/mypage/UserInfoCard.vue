@@ -77,7 +77,16 @@
                         <p class="text-lg text-gray-900">
                             {{
                                 userInfo.createAt
-                                    ? new Date(userInfo.createAt).toLocaleDateString('ko-KR')
+                                    ? (() => {
+                                          try {
+                                              const date = new Date(userInfo.createAt)
+                                              return isNaN(date.getTime())
+                                                  ? '날짜 정보 없음'
+                                                  : date.toLocaleDateString('ko-KR')
+                                          } catch (err) {
+                                              return '날짜 정보 없음'
+                                          }
+                                      })()
                                     : '로딩 중...'
                             }}
                         </p>
@@ -96,10 +105,10 @@
                             >
                                 <span
                                     v-for="keyword in userInfo.keywords"
-                                    :key="keyword"
+                                    :key="keyword.keywordId || keyword"
                                     class="bg-gray-100 text-gray-800 px-3 py-1 rounded-full text-sm"
                                 >
-                                    {{ keyword }}
+                                    {{ keyword.name || keyword }}
                                 </span>
                             </div>
                             <div v-else class="text-gray-500 text-sm">
@@ -107,44 +116,40 @@
                             </div>
                         </div>
                         <div v-else class="space-y-3">
-                            <!-- 키워드 입력 -->
-                            <div class="flex space-x-2">
-                                <input
-                                    v-model="newKeyword"
-                                    @keyup.enter="addKeyword"
-                                    type="text"
-                                    class="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-400 focus:border-transparent"
-                                    placeholder="키워드를 입력하세요"
-                                />
-                                <button
-                                    @click="addKeyword"
-                                    :disabled="!newKeyword.trim()"
-                                    class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                            <div class="flex items-center justify-between">
+                                <span class="text-sm text-gray-600"
+                                    >{{ editForm.selectedKeywordIds.length }}/3 선택됨</span
                                 >
-                                    추가
-                                </button>
                             </div>
-                            <!-- 키워드 목록 -->
+                            <p class="text-sm text-gray-600">
+                                관심 있는 키워드를 3개 선택해주세요.
+                            </p>
                             <div class="flex flex-wrap gap-2">
-                                <div
-                                    v-for="(keyword, index) in editForm.keywords"
-                                    :key="index"
-                                    class="bg-yellow-100 text-gray-800 px-3 py-1 rounded-full text-sm flex items-center space-x-1"
+                                <button
+                                    type="button"
+                                    v-for="keyword in availableKeywords"
+                                    :key="keyword.keywordId"
+                                    @click="toggleKeyword(keyword.keywordId)"
+                                    :class="{
+                                        'bg-blue-100 text-blue-800 border-blue-300':
+                                            editForm.selectedKeywordIds.includes(keyword.keywordId),
+                                        'bg-gray-50 text-gray-700 border-gray-200 hover:border-gray-300':
+                                            !editForm.selectedKeywordIds.includes(
+                                                keyword.keywordId,
+                                            ),
+                                        'cursor-not-allowed opacity-50':
+                                            !editForm.selectedKeywordIds.includes(
+                                                keyword.keywordId,
+                                            ) && editForm.selectedKeywordIds.length >= 3,
+                                    }"
+                                    class="px-4 py-2 rounded-full border text-sm font-medium transition-all duration-200 !rounded-button whitespace-nowrap"
+                                    :disabled="
+                                        !editForm.selectedKeywordIds.includes(keyword.keywordId) &&
+                                        editForm.selectedKeywordIds.length >= 3
+                                    "
                                 >
-                                    <span>{{ keyword }}</span>
-                                    <button
-                                        @click="removeKeyword(index)"
-                                        class="text-red-500 hover:text-red-700 ml-1"
-                                    >
-                                        <i class="fas fa-times text-xs"></i>
-                                    </button>
-                                </div>
-                            </div>
-                            <div
-                                v-if="editForm.keywords.length === 0"
-                                class="text-gray-500 text-sm"
-                            >
-                                키워드를 추가해주세요.
+                                    {{ keyword.name }}
+                                </button>
                             </div>
                         </div>
                     </div>
@@ -182,8 +187,8 @@
 </template>
 
 <script setup>
-import { ref, reactive, watch } from 'vue'
-import { updateAccountInfo, updateMyKeywords } from '@/api/mypageApi'
+import { ref, reactive, watch, onMounted } from 'vue'
+import { updateAccountInfo, updateMyKeywords, getMyKeywords } from '@/api/mypageApi'
 
 const props = defineProps({
     userInfo: {
@@ -196,16 +201,38 @@ const props = defineProps({
     },
 })
 
-const emit = defineEmits(['update:userInfo'])
+const emit = defineEmits(['update:userInfo', 'update-completed'])
 
 const editMode = ref(false)
-const newKeyword = ref('')
+const availableKeywords = ref([])
 const editForm = reactive({
     username: '',
     nickname: '',
     phoneNumber: '',
     keywords: [],
+    selectedKeywordIds: [],
 })
+
+// 사용 가능한 키워드 로드
+const loadAvailableKeywords = async () => {
+    try {
+        const keywords = await getMyKeywords()
+        availableKeywords.value = keywords
+    } catch (err) {
+        console.error('키워드 로드 실패:', err)
+        // Mock 데이터로 대체
+        availableKeywords.value = [
+            { keywordId: 1, name: '기술' },
+            { keywordId: 2, name: '환경' },
+            { keywordId: 3, name: '문화' },
+            { keywordId: 4, name: '교육' },
+            { keywordId: 5, name: '건강' },
+            { keywordId: 6, name: '여행' },
+            { keywordId: 7, name: '음식' },
+            { keywordId: 8, name: '스포츠' },
+        ]
+    }
+}
 
 // 사용자 정보가 변경될 때 수정 폼 초기화
 watch(
@@ -216,6 +243,18 @@ watch(
             editForm.nickname = newUserInfo.nickname || ''
             editForm.phoneNumber = newUserInfo.phoneNumber || ''
             editForm.keywords = [...(newUserInfo.keywords || [])]
+            // 키워드 ID 추출 로직 개선
+            editForm.selectedKeywordIds = (newUserInfo.keywords || [])
+                .map((k) => {
+                    if (typeof k === 'object' && k.keywordId) {
+                        return k.keywordId
+                    } else if (typeof k === 'number') {
+                        return k
+                    } else {
+                        return null
+                    }
+                })
+                .filter((id) => id !== null)
         }
     },
     { immediate: true },
@@ -228,28 +267,77 @@ const toggleEditMode = () => {
         editForm.nickname = props.userInfo.nickname
         editForm.phoneNumber = props.userInfo.phoneNumber
         editForm.keywords = [...(props.userInfo.keywords || [])]
-        newKeyword.value = ''
+        // 키워드 ID 추출 로직 개선
+        editForm.selectedKeywordIds = (props.userInfo.keywords || [])
+            .map((k) => {
+                if (typeof k === 'object' && k.keywordId) {
+                    return k.keywordId
+                } else if (typeof k === 'number') {
+                    return k
+                } else {
+                    return null
+                }
+            })
+            .filter((id) => id !== null)
+    } else {
+        // 수정 모드 진입 시 현재 선택된 키워드들로 초기화
+        console.log('수정 모드 진입 - 기존 키워드:', props.userInfo.keywords)
+        editForm.selectedKeywordIds = (props.userInfo.keywords || [])
+            .map((k) => {
+                if (typeof k === 'object' && k.keywordId) {
+                    return k.keywordId
+                } else if (typeof k === 'number') {
+                    return k
+                } else {
+                    return null
+                }
+            })
+            .filter((id) => id !== null)
+        console.log('수정 모드 진입 - 선택된 키워드 ID:', editForm.selectedKeywordIds)
     }
     editMode.value = !editMode.value
 }
 
-const addKeyword = () => {
-    const keyword = newKeyword.value.trim()
-    if (keyword && !editForm.keywords.includes(keyword)) {
-        editForm.keywords.push(keyword)
-        newKeyword.value = ''
+const toggleKeyword = (keywordId) => {
+    console.log(
+        '키워드 토글 - keywordId:',
+        keywordId,
+        '현재 선택된 키워드:',
+        editForm.selectedKeywordIds,
+    )
+    if (editForm.selectedKeywordIds.includes(keywordId)) {
+        editForm.selectedKeywordIds = editForm.selectedKeywordIds.filter((id) => id !== keywordId)
+        console.log('키워드 해제됨 - 새로운 선택된 키워드:', editForm.selectedKeywordIds)
+    } else {
+        if (editForm.selectedKeywordIds.length < 3) {
+            editForm.selectedKeywordIds.push(keywordId)
+            console.log('키워드 선택됨 - 새로운 선택된 키워드:', editForm.selectedKeywordIds)
+        } else {
+            console.log('최대 3개까지만 선택 가능')
+        }
     }
-}
-
-const removeKeyword = (index) => {
-    editForm.keywords.splice(index, 1)
 }
 
 const updateUserInfo = async () => {
     try {
         // 키워드가 변경된 경우 별도로 업데이트
-        if (JSON.stringify(editForm.keywords) !== JSON.stringify(props.userInfo.keywords || [])) {
-            await updateMyKeywords(editForm.keywords)
+        const currentKeywordIds = (props.userInfo.keywords || [])
+            .map((k) => {
+                if (typeof k === 'object' && k.keywordId) {
+                    return k.keywordId
+                } else if (typeof k === 'number') {
+                    return k
+                } else {
+                    return null
+                }
+            })
+            .filter((id) => id !== null)
+
+        if (
+            JSON.stringify(editForm.selectedKeywordIds.sort()) !==
+            JSON.stringify(currentKeywordIds.sort())
+        ) {
+            await updateMyKeywords(editForm.selectedKeywordIds, availableKeywords.value)
         }
 
         // 기본 정보 업데이트
@@ -265,17 +353,36 @@ const updateUserInfo = async () => {
             username: editForm.username,
             nickname: editForm.nickname,
             phoneNumber: editForm.phoneNumber,
-            keywords: editForm.keywords,
+            keywords: editForm.selectedKeywordIds.map((id) => {
+                const keyword = availableKeywords.value.find((k) => k.keywordId === id)
+                return keyword || { keywordId: id, name: `키워드 ${id}` }
+            }),
         }
+
+        // 부모 컴포넌트에 업데이트된 정보 전달
         emit('update:userInfo', updatedUserInfo)
 
+        // 업데이트 완료 알림
+        emit('update-completed')
+
+        // 수정 모드 종료
         editMode.value = false
+
+        // 성공 메시지 표시
         alert('개인정보가 성공적으로 수정되었습니다.')
     } catch (err) {
         console.error('개인정보 수정 실패:', err)
-        alert(err.response?.data?.error || '개인정보 수정에 실패했습니다.')
+        if (err.response?.status === 401) {
+            alert('인증이 만료되었습니다. 다시 로그인해주세요.')
+        } else {
+            alert(err.response?.data?.error || '개인정보 수정에 실패했습니다.')
+        }
     }
 }
+
+onMounted(() => {
+    loadAvailableKeywords()
+})
 </script>
 
 <style scoped>

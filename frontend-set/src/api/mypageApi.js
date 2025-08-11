@@ -15,18 +15,18 @@ export const getMyPageInfo = async (token) => {
 }
 
 // 관심 키워드 조회
-export const getMyKeywords = async (token) => {
-    const response = await api.get(`${BASE_URL}/keywords`, {
-        headers: {
-            Authorization: `Bearer ${token}`,
-        },
-    })
+export const getMyKeywords = async () => {
+    const response = await api.get('/keyword')
     return response.data
 }
 
 // 관심 키워드 수정
-export const updateMyKeywords = async (keywords) => {
-    const response = await api.put(`${BASE_URL}/keywords`, keywords)
+export const updateMyKeywords = async (keywordIds, availableKeywords) => {
+    const keywordNames = keywordIds.map((id) => {
+        const keyword = availableKeywords.find((k) => k.keywordId === id)
+        return keyword ? keyword.name : `키워드${id}`
+    })
+    const response = await api.put(`${BASE_URL}/keywords`, keywordNames)
     return response.data
 }
 

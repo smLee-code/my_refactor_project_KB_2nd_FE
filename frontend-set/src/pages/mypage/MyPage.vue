@@ -37,7 +37,8 @@
                         <UserInfoCard
                             :user-info="userInfo"
                             :loading="loading"
-                            @update:user-info="userInfo = $event"
+                            @update:user-info="handleUserInfoUpdate"
+                            @update-completed="handleUpdateCompleted"
                         />
                     </div>
 
@@ -120,6 +121,25 @@ const loadMyPageInfo = async () => {
 
         // 사용자 정보 업데이트
         Object.assign(userInfo, data)
+
+        // 가입일 날짜 형식 처리
+        if (userInfo.createAt) {
+            try {
+                const date = new Date(userInfo.createAt)
+                if (isNaN(date.getTime())) {
+                    // 날짜가 유효하지 않은 경우 현재 날짜로 설정
+                    userInfo.createAt = new Date().toISOString()
+                }
+            } catch (err) {
+                console.error('날짜 파싱 오류:', err)
+                userInfo.createAt = new Date().toISOString()
+            }
+        }
+
+        // 키워드 정보가 없는 경우 빈 배열로 초기화
+        if (!userInfo.keywords) {
+            userInfo.keywords = []
+        }
     } catch (err) {
         error.value = err.response?.data?.error || '마이페이지 정보를 불러오는데 실패했습니다.'
         console.error('마이페이지 정보 로드 실패:', err)
@@ -135,7 +155,11 @@ const loadMyPageInfo = async () => {
             createAt: '2024-01-15T00:00:00',
             totalVotes: 5,
             totalProjects: 2,
-            keywords: ['기술', '환경', '문화', '교육'],
+            keywords: [
+                { keywordId: 1, name: '운동' },
+                { keywordId: 2, name: '봉사' },
+                { keywordId: 3, name: '마음 건강' },
+            ],
         })
     } finally {
         loading.value = false
@@ -372,6 +396,17 @@ const loadLikedFundings = async () => {
             image: 'https://readdy.ai/api/search-image?query=virtual%20reality%20education%20platform%20with%20modern%20VR%20headsets%2C%20interactive%20learning%20environment%2C%20clean%20educational%20technology%2C%20professional%20tech%20photography&width=400&height=300&seq=funding3&orientation=landscape',
         },
     ]
+}
+
+const handleUserInfoUpdate = (updatedUserInfo) => {
+    // 로컬 상태 업데이트 (즉시 반영)
+    Object.assign(userInfo, updatedUserInfo)
+}
+
+const handleUpdateCompleted = () => {
+    // 사용자 정보 업데이트가 완료되었을 때 호출되는 함수
+    // 여기서는 마이페이지 정보를 다시 로드하여 최신 상태를 반영
+    loadMyPageInfo()
 }
 
 onMounted(async () => {
