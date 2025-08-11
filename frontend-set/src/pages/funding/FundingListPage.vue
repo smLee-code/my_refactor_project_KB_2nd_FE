@@ -220,10 +220,16 @@ watch([activeTab, selectedCategory, selectedSort], () => {
 
 onMounted(async () => {
     try {
+        console.log('🔍 펀딩 목록 API 호출 시작...')
         const [launchRes, endRes] = await Promise.all([
-            axios.get('/fund/list', { params: { progress: 'Launch' } }),
-            axios.get('/fund/list', { params: { progress: 'End' } }),
+            axios.get(`${import.meta.env.VITE_API_URL}/api/fund/list`, { params: { progress: 'Launch' } }),
+            axios.get(`${import.meta.env.VITE_API_URL}/api/fund/list`, { params: { progress: 'End' } }),
         ])
+
+        console.log('✅ API 응답 데이터:', {
+            launch: launchRes.data,
+            end: endRes.data
+        })
 
         launchFunds.value = launchRes.data
         endFunds.value = endRes.data
@@ -238,6 +244,7 @@ onMounted(async () => {
         console.log('좋아요한 펀딩:', likedFunds.value)
     } catch (err) {
         console.error(`❌ 펀딩 목록 실패:`, err)
+        console.error('에러 상세:', err.response?.data || err.message)
     }
 })
 </script>

@@ -424,7 +424,7 @@ const fetchFundingDetail = async () => {
                 periodDays: calculatePeriodDays(data.periodDays, data.launchAt, data.endAt),
                 productCondition: data.productCondition,
                 successCondition: data.successCondition,
-                joined: data.joined || true, // 테스트용으로 참여 중으로 설정
+                joined: data.joined || false, // API에서 받은 참여 여부 사용
                 keywords: data.keywords || [],
                 // 챌린지 전용 필드들
                 challengePeriodDays: data.challengePeriodDays,
@@ -458,7 +458,7 @@ const fetchFundingDetail = async () => {
             periodDays: 30,
             productCondition: '매일 1시간 이상 걷기',
             successCondition: '30일 중 25일 이상 인증',
-            joined: true, // 테스트용으로 참여 중으로 설정
+            joined: false, // 기본값으로 미참여 설정
             keywords: [],
             // 챌린지 전용 필드들
             challengePeriodDays: 30,
