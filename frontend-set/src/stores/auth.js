@@ -18,11 +18,11 @@ export const useAuthStore = defineStore('auth', () => {
         userRole.value = receivedAuthData.userRole
         console.log('✅userRole:', receivedAuthData.userRole)
 
-        // userId가 있으면 저장
-        if (receivedAuthData.user && receivedAuthData.user.userId) {
-            userId.value = receivedAuthData.user.userId
-            localStorage.setItem('userId', receivedAuthData.user.userId)
-            console.log('✅userId:', receivedAuthData.user.userId)
+        // userId 저장 (응답에서 직접 받음)
+        if (receivedAuthData.userId) {
+            userId.value = receivedAuthData.userId
+            localStorage.setItem('userId', receivedAuthData.userId)
+            console.log('✅userId:', receivedAuthData.userId)
         }
 
         localStorage.setItem('jwt', receivedAuthData.token)
@@ -71,11 +71,30 @@ export const useAuthStore = defineStore('auth', () => {
         if (savedUserId) {
             userId.value = parseInt(savedUserId)
         }
-        return userId
+        return userId.value
+    }
+
+    // 앱 시작 시 모든 사용자 데이터 로드
+    function initializeAuth() {
+        loadToken()
+        loadRole()
+        loadUserId()
     }
 
     function isFinanceRole() {
         return userRole.value === 'ROLE_FINANCE'
+    }
+
+    function isNormalRole() {
+        return userRole.value === 'ROLE_NORMAL'
+    }
+
+    function getRedirectPath() {
+        if (userRole.value === 'ROLE_NORMAL') {
+            return '/mypage'
+        } else {
+            return '/dashboard'
+        }
     }
 
     return {
@@ -88,6 +107,9 @@ export const useAuthStore = defineStore('auth', () => {
         loadToken,
         loadRole,
         loadUserId,
+        initializeAuth,
         isFinanceRole,
+        isNormalRole,
+        getRedirectPath,
     }
 })

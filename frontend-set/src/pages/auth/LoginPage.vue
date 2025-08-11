@@ -180,13 +180,16 @@ const handleLogin = async () => {
                 console.log('✅authStore role:', authStore.loadRole())
             })
 
-        // 로그인 성공 시 리다이렉트 또는 상태 변경
+        // 로그인 성공 시 역할에 따른 리다이렉트
         console.log('로그인 성공:', {
             email: email.value,
             password: password.value,
         })
 
-        router.push('/')
+        // 사용자 역할에 따른 분기 처리
+        const redirectPath = authStore.getRedirectPath()
+        console.log('✅리다이렉트 경로:', redirectPath)
+        router.push(redirectPath)
     } catch (error) {
         loginError.value = '로그인에 실패했습니다. 이메일과 비밀번호를 확인해주세요.'
     } finally {
