@@ -186,11 +186,6 @@ const handleLogin = async () => {
             email: email.value,
             password: password.value,
         })
-
-        // 사용자 역할에 따른 분기 처리
-        const redirectPath = authStore.getRedirectPath()
-        console.log('✅리다이렉트 경로:', redirectPath)
-        router.push(redirectPath)
     } catch (error) {
         loginError.value = '로그인에 실패했습니다. 이메일과 비밀번호를 확인해주세요.'
     } finally {
