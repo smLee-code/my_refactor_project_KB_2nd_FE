@@ -13,9 +13,15 @@
             <FundingHeaderSection
                 v-if="!isLoading && fundingData"
                 :funding-image="
-                    fundingData.imageUrls && fundingData.imageUrls.length > 0
-                        ? fundingData.imageUrls[0]
-                        : '/public/images/logo.png'
+                    (() => {
+                        const imageUrl =
+                            fundingData.imageUrls && fundingData.imageUrls.length > 0
+                                ? fundingData.imageUrls[0].imageUrl
+                                : '/public/images/logo.png'
+                        console.log('전달되는 이미지 URL:', imageUrl)
+                        console.log('fundingData.imageUrls:', fundingData.imageUrls)
+                        return imageUrl
+                    })()
                 "
                 :funding-name="fundingData.name"
                 :funding-detail="fundingData.detail"
@@ -85,6 +91,7 @@
             <ChallengeUploadSection
                 v-if="fundingData && fundingType === 'Challenge' && fundingData.joined"
                 :funding-id="fundingData.id"
+                :user-challenge-id="fundingData.userChallengeId"
                 :certification-data="certificationData"
                 :start-date="fundingData.startDate"
                 :end-date="fundingData.endDateForCertification"
@@ -174,6 +181,7 @@
 import { ref, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import api from '@/api'
+import axios from 'axios'
 import { useAuthStore } from '@/stores/auth'
 
 import FundingHeaderSection from '@/components/funding/FundingHeaderSection.vue'
@@ -210,6 +218,8 @@ const fundingData = ref({
     productCondition: '',
     successCondition: '',
     joined: false,
+    userChallengeId: null, // 사용자 챌린지 ID 추가
+    imageUrls: [], // imageUrls 추가
     keywords: [],
     // 챌린지 전용 필드들
     challengePeriodDays: 0,
@@ -219,66 +229,11 @@ const fundingData = ref({
 const isLiked = ref(false)
 const isLoading = ref(true)
 
-// 상세 정보 데이터
-const detailData = ref({
-    purpose:
-        '기후 변화와 환경 오염이 심각한 문제로 대두되고 있는 현재, 우리는 지속 가능한 미래를 위한 혁신적인 환경 기술 개발이 시급하다고 판단했습니다. 이 프로젝트는 재생 에너지 효율성을 높이고, 탄소 배출량을 획기적으로 줄일 수 있는 친환경 기술 솔루션을 개발하는 것을 목표로 합니다.',
-    background:
-        '특히 도시 환경에서 적용 가능한 스마트 에너지 관리 시스템과 폐기물 재활용 기술을 통해 지역 사회의 환경 개선과 경제적 효과를 동시에 달성하고자 합니다.',
-    sourceProject: {
-        thumbnail:
-            'https://readdy.ai/api/search-image?query=modern%20eco%20technology%20project%20thumbnail%20with%20clean%20white%20background%2C%20environmental%20innovation%20concept%2C%20professional%20project%20presentation%20visual%2C%20minimalist%20tech%20design%20elements&width=80&height=80&seq=project1&orientation=squarish',
-        title: '친환경 도시 개발 프로젝트',
-        organization: 'KB 환경 연구소',
-        tags: ['진행중', '연구개발', '환경/에너지'],
-        period: '2025.01 - 2025.12',
-        stage: '연구개발 2단계',
-        description:
-            "본 펀딩은 KB 환경 연구소의 '친환경 도시 개발 프로젝트'의 2단계 연구개발을 위해 개설되었습니다. 1단계에서 개발된 기술을 실제 도시 환경에 적용하기 위한 실증 연구를 진행할 예정입니다.",
-    },
-    budgetPlan: [
-        { category: '연구개발비', amount: 25000000, percentage: 50 },
-        { category: '장비 구입비', amount: 15000000, percentage: 30 },
-        { category: '인건비', amount: 7500000, percentage: 15 },
-        { category: '기타 운영비', amount: 2500000, percentage: 5 },
-    ],
-    benefits: [
-        { amount: 10000, description: '프로젝트 진행 보고서 및 감사 인증서', icon: 'fas fa-medal' },
-        {
-            amount: 50000,
-            description: '친환경 제품 샘플 + 프로젝트 참여 기념품',
-            icon: 'fas fa-trophy',
-        },
-        { amount: 100000, description: '프로젝트 완료 후 기술 설명회 초대', icon: 'fas fa-crown' },
-    ],
-})
+// 펀딩 타입
+const fundingType = ref('')
 
-// 펀딩 타입 (챌린지로 설정하여 인증샷 업로드 영역이 보이도록 함)
-const fundingType = ref('challenge')
-
-// 인증샷 데이터 (날짜별) - 실제 펀딩 기간에 맞춤
-const certificationData = ref([
-    {
-        date: '2025-07-15',
-        image: '/images/logo.png',
-        isApproved: true,
-        uploadedAt: '2024-07-15',
-    },
-    {
-        date: '2025-07-20',
-        image: '/images/logo.png',
-        isApproved: false,
-        uploadedAt: '2024-07-20',
-    },
-    {
-        date: '2025-07-25',
-        image: '/images/logo.png',
-        isApproved: true,
-        uploadedAt: '2024-07-25',
-    },
-    // 오늘 날짜는 업로드하지 않은 상태로 설정 (테스트용)
-    // 실제로는 이 부분이 없어야 하며, 오늘 날짜에 업로드하면 자동으로 추가됨
-])
+// 인증샷 데이터 (날짜별)
+const certificationData = ref([])
 
 // 펀딩 정보 조회
 const fetchFundingDetail = async () => {
@@ -288,6 +243,53 @@ const fetchFundingDetail = async () => {
 
         console.log('펀딩 상세 정보:', data)
 
+        // 사용자의 챌린지 참여 정보 조회 (챌린지 타입인 경우)
+        let userChallengeId = null
+        if (data.fundType === 'Challenge') {
+            const baseURL = import.meta.env.VITE_API_URL || ''
+            try {
+                console.log(
+                    '챌린지 참여 정보 조회 시작 - fundId:',
+                    data.fundId,
+                    'data.id:',
+                    data.id,
+                )
+                const userChallengesResponse = await axios.get(
+                    `${baseURL}/user-challenge/user/all/v2`,
+                    {
+                        headers: {
+                            Authorization: `Bearer ${authStore.token}`,
+                        },
+                    },
+                )
+                const userChallenges = userChallengesResponse.data
+                console.log('사용자 챌린지 목록:', userChallenges)
+
+                // fundId와 data.id 모두 시도
+                let userChallenge = userChallenges.find(
+                    (challenge) => challenge.fundId === data.fundId,
+                )
+
+                if (!userChallenge) {
+                    userChallenge = userChallenges.find((challenge) => challenge.fundId === data.id)
+                }
+
+                if (userChallenge) {
+                    userChallengeId = userChallenge.userChallengeId
+                    console.log(
+                        '사용자 챌린지 ID 찾음:',
+                        userChallengeId,
+                        '매칭된 챌린지:',
+                        userChallenge,
+                    )
+                } else {
+                    console.log('해당 펀딩의 챌린지 참여 정보를 찾을 수 없음')
+                }
+            } catch (error) {
+                console.warn('사용자 챌린지 정보 조회 실패:', error)
+                // 에러가 발생해도 계속 진행
+            }
+        }
         // 실제 API 응답 데이터로 업데이트
         if (data) {
             // 날짜 배열을 문자열로 변환하는 함수
@@ -402,7 +404,7 @@ const fetchFundingDetail = async () => {
             // 펀딩 데이터 설정
             fundingData.value = {
                 id: data.fundId,
-                projectId: 117, // 임시로 프로젝트 ID 117로 설정
+                projectId: data.projectId,
                 targetAmount: data.targetAmount || 50000000,
                 currentAmount: data.currentAmount || 0,
                 progress: data.progress || '진행중', // progress 필드 추가
@@ -416,7 +418,7 @@ const fetchFundingDetail = async () => {
                 endDate: formatDateArray(data.endAt),
                 startDate: formatDateArray(data.launchAt),
                 endDateForCertification: formatDateArray(data.endAt),
-                fundType: data.fundType || 'Challenge', // 테스트용으로 Challenge로 변경
+                fundType: data.fundType || '',
                 name: data.name,
                 detail: data.detail,
                 financialInstitution: data.financialInstitution,
@@ -424,7 +426,9 @@ const fetchFundingDetail = async () => {
                 periodDays: calculatePeriodDays(data.periodDays, data.launchAt, data.endAt),
                 productCondition: data.productCondition,
                 successCondition: data.successCondition,
-                joined: data.joined || true, // 테스트용으로 참여 중으로 설정
+                joined: data.joined || false,
+                userChallengeId: userChallengeId,
+                imageUrls: data.imageUrls || [], // imageUrls 추가
                 keywords: data.keywords || [],
                 // 챌린지 전용 필드들
                 challengePeriodDays: data.challengePeriodDays,
@@ -433,37 +437,38 @@ const fetchFundingDetail = async () => {
             }
 
             // 펀딩 타입 설정
-            fundingType.value = data.fundType || 'Challenge' // 테스트용으로 Challenge로 설정
+            fundingType.value = data.fundType || ''
         }
     } catch (error) {
         console.error('펀딩 상세 정보 조회 실패:', error)
         // 에러 시 기본값 설정
         fundingData.value = {
             id: fundingId,
-            projectId: null, // 프로젝트 ID 추가
-            targetAmount: 50000000,
+            projectId: null,
+            targetAmount: 0,
             currentAmount: 0,
-            progress: '진행중', // progress 필드 추가
+            progress: '',
             progressPercentage: 0,
             participantCount: 0,
-            daysLeft: 23, // 테스트용으로 23일 남음으로 설정
-            endDate: '2025년 8월 31일', // 테스트용으로 현재 날짜 기준으로 설정
-            startDate: '2025년 8월 1일', // 테스트용으로 현재 날짜 기준으로 설정
-            endDateForCertification: '2025년 8월 31일', // 테스트용으로 현재 날짜 기준으로 설정
-            fundType: 'Challenge', // 테스트용으로 Challenge로 설정
-            name: '하루 1시간 걷기 챌린지',
-            detail: '매일 1시간씩 걷기로 건강한 습관 만들기',
-            financialInstitution: '국민은행',
-            interestRate: 3.5,
-            periodDays: 30,
-            productCondition: '매일 1시간 이상 걷기',
-            successCondition: '30일 중 25일 이상 인증',
-            joined: true, // 테스트용으로 참여 중으로 설정
+            daysLeft: 0,
+            endDate: '',
+            startDate: '',
+            endDateForCertification: '',
+            fundType: '',
+            name: '',
+            detail: '',
+            financialInstitution: '',
+            interestRate: 0,
+            periodDays: 0,
+            productCondition: '',
+            successCondition: '',
+            joined: false,
+            userChallengeId: null,
+            imageUrls: [], // imageUrls 추가
             keywords: [],
-            // 챌린지 전용 필드들
-            challengePeriodDays: 30,
-            challengeReward: '건강한 습관 형성',
-            challengeRewardCondition: '30일 중 25일 이상 인증',
+            challengePeriodDays: 0,
+            challengeReward: '',
+            challengeRewardCondition: '',
         }
     } finally {
         isLoading.value = false

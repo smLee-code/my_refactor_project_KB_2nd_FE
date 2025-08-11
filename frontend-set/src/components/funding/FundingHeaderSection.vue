@@ -8,11 +8,11 @@
                 class="w-full h-full object-cover object-top"
             />
             <div class="absolute top-6 right-6 flex items-center space-x-3">
-                <div
+                <!-- <div
                     class="bg-yellow-400 text-gray-900 px-4 py-2 rounded-full font-bold text-sm shadow-lg"
                 >
                     {{ getStatusText() }}
-                </div>
+                </div> -->
                 <button
                     @click="$emit('toggleLike')"
                     class="bg-white/90 backdrop-blur-sm p-3 rounded-full shadow-lg hover:bg-white transition-all cursor-pointer"
