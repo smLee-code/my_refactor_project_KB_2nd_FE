@@ -1,4 +1,5 @@
 import api from '@/api'
+import axios from 'axios'
 
 const BASE_URL = '/mypage'
 
@@ -38,7 +39,11 @@ export const updateAccountInfo = async (accountInfo) => {
 
 // 내 투표 조회
 export const getMyVotes = async (token) => {
-    const response = await api.get(`${BASE_URL}/votes`)
+    const response = await api.get(`/votes/my-votes`, {
+        headers: {
+            Authorization: `Bearer ${token}`,
+        },
+    })
     return response.data
 }
 
@@ -48,32 +53,124 @@ export const getMyProjects = async () => {
     return response.data
 }
 
+// 프로젝트 상세 정보 조회
+export const getProjectDetail = async (projectId, token) => {
+    const response = await api.get(`/project/list/detail/${projectId}/full`, {
+        headers: {
+            Authorization: `Bearer ${token}`,
+        },
+    })
+    return response.data
+}
+
+// 프로젝트 좋아요 토글
+export const toggleProjectLike = async (projectId, token) => {
+    const response = await api.post(`/votes/${projectId}`, null, {
+        headers: {
+            Authorization: `Bearer ${token}`,
+        },
+    })
+    return response.data
+}
+
 // 좋아요한 프로젝트 조회 (투표한 프로젝트)
-export const getLikedProjects = async () => {
-    const response = await api.get(`${BASE_URL}/votes`)
+export const getLikedProjects = async (token) => {
+    const response = await api.get('/api/votes/my-votes', {
+        headers: {
+            Authorization: `Bearer ${token}`,
+        },
+    })
     return response.data
 }
 
-// 참여 중인 챌린지 조회
-export const getMyChallenges = async () => {
-    const response = await api.get('/api/userChallenge/my-challenges')
+// 좋아요한 펀딩 조회
+export const getLikedFundings = async (token) => {
+    const response = await api.get(`${BASE_URL}/liked-fundings`, {
+        headers: {
+            Authorization: `Bearer ${token}`,
+        },
+    })
     return response.data
 }
 
-// 참여 중인 기부 조회
-export const getMyDonations = async () => {
-    const response = await api.get('/api/user-donation/my-donations')
-    return response.data
+// 내가 투표한 펀딩 조회
+export const getMyAllVotedFunds = async (token) => {
+    const baseURL = import.meta.env.VITE_API_URL || ''
+
+    try {
+        const response = await axios.get(`${baseURL}/retryVotes/my-fund/list`, {
+            headers: {
+                Authorization: `Bearer ${token}`,
+            },
+        })
+        return response.data
+    } catch (error) {
+        throw error
+    }
 }
 
-// 참여 중인 대출 조회
-export const getMyLoans = async () => {
-    const response = await api.get('/api/user-loan/my-loans')
+// 참여 중인 펀딩 조회
+export const getParticipatingFundings = async () => {
+    const response = await api.get(`${BASE_URL}/participating-fundings`)
     return response.data
 }
 
 // 참여 중인 저축 조회
-export const getMySavings = async () => {
-    const response = await api.get('/api/user-saving/my-savings')
-    return response.data
+export const getMyAllSavings = async (token) => {
+    const baseURL = import.meta.env.VITE_API_URL || ''
+    try {
+        const response = await axios.get(`${baseURL}/user-saving/user/all/v2`, {
+            headers: {
+                Authorization: `Bearer ${token}`,
+            },
+        })
+        return response.data
+    } catch (error) {
+        throw error
+    }
+}
+
+// 참여 중인 대출 조회
+export const getMyAllLoans = async (token) => {
+    const baseURL = import.meta.env.VITE_API_URL || ''
+    try {
+        const response = await axios.get(`${baseURL}/user-loan/user/all/v2`, {
+            headers: {
+                Authorization: `Bearer ${token}`,
+            },
+        })
+        return response.data
+    } catch (error) {
+        throw error
+    }
+}
+
+// 참여 중인 기부 조회
+export const getMyAllDonations = async (token) => {
+    const baseURL = import.meta.env.VITE_API_URL || ''
+    try {
+        const response = await axios.get(`${baseURL}/user-donation/user/all/v2`, {
+            headers: {
+                Authorization: `Bearer ${token}`,
+            },
+        })
+        return response.data
+    } catch (error) {
+        throw error
+    }
+}
+
+// 참여 중인 챌린지 조회
+export const getMyAllChallenges = async (token) => {
+    const baseURL = import.meta.env.VITE_API_URL || ''
+    try {
+        const response = await axios.get(`${baseURL}/user-challenge/user/all/v2`, {
+            headers: {
+                Authorization: `Bearer ${token}`,
+            },
+        })
+        return response.data
+    } catch (error) {
+        throw error
+    }
 }

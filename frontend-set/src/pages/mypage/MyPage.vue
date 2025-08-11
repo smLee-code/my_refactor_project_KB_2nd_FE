@@ -45,8 +45,9 @@
                     <!-- 내 활동 탭 -->
                     <div class="w-full flex-shrink-0 py-6 px-4">
                         <LikedProjectsSection
-                            :liked-projects="likedProjects"
+                            :likedProjects="likedProjects"
                             :liked-fundings="likedFundings"
+                            @toggle-like="handleProjectToggleLike"
                         />
                         <ParticipatingFundingsSection
                             :participating-fundings="participatingFundings"
@@ -68,11 +69,16 @@ import {
     updateAccountInfo,
     getMyVotes,
     getMyProjects,
-    getMyChallenges,
-    getMyDonations,
-    getMyLoans,
-    getMySavings,
+    getMyAllSavings,
+    getMyAllLoans,
+    getMyAllDonations,
+    getMyAllChallenges,
+    getLikedFundings,
+    getMyAllVotedFunds,
+    getProjectDetail,
+    toggleProjectLike,
 } from '@/api/mypageApi'
+import { getUserBadges } from '@/api/badgeApi'
 import { useAuthStore } from '@/stores/auth'
 
 // 컴포넌트 import
@@ -83,6 +89,11 @@ import ParticipatingFundingsSection from '@/components/mypage/ParticipatingFundi
 
 const authStore = useAuthStore()
 const token = authStore.loadToken()
+
+// 토큰 디버깅
+console.log('🔑 토큰 확인:', token)
+console.log('🔑 토큰 타입:', typeof token)
+console.log('🔑 토큰 길이:', token ? token.length : 0)
 
 const activeTab = ref('info')
 const showUserMenu = ref(false)
@@ -101,6 +112,7 @@ const userInfo = reactive({
     totalVotes: 0,
     totalProjects: 0,
     keywords: [],
+    badges: [],
 })
 
 const notifications = ref([
@@ -110,6 +122,67 @@ const notifications = ref([
 
 const toggleUserMenu = () => {
     showUserMenu.value = !showUserMenu.value
+}
+
+const toDate = (v) => {
+    if (!v) return null
+    if (v instanceof Date) return v
+    if (Array.isArray(v)) {
+        const [y, m, d, hh = 0, mm = 0, ss = 0] = v
+        return new Date(y, (m ?? 1) - 1, d ?? 1, hh, mm, ss)
+    }
+    return new Date(v)
+}
+
+const formatDate = (val) => {
+    const dt = toDate(val)
+    if (!dt || isNaN(dt)) return ''
+    const y = dt.getFullYear()
+    const m = String(dt.getMonth() + 1).padStart(2, '0')
+    const d = String(dt.getDate()).padStart(2, '0')
+    return `${y}-${m}-${d}`
+}
+
+// 뱃지 정보 로드
+const loadUserBadges = async () => {
+    try {
+        console.log('뱃지 정보 로드 시작')
+        const badges = await getUserBadges(token)
+        console.log('뱃지 정보 로드 완료:', badges)
+        userInfo.badges = badges || []
+    } catch (err) {
+        console.error('뱃지 정보 로드 실패:', err)
+        // API 실패 시 빈 배열로 설정
+        userInfo.badges = []
+
+        // Mock 데이터로 대체 (테스트용)
+        userInfo.badges = [
+            {
+                badgeId: 1,
+                name: 'CertifiedCompany4 (업체 인증)',
+                description: '업체 인증 (Company Certification)',
+                autoGrantCondition: 'COMPLETED_FUNDING',
+            },
+            {
+                badgeId: 3,
+                name: 'Donor (기부가)',
+                description: '기부가 (Donor)',
+                autoGrantCondition: 'DONATED',
+            },
+            {
+                badgeId: 4,
+                name: 'Challenger (챌린저)',
+                description: '챌린저 (Challenger)',
+                autoGrantCondition: 'CHALLENGE_PARTICIPATION',
+            },
+            {
+                badgeId: 8,
+                name: 'CommentKing (댓글왕)',
+                description: '댓글왕 (Comment King)',
+                autoGrantCondition: 'COMMENT_MASTER',
+            },
+        ]
+    }
 }
 
 // 마이페이지 정보 로드
@@ -140,6 +213,9 @@ const loadMyPageInfo = async () => {
         if (!userInfo.keywords) {
             userInfo.keywords = []
         }
+
+        // 뱃지 정보 로드
+        await loadUserBadges()
     } catch (err) {
         error.value = err.response?.data?.error || '마이페이지 정보를 불러오는데 실패했습니다.'
         console.error('마이페이지 정보 로드 실패:', err)
@@ -160,7 +236,11 @@ const loadMyPageInfo = async () => {
                 { keywordId: 2, name: '봉사' },
                 { keywordId: 3, name: '마음 건강' },
             ],
+            badges: [],
         })
+
+        // 뱃지 정보도 로드
+        await loadUserBadges()
     } finally {
         loading.value = false
     }
@@ -169,233 +249,211 @@ const loadMyPageInfo = async () => {
 // 좋아요한 프로젝트 로드
 const loadLikedProjects = async () => {
     try {
-        const votes = await getMyVotes()
-        // 투표한 프로젝트들을 프로젝트 상세 정보로 변환
-        // 실제로는 프로젝트 상세 API를 호출해야 하지만, 여기서는 간단히 처리
-        likedProjects.value = votes.map((vote) => ({
-            id: vote.projectId,
-            title: vote.projectTitle || '프로젝트 제목',
-            description: vote.projectDescription || '프로젝트 설명',
-            category: vote.projectType || '기타',
-            location: '서울',
-            likes: vote.likeCount || 0,
-            image:
-                'https://readdy.ai/api/search-image?query=project%20thumbnail&width=400&height=300&seq=project' +
-                vote.projectId,
-        }))
+        console.log('좋아요한 프로젝트 로드 시작 - token:', token)
+        const votes = await getMyVotes(token)
+        console.log('API 응답 - votes:', votes)
+
+        // 프로젝트 ID 목록 추출
+        const projectIds = votes
+        console.log('프로젝트 ID 목록:', projectIds)
+
+        // 각 프로젝트의 상세 정보를 가져오기
+        const projectDetails = await Promise.all(
+            projectIds.map(async (projectId) => {
+                try {
+                    const detail = await getProjectDetail(projectId, token)
+                    console.log(`프로젝트 ${projectId} 상세 정보:`, detail)
+                    return detail
+                } catch (error) {
+                    console.error(`프로젝트 ${projectId} 상세 정보 로드 실패:`, error)
+                    return null
+                }
+            }),
+        )
+
+        likedProjects.value = projectDetails
+            .filter((project) => project !== null)
+            .map((project) => {
+                console.log('프로젝트 원본 데이터:', project)
+
+                const transformedProject = {
+                    type: project.basicInfo.projectType,
+                    likes: project.voteCount,
+                    title: project.basicInfo.title,
+                    description: project.basicInfo.promotion,
+                    createdAt: formatDate(project.basicInfo.createAt),
+                    status:
+                        project.basicInfo.progress === 'Active'
+                            ? '진행중'
+                            : project.basicInfo.progress === 'Close'
+                              ? '마감'
+                              : '준비중',
+                    id: project.basicInfo.projectId,
+                    image: project.imageList?.[0]?.imageUrl,
+                    isLiked: true,
+                }
+
+                console.log('변환된 프로젝트 데이터:', transformedProject)
+                return transformedProject
+            })
+
+        console.log('변환된 likedProjects:', likedProjects.value)
     } catch (err) {
         console.error('좋아요한 프로젝트 로드 실패:', err)
-
-        // Mock 데이터로 대체
-        likedProjects.value = [
-            {
-                id: 1,
-                title: '지역 상권 활성화 프로젝트',
-                description: '지역 소상공인을 위한 통합 마케팅 및 결제 플랫폼 구축',
-                category: '기타',
-                location: '서울',
-                likes: 98,
-                image: 'https://readdy.ai/api/search-image?query=vibrant%20local%20marketplace%20street%20scene%20with%20traditional%20storefronts%2C%20small%20businesses%2C%20and%20modern%20urban%20development%2C%20clean%20architectural%20style%2C%20warm%20sunlight%2C%20professional%20photography%20perspective&width=400&height=300&seq=liked1&orientation=landscape',
-            },
-            {
-                id: 2,
-                title: '스마트 도시 인프라 구축',
-                description: '도시 문제 해결을 위한 IoT 기반 스마트 시티 솔루션',
-                category: '기술',
-                location: '부산',
-                likes: 87,
-                image: 'https://readdy.ai/api/search-image?query=modern%20smart%20city%20infrastructure%20with%20IoT%20sensors%2C%20clean%20urban%20design%2C%20technological%20integration%2C%20professional%20architectural%20visualization&width=400&height=300&seq=liked2&orientation=landscape',
-            },
-            {
-                id: 3,
-                title: '친환경 에너지 전환',
-                description: '지역 커뮤니티 기반 재생에너지 프로젝트',
-                category: '환경',
-                location: '제주',
-                likes: 76,
-                image: 'https://readdy.ai/api/search-image?query=renewable%20energy%20installation%20in%20urban%20setting%2C%20solar%20panels%2C%20clean%20energy%20infrastructure%2C%20professional%20environmental%20photography&width=400&height=300&seq=liked3&orientation=landscape',
-            },
-        ]
+        console.error('에러 상세:', err.response?.data)
+        // API 실패 시 빈 배열로 설정
+        likedProjects.value = []
+        console.log('API 실패로 빈 배열 설정')
     }
 }
 
 // 참여 중인 펀딩 로드
 const loadParticipatingFundings = async () => {
-    console.log('loadParticipatingFundings 함수 시작')
+    try {
+        // 타입별로 API 호출
+        const [savings, loans, donations, challenges] = await Promise.all([
+            getMyAllSavings(token),
+            getMyAllLoans(token),
+            getMyAllDonations(token),
+            getMyAllChallenges(token),
+        ])
 
-    // API 호출이 실패할 가능성이 높으므로 바로 mock data 사용
-    console.log('참여중인 펀딩 mock 데이터 로드 중...')
+        // 각 타입별 데이터를 통합
+        const allFundings = []
 
-    participatingFundings.value = [
-        {
-            id: 1,
-            title: '지역 카페 창업 지원',
-            joinDate: '2024.01.20',
-            amount: 50000,
-            certificationImages: [
-                {
-                    url: 'https://readdy.ai/api/search-image?query=cozy%20local%20coffee%20shop%20interior%20with%20warm%20lighting%2C%20comfortable%20seating%20area%2C%20professional%20cafe%20atmosphere%2C%20modern%20coffee%20equipment%2C%20clean%20business%20photography&width=150&height=150&seq=cert1&orientation=squarish',
-                    isApproved: true,
-                    uploadedAt: '2024.01.25',
-                },
-            ],
-            type: 'challenge',
-        },
-        {
-            id: 2,
-            title: '청년 창업 지원 프로그램',
-            joinDate: '2024.02.05',
-            amount: 100000,
-            certificationImages: [
-                {
-                    url: 'https://readdy.ai/api/search-image?query=young%20entrepreneurs%20working%20in%20modern%20startup%20office%2C%20collaborative%20workspace%2C%20professional%20business%20environment%2C%20clean%20corporate%20photography&width=150&height=150&seq=cert2&orientation=squarish',
-                    isApproved: true,
-                    uploadedAt: '2024.02.10',
-                },
-                {
-                    url: 'https://readdy.ai/api/search-image?query=startup%20team%20meeting%20with%20laptops%20and%20documents%2C%20modern%20office%20setting%2C%20professional%20business%20collaboration%2C%20clean%20workspace%20photography&width=150&height=150&seq=cert3&orientation=squarish',
-                    isApproved: false,
-                    uploadedAt: '2024.02.12',
-                },
-            ],
-            type: 'donation',
-        },
-        {
-            id: 3,
-            title: '환경 보호 캠페인',
-            joinDate: '2024.02.15',
-            amount: 30000,
-            certificationImages: [],
-            type: 'loan',
-        },
-        {
-            id: 4,
-            title: '스마트 홈 IoT 프로젝트',
-            joinDate: '2024.03.01',
-            amount: 75000,
-            certificationImages: [
-                {
-                    url: 'https://readdy.ai/api/search-image?query=smart%20home%20automation%20system%20with%20IoT%20devices%2C%20modern%20home%20technology%2C%20clean%20interior%20design%2C%20professional%20smart%20home%20photography&width=150&height=150&seq=cert4&orientation=squarish',
-                    isApproved: true,
-                    uploadedAt: '2024.03.05',
-                },
-            ],
-            type: 'challenge',
-        },
-        {
-            id: 5,
-            title: '지역 문화재 복원 프로젝트',
-            joinDate: '2024.03.10',
-            amount: 200000,
-            certificationImages: [
-                {
-                    url: 'https://readdy.ai/api/search-image?query=traditional%20korean%20cultural%20heritage%20site%20restoration%2C%20historic%20architecture%2C%20cultural%20preservation%2C%20professional%20heritage%20photography&width=150&height=150&seq=cert5&orientation=squarish',
-                    isApproved: true,
-                    uploadedAt: '2024.03.15',
-                },
-                {
-                    url: 'https://readdy.ai/api/search-image?query=restoration%20work%20on%20traditional%20building%2C%20cultural%20preservation%20efforts%2C%20professional%20conservation%20photography&width=150&height=150&seq=cert6&orientation=squarish',
-                    isApproved: true,
-                    uploadedAt: '2024.03.18',
-                },
-            ],
-            type: 'donation',
-        },
-        {
-            id: 6,
-            title: '친환경 자전거 공유 서비스',
-            joinDate: '2024.03.15',
-            amount: 150000,
-            certificationImages: [
-                {
-                    url: 'https://readdy.ai/api/search-image?query=eco-friendly%20bicycle%20sharing%20station%20with%20modern%20bikes%2C%20sustainable%20transportation%2C%20clean%20urban%20mobility%2C%20professional%20transportation%20photography&width=150&height=150&seq=cert7&orientation=squarish',
-                    isApproved: false,
-                    uploadedAt: '2024.03.20',
-                },
-            ],
-            type: 'loan',
-        },
-        {
-            id: 7,
-            title: '디지털 아트 갤러리',
-            joinDate: '2024.03.20',
-            amount: 80000,
-            certificationImages: [],
-            type: 'saving',
-        },
-        {
-            id: 8,
-            title: '지역 농산물 직거래 플랫폼',
-            joinDate: '2024.03.25',
-            amount: 120000,
-            certificationImages: [
-                {
-                    url: 'https://readdy.ai/api/search-image?query=fresh%20local%20farm%20produce%20marketplace%2C%20direct%20trade%20platform%2C%20sustainable%20agriculture%2C%20professional%20market%20photography&width=150&height=150&seq=cert8&orientation=squarish',
-                    isApproved: true,
-                    uploadedAt: '2024.03.30',
-                },
-            ],
-            type: 'challenge',
-        },
-        {
-            id: 9,
-            title: '청소년 코딩 교육 프로그램',
-            joinDate: '2024.04.01',
-            amount: 60000,
-            certificationImages: [
-                {
-                    url: 'https://readdy.ai/api/search-image?query=teenagers%20learning%20coding%20in%20modern%20classroom%2C%20educational%20technology%2C%20programming%20education%2C%20professional%20education%20photography&width=150&height=150&seq=cert9&orientation=squarish',
-                    isApproved: true,
-                    uploadedAt: '2024.04.05',
-                },
-            ],
-            type: 'donation',
-        },
-        {
-            id: 10,
-            title: '스마트 웨어러블 헬스케어',
-            joinDate: '2024.04.05',
-            amount: 90000,
-            certificationImages: [],
-            type: 'loan',
-        },
-    ]
-    console.log('참여중인 펀딩 데이터:', participatingFundings.value)
+        // 저축 데이터 추가
+        savings.forEach((saving) => {
+            allFundings.push({
+                id: saving.userSavingId,
+                title: saving.fundName || '저축 상품',
+                joinDate: saving.createdAt
+                    ? new Date(saving.createdAt).toLocaleDateString('ko-KR')
+                    : '날짜 없음',
+                amount: saving.amount || 0,
+                type: 'saving',
+                fundId: saving.fundId,
+                status: saving.status || '진행중',
+                image:
+                    saving.imageUrl ||
+                    `https://readdy.ai/api/search-image?query=savings%20product&width=150&height=150&seq=saving${saving.userSavingId}`,
+            })
+        })
+
+        // 대출 데이터 추가
+        loans.forEach((loan) => {
+            allFundings.push({
+                id: loan.userLoanId,
+                title: loan.fundName || '대출 상품',
+                joinDate: loan.createdAt
+                    ? new Date(loan.createdAt).toLocaleDateString('ko-KR')
+                    : '날짜 없음',
+                amount: loan.amount || 0,
+                type: 'loan',
+                fundId: loan.fundId,
+                status: loan.status || '진행중',
+                image:
+                    loan.imageUrl ||
+                    `https://readdy.ai/api/search-image?query=loan%20product&width=150&height=150&seq=loan${loan.userLoanId}`,
+            })
+        })
+
+        // 기부 데이터 추가
+        donations.forEach((donation) => {
+            allFundings.push({
+                id: donation.userDonationId,
+                title: donation.fundName || '기부 상품',
+                joinDate: donation.createdAt
+                    ? new Date(donation.createdAt).toLocaleDateString('ko-KR')
+                    : '날짜 없음',
+                amount: donation.amount || 0,
+                type: 'donation',
+                fundId: donation.fundId,
+                status: donation.status || '진행중',
+                image:
+                    donation.imageUrl ||
+                    `https://readdy.ai/api/search-image?query=donation%20product&width=150&height=150&seq=donation${donation.userDonationId}`,
+            })
+        })
+
+        // 챌린지 데이터 추가 (인증샷 포함)
+        challenges.forEach((challenge) => {
+            allFundings.push({
+                id: challenge.userChallengeId,
+                title: challenge.fundName || '챌린지',
+                joinDate: challenge.createdAt
+                    ? new Date(challenge.createdAt).toLocaleDateString('ko-KR')
+                    : '날짜 없음',
+                amount: challenge.amount || 0,
+                type: 'challenge',
+                fundId: challenge.fundId,
+                status: challenge.status || '진행중',
+                image:
+                    challenge.imageUrl ||
+                    `https://readdy.ai/api/search-image?query=challenge%20product&width=150&height=150&seq=challenge${challenge.userChallengeId}`,
+                certificationImages: challenge.certificationImages || [],
+                userChallengeId: challenge.userChallengeId,
+            })
+        })
+
+        participatingFundings.value = allFundings
+        console.log('참여중인 펀딩 데이터:', participatingFundings.value)
+    } catch (err) {
+        console.error('참여 중인 펀딩 로드 실패:', err)
+        // API 실패 시 빈 배열로 설정
+        participatingFundings.value = []
+        console.log('API 실패로 빈 배열 설정')
+    }
 }
 
 const likedProjects = ref([])
 const likedFundings = ref([])
 const participatingFundings = ref([])
 
-// 좋아요한 펀딩 mock 데이터 로드
+// 좋아요한 펀딩 로드
 const loadLikedFundings = async () => {
-    // Mock 데이터로 대체
-    likedFundings.value = [
-        {
-            id: 1,
-            title: '친환경 패키징 솔루션',
-            daysLeft: 15,
-            progress: 85,
-            status: '모집중',
-            image: 'https://readdy.ai/api/search-image?query=eco-friendly%20packaging%20materials%20with%20sustainable%20design%2C%20green%20technology%20innovation%2C%20clean%20white%20background%2C%20professional%20product%20photography%2C%20modern%20environmental%20solution&width=400&height=300&seq=funding1&orientation=landscape',
-        },
-        {
-            id: 2,
-            title: '스마트 농업 기술',
-            daysLeft: 8,
-            progress: 92,
-            status: '모집중',
-            image: 'https://readdy.ai/api/search-image?query=smart%20agriculture%20technology%20with%20modern%20farming%20equipment%2C%20IoT%20sensors%20in%20greenhouse%2C%20clean%20agricultural%20innovation%2C%20professional%20technology%20photography&width=400&height=300&seq=funding2&orientation=landscape',
-        },
-        {
-            id: 3,
-            title: '교육용 VR 플랫폼',
-            daysLeft: 0,
-            progress: 100,
-            status: '모집완료',
-            image: 'https://readdy.ai/api/search-image?query=virtual%20reality%20education%20platform%20with%20modern%20VR%20headsets%2C%20interactive%20learning%20environment%2C%20clean%20educational%20technology%2C%20professional%20tech%20photography&width=400&height=300&seq=funding3&orientation=landscape',
-        },
-    ]
+    try {
+        console.log('🔥 좋아요한 펀딩 로드 시작 - token:', token)
+        const votedFundsData = await getMyAllVotedFunds(token)
+        console.log('🔥 API 응답 - votedFundsData:', votedFundsData)
+
+        // 응답값 형태 확인을 위한 상세 로그
+        if (votedFundsData && votedFundsData.length > 0) {
+            console.log('🔥 첫 번째 펀딩 데이터 구조:', votedFundsData[0])
+            console.log('🔥 모든 펀딩 데이터:', votedFundsData)
+        }
+
+        // FundingCard 컴포넌트에 맞게 데이터 변환
+        likedFundings.value = votedFundsData.map((funding) => {
+            console.log('🔥 변환 중인 펀딩:', funding)
+
+            const transformedFunding = {
+                id: funding.fundId || funding.id,
+                fundType: funding.fundType || funding.type || '저축형',
+                title: funding.name || funding.title || '펀딩 제목',
+                description: funding.description || funding.content || '펀딩 설명',
+                daysLeft: funding.daysLeft || funding.remainingDays || 0,
+                category: funding.category || funding.fundType || '저축형',
+                likes: funding.likes || funding.likeCount || 0,
+                progress: funding.progress || funding.progressRate || 0,
+                image:
+                    funding.imageUrl ||
+                    funding.image ||
+                    funding.thumbnail ||
+                    `https://readdy.ai/api/search-image?query=funding%20thumbnail&width=400&height=300&seq=funding${funding.fundId || funding.id}`,
+            }
+
+            console.log('🔥 변환된 펀딩:', transformedFunding)
+            return transformedFunding
+        })
+
+        console.log('🔥 최종 변환된 likedFundings:', likedFundings.value)
+    } catch (err) {
+        console.error('🔥 좋아요한 펀딩 로드 실패:', err)
+        console.error('🔥 에러 상세:', err.response?.data)
+        // API 실패 시 빈 배열로 설정
+        likedFundings.value = []
+        console.log('🔥 API 실패로 빈 배열 설정')
+    }
 }
 
 const handleUserInfoUpdate = (updatedUserInfo) => {
@@ -409,12 +467,46 @@ const handleUpdateCompleted = () => {
     loadMyPageInfo()
 }
 
+// 프로젝트 좋아요 토글 처리
+const handleProjectToggleLike = async (projectId) => {
+    try {
+        console.log('프로젝트 좋아요 토글 시작:', projectId)
+
+        // API 호출
+        await toggleProjectLike(projectId, token)
+
+        // 좋아요 상태 업데이트
+        const projectIndex = likedProjects.value.findIndex((p) => p.id === projectId)
+        if (projectIndex !== -1) {
+            const project = likedProjects.value[projectIndex]
+            project.isLiked = !project.isLiked
+            project.likes += project.isLiked ? 1 : -1
+
+            // 좋아요 해제된 경우 목록에서 제거
+            if (!project.isLiked) {
+                likedProjects.value.splice(projectIndex, 1)
+            }
+        }
+
+        console.log('프로젝트 좋아요 토글 완료:', projectId)
+    } catch (error) {
+        console.error('프로젝트 좋아요 토글 실패:', error)
+    }
+}
+
 onMounted(async () => {
+    console.log('MyPage onMounted 시작')
+    console.log('현재 token:', token)
+
     // 마이페이지 정보 로드
     await loadMyPageInfo()
 
     // 활동 탭 데이터 로드
+    console.log('활동 탭 데이터 로드 시작')
     await Promise.all([loadLikedProjects(), loadLikedFundings(), loadParticipatingFundings()])
+    console.log('활동 탭 데이터 로드 완료')
+    console.log('최종 likedProjects:', likedProjects.value)
+    console.log('최종 likedFundings:', likedFundings.value)
 
     document.addEventListener('click', (event) => {
         const userMenuButton = document.getElementById('user-menu-button')

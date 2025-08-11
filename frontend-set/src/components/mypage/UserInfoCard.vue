@@ -3,7 +3,7 @@
         <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
             <div class="space-y-6">
                 <div class="flex items-center space-x-4">
-                    <div class="w-4 h-4 bg-gray-400 rounded-full"></div>
+                    <div class="w-4 h-4 bg-yellow-400 rounded-full"></div>
                     <div>
                         <label class="block text-sm font-medium text-gray-600 mb-1">이름</label>
                         <div v-if="!editMode">
@@ -22,7 +22,7 @@
                     </div>
                 </div>
                 <div class="flex items-center space-x-4">
-                    <div class="w-4 h-4 bg-gray-400 rounded-full"></div>
+                    <div class="w-4 h-4 bg-yellow-400 rounded-full"></div>
                     <div>
                         <label class="block text-sm font-medium text-gray-600 mb-1">닉네임</label>
                         <div v-if="!editMode">
@@ -41,7 +41,7 @@
                     </div>
                 </div>
                 <div class="flex items-center space-x-4">
-                    <div class="w-4 h-4 bg-gray-400 rounded-full"></div>
+                    <div class="w-4 h-4 bg-yellow-400 rounded-full"></div>
                     <div>
                         <label class="block text-sm font-medium text-gray-600 mb-1">이메일</label>
                         <p class="text-lg text-gray-900">
@@ -52,7 +52,7 @@
             </div>
             <div class="space-y-6">
                 <div class="flex items-center space-x-4">
-                    <div class="w-4 h-4 bg-gray-400 rounded-full"></div>
+                    <div class="w-4 h-4 bg-yellow-400 rounded-full"></div>
                     <div>
                         <label class="block text-sm font-medium text-gray-600 mb-1">전화번호</label>
                         <div v-if="!editMode">
@@ -71,7 +71,7 @@
                     </div>
                 </div>
                 <div class="flex items-center space-x-4">
-                    <div class="w-4 h-4 bg-gray-400 rounded-full"></div>
+                    <div class="w-4 h-4 bg-yellow-400 rounded-full"></div>
                     <div>
                         <label class="block text-sm font-medium text-gray-600 mb-1">가입일</label>
                         <p class="text-lg text-gray-900">
@@ -93,7 +93,7 @@
                     </div>
                 </div>
                 <div class="flex items-start space-x-4">
-                    <div class="w-4 h-4 bg-gray-400 rounded-full mt-1"></div>
+                    <div class="w-4 h-4 bg-yellow-400 rounded-full mt-1"></div>
                     <div class="w-full">
                         <label class="block text-sm font-medium text-gray-600 mb-3"
                             >관심 키워드</label
@@ -154,6 +154,17 @@
                         </div>
                     </div>
                 </div>
+
+                <!-- 뱃지 섹션 -->
+                <div class="flex items-start space-x-4">
+                    <div class="w-4 h-4 bg-yellow-400 rounded-full mt-1"></div>
+                    <div class="w-full">
+                        <label class="block text-sm font-medium text-gray-600 mb-3"
+                            >획득한 뱃지</label
+                        >
+                        <BadgeDisplay :badges="userInfo.badges || []" />
+                    </div>
+                </div>
             </div>
         </div>
         <div class="mt-8 pt-6 border-t border-gray-200">
@@ -189,6 +200,7 @@
 <script setup>
 import { ref, reactive, watch, onMounted } from 'vue'
 import { updateAccountInfo, updateMyKeywords, getMyKeywords } from '@/api/mypageApi'
+import BadgeDisplay from '@/components/common/BadgeDisplay.vue'
 
 const props = defineProps({
     userInfo: {
