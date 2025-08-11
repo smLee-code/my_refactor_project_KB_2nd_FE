@@ -377,23 +377,25 @@ const submitFunding = async () => {
 onMounted(async () => {
   if (projectId) {
     try {
-      const response = await axios.get(`/api/projects/${projectId}`)
-      const project = response.data
+      const response = await axios.get(`${import.meta.env.VITE_API_URL}/api/project/list/detail/${projectId}/full`)
+      const projectData = response.data
       
       // 기본 정보 매핑
-      formData.value.name = project.title || ''
-      formData.value.detail = project.promotion || ''
+      if (projectData.basicInfo) {
+        formData.value.name = projectData.basicInfo.title || ''
+        formData.value.detail = projectData.basicInfo.promotion || ''
+      }
       
-      // 챌린지형 특성에 맞는 필드 매핑
-      if (project.type === 'challenge') {
-        formData.value.challengePeriodDays = project.challengePeriodDays || ''
-        formData.value.joinCondition = project.joinCondition || ''
-        formData.value.verifyStandard = project.verifyStandard || ''
-        formData.value.reward = project.reward || ''
-        formData.value.rewardCondition = project.rewardCondition || ''
+      // 챌린지형 특정 정보 매핑
+      if (projectData.detailInfo) {
+        formData.value.challengePeriodDays = projectData.detailInfo.challengePeriodDays || ''
+        formData.value.joinCondition = projectData.detailInfo.joinCondition || ''
+        formData.value.verifyStandard = projectData.detailInfo.verifyStandard || ''
+        formData.value.reward = projectData.detailInfo.reward || ''
+        formData.value.rewardCondition = projectData.detailInfo.rewardCondition || ''
       }
     } catch (error) {
-      console.error('프로젝트 정보 가져오기 실패:', error)
+      console.error('프로젝트 정보 조회 실패:', error)
     }
   }
 })

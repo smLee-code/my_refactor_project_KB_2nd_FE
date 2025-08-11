@@ -102,14 +102,20 @@ const loadHistory = async () => {
             },
         })
         messages.value = res.data.map((msg) => {
+            // const chatResponse = JSON.parse(msg.body)
+            console.log('✅ msg:', msg)
+            const chatResponse = msg
+
             const now = new Date(msg.timestamp) // Assuming msg.timestamp is available from backend
             const hours = String(now.getHours()).padStart(2, '0')
             const minutes = String(now.getMinutes()).padStart(2, '0')
             const currentTime = `${hours}:${minutes}`
             return {
-                ...msg,
-                author: msg.sender, // UI 표시용
-                time: currentTime, // UI 표시용
+                id: chatResponse.id,
+                content: chatResponse.content,
+                isSelf: chatResponse.userId === authStore.loadUserId(),
+                author: chatResponse.username, // UI 표시용
+                time: chatResponse.timestamp, // UI 표시용
             }
         })
         console.log('불러온 메시지:', messages.value)
@@ -132,19 +138,24 @@ const connectWebSocket = () => {
         () => {
             console.log('✅ 연결 성공')
             stompClient.value.subscribe(`/topic/chat/${props.roomId}`, (msg) => {
-                const chatMessage = JSON.parse(msg.body)
-                const now = new Date()
-                const hours = String(now.getHours()).padStart(2, '0')
-                const minutes = String(now.getMinutes()).padStart(2, '0')
-                const currentTime = `${hours}:${minutes}`
+                const chatResponse = JSON.parse(msg.body)
+
+                console.log('✅ 메시지 수신:', chatResponse)
+
+                // const now = new Date()
+                // const now = chatResponse.timestamp
+                // const hours = String(now.getHours()).padStart(2, '0')
+                // const minutes = String(now.getMinutes()).padStart(2, '0')
+                // const currentTime = `${hours}:${minutes}`
 
                 const processedMessage = {
-                    ...chatMessage,
-                    isSelf: chatMessage.sender === mySenderId.value,
-                    author: chatMessage.sender, // UI 표시용
-                    time: currentTime, // UI 표시용
+                    id: chatResponse.id,
+                    content: chatResponse.content,
+                    isSelf: chatResponse.userId === authStore.loadUserId(),
+                    author: chatResponse.username, // UI 표시용
+                    time: chatResponse.timestamp, // UI 표시용
                 }
-                // messages.value.push(processedMessage)
+                messages.value.push(processedMessage)
             })
         },
         (error) => {
@@ -186,15 +197,15 @@ const sendMessage = () => {
         }
 
         // 1. 메시지 전송
-        stompClient.value.send(`/app/chat/${props.roomId}`, {}, JSON.stringify(chatMessage))
+        stompClient.value.send(`/app/chat/${props.roomId}`, {}, inputMessage.value.trim())
 
         // 2. 메시지 화면에 반영
-        messages.value.push({
-            ...chatMessage,
-            isSelf: true,
-            author: mySenderId.value,
-            time: currentTime,
-        })
+        // messages.value.push({
+        //     ...chatMessage,
+        //     isSelf: true,
+        //     author: mySenderId.value,
+        //     time: currentTime,
+        // })
 
         // 3. 입력창 비우기
         inputMessage.value = ''
