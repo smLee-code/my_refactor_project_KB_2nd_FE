@@ -17,19 +17,19 @@
             <div class="flex items-center space-x-4 text-sm text-gray-600 mb-4">
                 <div class="flex items-center bg-red-50 px-3 py-1 rounded-full">
                     <i class="fas fa-clock text-red-500 mr-1"></i>
-                    <span>{{ timeLeft }}</span>
+                    <span>D-{{ timeLeft }}</span>
                 </div>
-                <div class="flex items-center bg-red-50 px-3 py-1 rounded-full">
-                    <i class="fas fa-user-bust text-red-500 mr-1"></i>
-                    <span>{{ participants }}명 참여</span>
+                <div class="flex items-center bg-blue-50 px-3 py-1 rounded-full">
+                    <i class="fas fa-user-group text-blue-500 mr-1"></i>
+                    <span>{{ participants }}</span>
                 </div>
             </div>
             <div class="mb-3">
                 <div class="flex justify-between text-sm text-gray-600 mb-1">
                     <span>진행률</span>
-                    <span>{{ timeLeft }}%</span>
+                    <span>{{ progress }}%</span>
                 </div>
-                <ProgressBar :percent="timeLeft" />
+                <ProgressBar :percent="progress" />
             </div>
             <slot />
         </div>
@@ -53,7 +53,7 @@ const props = defineProps({
     id: Number,
     image: String,
     title: String,
-    timeLeft: String,
+    timeLeft: [String, Number], // D-Day 표시용 (숫자 또는 문자열)
     participants: Number,
     progress: Number,
 })

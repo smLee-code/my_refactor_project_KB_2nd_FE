@@ -47,7 +47,7 @@
                     :daysLeft="getDaysLeft(funding.endAt)"
                     :category="getFundTypeKorean(funding.fundType)"
                     :likes="funding.retryVotesCount || 0"
-                    :progress="calculateProgress(funding)"
+                    :progress="calculateFundingProgress(funding)"
                 />
             </div>
             <!-- 페이지네이션 -->
@@ -88,6 +88,7 @@ import CategoryFilter from '@/components/common/CategoryFilter.vue'
 import Pagination from '@/components/common/Pagination.vue'
 import { onMounted } from 'vue'
 import axios from 'axios'
+import { calculateFundingProgress, getFundTypeKorean, getDaysLeft } from '@/utils/fundingUtils'
 
 const fundingList = ref([])
 const launchFunds = ref([])
@@ -170,7 +171,7 @@ const urgentFundings = computed(() => {
             title: fund.name,
             timeLeft: getDaysLeft(fund.endAt),
             participants: fund.retryVotesCount || 0,
-            progress: calculateProgress(fund),
+            progress: calculateFundingProgress(fund),
         }))
 })
 
@@ -215,64 +216,7 @@ function handleSearch() {
     currentPage.value = 1
 }
 
-const getDaysLeft = (endAt) => {
-    const end = new Date(endAt)
-    const today = new Date()
-    const diff = Math.ceil((end - today) / (1000 * 60 * 60 * 24))
-    return diff >= 0 ? diff : 0
-}
-
-// 펀딩 타입 한글 변환
-const getFundTypeKorean = (type) => {
-    const typeMap = {
-        'Savings': '저축형',
-        'Loan': '대출형',
-        'Donation': '기부형',
-        'Challenge': '챌린지형'
-    }
-    return typeMap[type] || type
-}
-
-// 진행률 계산 함수
-const calculateProgress = (funding) => {
-    // 1. progressPercentage가 있으면 사용
-    if (funding.progressPercentage !== undefined && funding.progressPercentage !== null) {
-        return Math.min(100, Math.round(funding.progressPercentage))
-    }
-    
-    // 2. 목표 금액과 현재 금액이 있으면 계산
-    if (funding.targetAmount && funding.currentAmount !== undefined) {
-        return Math.min(100, Math.round((funding.currentAmount / funding.targetAmount) * 100))
-    }
-    
-    // 3. 참여자 수 기반 계산
-    if (funding.participantCount !== undefined && funding.participantCount > 0) {
-        // 100명을 기준으로 계산
-        return Math.min(100, Math.round((funding.participantCount / 100) * 100))
-    }
-    
-    // 4. 날짜 기반 진행률 계산
-    if (funding.launchAt && funding.endAt) {
-        const launchDate = Array.isArray(funding.launchAt) 
-            ? new Date(funding.launchAt[0], funding.launchAt[1] - 1, funding.launchAt[2])
-            : new Date(funding.launchAt)
-        const endDate = Array.isArray(funding.endAt)
-            ? new Date(funding.endAt[0], funding.endAt[1] - 1, funding.endAt[2])
-            : new Date(funding.endAt)
-        const today = new Date()
-        
-        const totalDuration = endDate - launchDate
-        const elapsedDuration = today - launchDate
-        
-        if (totalDuration > 0) {
-            const progress = Math.round((elapsedDuration / totalDuration) * 100)
-            return Math.min(100, Math.max(0, progress))
-        }
-    }
-    
-    // 5. 기본값 - 랜덤
-    return Math.floor(Math.random() * 60) + 20  // 20~80 사이 랜덤값
-}
+// 기존 함수들을 유틸리티로 이동함
 
 // 탭, 카테고리, 정렬이 변경되면 페이지를 1로 초기화
 // watch([activeTab, selectedCategory, selectedSort], () => {

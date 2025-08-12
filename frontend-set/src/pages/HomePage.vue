@@ -127,6 +127,7 @@ import Footer from '@/components/layout/MainFooter.vue'
 import axios from 'axios'
 import { useAuthStore } from '@/stores/auth'
 import { getRecommendedFundings } from '@/api/fundingApi'
+import { calculateFundingProgress, getFundTypeKorean, getDaysLeft } from '@/utils/fundingUtils'
 
 const authStore = useAuthStore()
 const token = authStore.loadToken()
@@ -140,76 +141,7 @@ const goToProject = (id) => {
     router.push(`project/detail/${id}`)
 }
 
-// 펀딩 타입 한글 변환
-const getFundTypeKorean = (type) => {
-    const typeMap = {
-        'Savings': '저축형',
-        'Loan': '대출형',
-        'Donation': '기부형',
-        'Challenge': '챌린지형'
-    }
-    return typeMap[type] || type
-}
-
-// 펀딩 진행률 계산
-const calculateProgress = (fund) => {
-    // 1. progressPercentage가 있으면 사용
-    if (fund.progressPercentage !== undefined && fund.progressPercentage !== null && fund.progressPercentage >= 0) {
-        return Math.min(100, fund.progressPercentage)
-    }
-    
-    // 2. 펀딩 타입별로 다른 계산 방식 적용
-    if (fund.fundType === 'Donation' || fund.fundType === 'Challenge') {
-        // 기부형과 챌린지형은 목표 금액 대비 현재 금액
-        if (fund.targetAmount && fund.currentAmount !== undefined) {
-            return Math.min(100, Math.round((fund.currentAmount / fund.targetAmount) * 100))
-        }
-    } else if (fund.fundType === 'Savings' || fund.fundType === 'Loan') {
-        // 저축형과 대출형은 참여자 수나 모집 금액 기준
-        if (fund.joinedMemberCount && fund.targetMemberCount) {
-            return Math.min(100, Math.round((fund.joinedMemberCount / fund.targetMemberCount) * 100))
-        }
-        if (fund.targetAmount && fund.currentAmount !== undefined) {
-            return Math.min(100, Math.round((fund.currentAmount / fund.targetAmount) * 100))
-        }
-    }
-    
-    // 3. 날짜 기반 진행률 계산
-    if (fund.launchAt && fund.endAt) {
-        const launchDate = Array.isArray(fund.launchAt) 
-            ? new Date(fund.launchAt[0], fund.launchAt[1] - 1, fund.launchAt[2])
-            : new Date(fund.launchAt)
-        const endDate = Array.isArray(fund.endAt)
-            ? new Date(fund.endAt[0], fund.endAt[1] - 1, fund.endAt[2])
-            : new Date(fund.endAt)
-        const today = new Date()
-        
-        const totalDuration = endDate - launchDate
-        const elapsedDuration = today - launchDate
-        
-        if (totalDuration > 0) {
-            const progress = Math.round((elapsedDuration / totalDuration) * 100)
-            return Math.min(100, Math.max(0, progress))
-        }
-    }
-    
-    // 4. participantCount가 있으면 사용 (참여자 수 기반)
-    if (fund.participantCount !== undefined && fund.participantCount > 0) {
-        // 참여자 수를 기반으로 진행률 계산 (예: 100명 목표 가정)
-        return Math.min(100, Math.round((fund.participantCount / 100) * 100))
-    }
-    
-    // 5. 기본값으로 30% 반환
-    return 30
-}
-
-// 남은 일수 계산
-const getDaysLeft = (endAt) => {
-    const end = new Date(endAt)
-    const today = new Date()
-    const diff = Math.ceil((end - today) / (1000 * 60 * 60 * 24))
-    return diff >= 0 ? diff : 0
-}
+// 기존 함수들을 유틸리티로 이동함
 
 // 기본 펀딩 로드 (추천이 없거나 로그인하지 않은 경우)
 const loadDefaultFundings = async () => {
@@ -223,7 +155,7 @@ const loadDefaultFundings = async () => {
             
             // 최신 펀딩 3개 표시
             popularFundings.value = fundings.slice(0, 3).map(fund => {
-                const progress = calculateProgress(fund)
+                const progress = calculateFundingProgress(fund)
                 
                 return {
                     id: fund.fundId,
@@ -342,7 +274,7 @@ onMounted(async () => {
                 // 마감일이 같으면 2차 정렬 기준 적용
                 if (dateDiff === 0) {
                     // 1. 진행률이 높은 순
-                    const progressDiff = calculateProgress(b) - calculateProgress(a)
+                    const progressDiff = calculateFundingProgress(b) - calculateFundingProgress(a)
                     if (progressDiff !== 0) return progressDiff
                     
                     // 2. 참여자(투표수)가 많은 순
@@ -363,7 +295,7 @@ onMounted(async () => {
             title: fund.name,
             timeLeft: getDaysLeft(fund.endAt),
             participants: fund.retryVotesCount || 0,
-            progress: calculateProgress(fund),
+            progress: calculateFundingProgress(fund),
         }))
     } catch (err) {
         console.error('❌ 마감임박 펀딩 로딩 실패:', err)
@@ -386,7 +318,7 @@ onMounted(async () => {
                     daysLeft: getDaysLeft(fund.endAt),
                     category: getFundTypeKorean(fund.fundType),
                     likes: fund.likeCount || 0,
-                    progress: calculateProgress(fund),
+                    progress: calculateFundingProgress(fund),
                     link: `/funding/detail/${fund.fundId}`,
                 }))
             } else {
