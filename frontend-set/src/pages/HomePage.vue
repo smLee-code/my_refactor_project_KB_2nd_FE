@@ -6,8 +6,8 @@
                 <!-- 좌측: 메인 배너 + 당신이 좋아할만한 펀딩 -->
                 <div class="lg:col-span-2 space-y-6">
                     <!-- 메인 배너 슬라이더 -->
-                    <MainBannerSlider 
-                        :banners="mainBanners" 
+                    <MainBannerSlider
+                        :banners="mainBanners"
                         v-model:current="currentSlide"
                         @mouseenter="stopAutoSlide"
                         @mouseleave="startAutoSlide"
@@ -146,9 +146,9 @@ onMounted(async () => {
         const sortedFunds = fundRes.data
             .sort((a, b) => new Date(b.launchAt) - new Date(a.launchAt)) // 최신순 정렬
             .slice(0, 3) // 상위 3개만
-        
+
         latestFundings.value = sortedFunds
-        
+
         // 펀딩 데이터가 있으면 캐러셀 배너 업데이트
         if (latestFundings.value.length > 0) {
             updateBannersWithFundings()
@@ -156,10 +156,10 @@ onMounted(async () => {
     } catch (err) {
         console.error('❌ 최신 펀딩 로딩 실패:', err)
     }
-    
+
     // 자동 슬라이드 시작
     startAutoSlide()
-    
+
     console.log('token123123:', token) // ✅ JWT 문자열 출력돼야 함
 
     // console.log('토큰 상태:', {
@@ -191,8 +191,19 @@ onMounted(async () => {
                     Authorization: `Bearer ${token}`,
                 },
             })
-            console.log('dasfewaf', token)
-            const recommended = recommendRes.data || []
+
+            console.log('✅ recommendRes:', recommendRes.data)
+
+            const recommended =
+                recommendRes.data.map((item) => {
+                    return {
+                        ...item,
+                        image: item.images[0]?.imageUrl,
+                    }
+                }) || []
+
+            console.log('✅ recommended:', recommended)
+
             const recommendedIds = recommended.map((p) => p.projectId)
 
             // 중복 제거 후 부족한 수만큼 랜덤으로 채움
@@ -248,7 +259,7 @@ const mainBanners = ref([
 
 // 펀딩 데이터로 배너 업데이트
 const updateBannersWithFundings = () => {
-    mainBanners.value = latestFundings.value.map(fund => ({
+    mainBanners.value = latestFundings.value.map((fund) => ({
         title: fund.name,
         image: fund.thumbnailImage?.imageUrl || '/images/logo.png',
         fundId: fund.fundId,
