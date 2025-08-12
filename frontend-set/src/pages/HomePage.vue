@@ -126,6 +126,7 @@ import FundingUrgentCard from '@/components/funding/FundingUrgentCard.vue'
 import Footer from '@/components/layout/MainFooter.vue'
 import axios from 'axios'
 import { useAuthStore } from '@/stores/auth'
+import { getRecommendedFundings } from '@/api/fundingApi'
 
 const authStore = useAuthStore()
 const token = authStore.loadToken()
@@ -139,10 +140,114 @@ const goToProject = (id) => {
     router.push(`project/detail/${id}`)
 }
 
+// 펀딩 타입 한글 변환
+const getFundTypeKorean = (type) => {
+    const typeMap = {
+        'Savings': '저축형',
+        'Loan': '대출형',
+        'Donation': '기부형',
+        'Challenge': '챌린지형'
+    }
+    return typeMap[type] || type
+}
+
+// 펀딩 진행률 계산
+const calculateProgress = (fund) => {
+    // 1. progressPercentage가 있으면 사용
+    if (fund.progressPercentage !== undefined && fund.progressPercentage !== null && fund.progressPercentage >= 0) {
+        return Math.min(100, fund.progressPercentage)
+    }
+    
+    // 2. 펀딩 타입별로 다른 계산 방식 적용
+    if (fund.fundType === 'Donation' || fund.fundType === 'Challenge') {
+        // 기부형과 챌린지형은 목표 금액 대비 현재 금액
+        if (fund.targetAmount && fund.currentAmount !== undefined) {
+            return Math.min(100, Math.round((fund.currentAmount / fund.targetAmount) * 100))
+        }
+    } else if (fund.fundType === 'Savings' || fund.fundType === 'Loan') {
+        // 저축형과 대출형은 참여자 수나 모집 금액 기준
+        if (fund.joinedMemberCount && fund.targetMemberCount) {
+            return Math.min(100, Math.round((fund.joinedMemberCount / fund.targetMemberCount) * 100))
+        }
+        if (fund.targetAmount && fund.currentAmount !== undefined) {
+            return Math.min(100, Math.round((fund.currentAmount / fund.targetAmount) * 100))
+        }
+    }
+    
+    // 3. 날짜 기반 진행률 계산
+    if (fund.launchAt && fund.endAt) {
+        const launchDate = Array.isArray(fund.launchAt) 
+            ? new Date(fund.launchAt[0], fund.launchAt[1] - 1, fund.launchAt[2])
+            : new Date(fund.launchAt)
+        const endDate = Array.isArray(fund.endAt)
+            ? new Date(fund.endAt[0], fund.endAt[1] - 1, fund.endAt[2])
+            : new Date(fund.endAt)
+        const today = new Date()
+        
+        const totalDuration = endDate - launchDate
+        const elapsedDuration = today - launchDate
+        
+        if (totalDuration > 0) {
+            const progress = Math.round((elapsedDuration / totalDuration) * 100)
+            return Math.min(100, Math.max(0, progress))
+        }
+    }
+    
+    // 4. participantCount가 있으면 사용 (참여자 수 기반)
+    if (fund.participantCount !== undefined && fund.participantCount > 0) {
+        // 참여자 수를 기반으로 진행률 계산 (예: 100명 목표 가정)
+        return Math.min(100, Math.round((fund.participantCount / 100) * 100))
+    }
+    
+    // 5. 기본값으로 30% 반환
+    return 30
+}
+
+// 남은 일수 계산
+const getDaysLeft = (endAt) => {
+    const end = new Date(endAt)
+    const today = new Date()
+    const diff = Math.ceil((end - today) / (1000 * 60 * 60 * 24))
+    return diff >= 0 ? diff : 0
+}
+
+// 기본 펀딩 로드 (추천이 없거나 로그인하지 않은 경우)
+const loadDefaultFundings = async () => {
+    try {
+        const baseURL = import.meta.env.VITE_API_URL || 'http://localhost:8080'
+        const res = await axios.get(`${baseURL}/api/fund/list`, { params: { progress: 'Launch' } })
+        const fundings = res.data || []
+        
+        if (fundings.length > 0) {
+            console.log('전체 펀딩 데이터 구조 확인:', fundings[0]) // 첫 번째 펀딩 데이터 확인
+            
+            // 최신 펀딩 3개 표시
+            popularFundings.value = fundings.slice(0, 3).map(fund => {
+                const progress = calculateProgress(fund)
+                
+                return {
+                    id: fund.fundId,
+                    image: fund.thumbnailImage?.imageUrl || '/images/logo.png',
+                    title: fund.name,
+                    description: fund.financialInstitution || '금융기관',
+                    daysLeft: getDaysLeft(fund.endAt),
+                    category: getFundTypeKorean(fund.fundType),
+                    likes: fund.likeCount || 0,
+                    progress: progress,
+                    link: `/funding/detail/${fund.fundId}`,
+                }
+            })
+        }
+    } catch (err) {
+        console.error('❌ 기본 펀딩 로딩 실패:', err)
+    }
+}
+
 onMounted(async () => {
     // 최신 펀딩 데이터 가져오기
     try {
-        const fundRes = await axios.get('/fund/list', { params: { progress: 'Launch' } })
+        const baseURL = import.meta.env.VITE_API_URL || 'http://localhost:8080'
+        const fundRes = await axios.get(`${baseURL}/api/fund/list`, { params: { progress: 'Launch' } })
         const sortedFunds = fundRes.data
             .sort((a, b) => new Date(b.launchAt) - new Date(a.launchAt)) // 최신순 정렬
             .slice(0, 3) // 상위 3개만
@@ -220,6 +325,40 @@ onMounted(async () => {
     } catch (err) {
         console.error('❌ 추천 프로젝트 로딩 실패:', err)
     }
+    
+    // 키워드 기반 추천 펀딩 로드
+    try {
+        if (authStore.isLoggedIn && token) {
+            // 로그인한 사용자의 키워드 기반 추천
+            const recommendedFunds = await getRecommendedFundings()
+            console.log('키워드 기반 추천 펀딩:', recommendedFunds)
+            
+            if (recommendedFunds && recommendedFunds.length > 0) {
+                // 추천 펀딩이 있으면 최대 3개까지 표시
+                popularFundings.value = recommendedFunds.slice(0, 3).map(fund => ({
+                    id: fund.fundId,
+                    image: fund.thumbnailImage?.imageUrl || '/images/logo.png',
+                    title: fund.name,
+                    description: fund.financialInstitution || '금융기관',
+                    daysLeft: getDaysLeft(fund.endAt),
+                    category: getFundTypeKorean(fund.fundType),
+                    likes: fund.likeCount || 0,
+                    progress: calculateProgress(fund),
+                    link: `/funding/detail/${fund.fundId}`,
+                }))
+            } else {
+                // 추천 펀딩이 없으면 최신 펀딩에서 3개 표시
+                await loadDefaultFundings()
+            }
+        } else {
+            // 로그인하지 않은 사용자는 최신 펀딩 표시
+            await loadDefaultFundings()
+        }
+    } catch (err) {
+        console.error('❌ 추천 펀딩 로딩 실패:', err)
+        // 에러 발생 시 기본 펀딩 로드
+        await loadDefaultFundings()
+    }
 })
 
 const goToProjectList = () => {
@@ -269,12 +408,6 @@ const updateBannersWithFundings = () => {
     }))
 }
 
-const getDaysLeft = (endAt) => {
-    const end = new Date(endAt)
-    const today = new Date()
-    const diff = Math.ceil((end - today) / (1000 * 60 * 60 * 24))
-    return diff >= 0 ? diff : 0
-}
 const currentSlide = ref(0)
 
 // 자동 슬라이드 기능
@@ -309,42 +442,42 @@ onUnmounted(() => {
     stopAutoSlide()
 })
 
-const popularFundings = [
-    // FundingCard용 mock data
+const popularFundings = ref([
+    // 기본 mock data (데이터 로딩 전 표시)
     {
         id: 1,
         image: '/images/logo.png',
-        title: '인기 펀딩 1',
-        description: '설명1',
-        daysLeft: 10,
-        category: '저축형',
-        likes: 100,
-        progress: 80,
+        title: '로딩 중...',
+        description: '추천 펀딩을 불러오는 중입니다',
+        daysLeft: 0,
+        category: '',
+        likes: 0,
+        progress: 0,
         link: '#',
     },
     {
         id: 2,
         image: '/images/logo.png',
-        title: '인기 펀딩 2',
-        description: '설명2',
-        daysLeft: 5,
-        category: '기부형',
-        likes: 80,
-        progress: 60,
+        title: '로딩 중...',
+        description: '추천 펀딩을 불러오는 중입니다',
+        daysLeft: 0,
+        category: '',
+        likes: 0,
+        progress: 0,
         link: '#',
     },
     {
         id: 3,
         image: '/images/logo.png',
-        title: '인기 펀딩 3',
-        description: '설명3',
-        daysLeft: 2,
-        category: '대출형',
-        likes: 120,
-        progress: 90,
+        title: '로딩 중...',
+        description: '추천 펀딩을 불러오는 중입니다',
+        daysLeft: 0,
+        category: '',
+        likes: 0,
+        progress: 0,
         link: '#',
     },
-]
+])
 
 const visibleUrgentFundings = [
     // FundingUrgentCard용 mock data
