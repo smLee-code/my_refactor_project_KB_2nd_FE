@@ -107,11 +107,22 @@ const tabOptions = [
     { value: 'liked', label: '좋아요한 펀딩' },
 ]
 
+// const activeTab = ref('ongoing')
+// const selectedCategory = ref('전체')
+// const currentPage = ref(1)
+// const totalPages = computed(() => {
+//     return Math.ceil(filteredFundingList.value.length / itemsPerPage) || 1
+// })
+// const searchQuery = ref('')
+// const selectedSort = ref('latest')
+
 const activeTab = ref('ongoing')
 const selectedCategory = ref('전체')
 const currentPage = ref(1)
+const itemsPerPage = 6 // 페이지당 카드 수 (필요 시 조정)
 const totalPages = computed(() => {
-    return Math.ceil(filteredFundingList.value.length / itemsPerPage) || 1
+    const count = filteredFundingList.value.length
+    return Math.max(1, Math.ceil(count / itemsPerPage))
 })
 const searchQuery = ref('')
 const selectedSort = ref('latest')
@@ -163,8 +174,6 @@ const urgentFundings = computed(() => {
         }))
 })
 
-const itemsPerPage = 6 // 페이지당 표시할 아이템 수
-
 const filteredFundingList = computed(() => {
     let filtered = [...filteredByTab.value]
 
@@ -214,8 +223,21 @@ const getDaysLeft = (endAt) => {
 }
 
 // 탭, 카테고리, 정렬이 변경되면 페이지를 1로 초기화
+// watch([activeTab, selectedCategory, selectedSort], () => {
+//     currentPage.value = 1
+// })
+
 watch([activeTab, selectedCategory, selectedSort], () => {
     currentPage.value = 1
+})
+watch(searchQuery, () => {
+    currentPage.value = 1
+})
+
+// 전체 개수가 줄어들어 현재 페이지가 초과하면 마지막 페이지로 보정
+watch([filteredFundingList, totalPages], () => {
+    if (currentPage.value > totalPages.value) currentPage.value = totalPages.value
+    if (currentPage.value < 1) currentPage.value = 1
 })
 
 onMounted(async () => {

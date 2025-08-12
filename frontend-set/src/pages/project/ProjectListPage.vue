@@ -24,13 +24,15 @@
             <!-- 프로젝트 카드 그리드 -->
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
                 <ProjectCard
-                    v-for="project in filteredProjects"
+                    v-for="project in paginatedProjects"
                     :key="project.id"
                     :project="project"
                     @toggle-like="toggleLike"
                     @click="goToDetail(project)"
                 />
             </div>
+
+            <Pagination v-model="currentPage" :totalPages="totalPages" />
 
             <!-- 새 프로젝트 등록 버튼 -->
             <div class="fixed bottom-8 right-8">
@@ -49,7 +51,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import axios from 'axios'
 import SearchBox from '@/components/common/SearchBox.vue'
@@ -60,10 +62,18 @@ import CategoryFilter from '@/components/common/CategoryFilter.vue'
 import SortSelect from '@/components/common/SortSelect.vue'
 import ProjectCard from '@/components/project/list/ProjectCard.vue'
 import Footer from '@/components/layout/Footer.vue'
+import Pagination from '@/components/common/Pagination.vue'
 
 // style import
 import '@/assets/styles/projectList.css'
 import { useAuthStore } from '@/stores/auth'
+
+const currentPage = ref(1)
+const itemsPerPage = 9 // 한 페이지당 카드 수 (3열 * 3행 기준, 필요시 조정)
+const totalPages = computed(() => {
+    const count = filteredProjects.value.length
+    return Math.max(1, Math.ceil(count / itemsPerPage))
+})
 
 const authStore = useAuthStore()
 authStore.loadToken()
@@ -185,6 +195,25 @@ const filteredProjects = computed(() => {
     }
 
     return filtered
+})
+
+// 현재 페이지 슬라이스
+const paginatedProjects = computed(() => {
+    const start = (currentPage.value - 1) * itemsPerPage
+    return filteredProjects.value.slice(start, start + itemsPerPage)
+})
+
+/* ---------- 페이지 보정 ---------- */
+// 필터/검색/정렬/탭 변경 시 1페이지로 리셋
+watch([activeTab, searchQuery, selectedCategory, selectedSort], () => {
+    currentPage.value = 1
+})
+
+// 전체 개수가 줄어들어 현재 페이지가 초과하면 마지막 페이지로 보정
+watch([filteredProjects, totalPages], () => {
+    if (currentPage.value > totalPages.value) {
+        currentPage.value = totalPages.value
+    }
 })
 
 /* ---------- 좋아요 토글 ---------- */
