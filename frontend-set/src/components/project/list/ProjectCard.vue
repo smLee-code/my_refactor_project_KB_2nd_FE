@@ -73,4 +73,8 @@ const props = defineProps({
 })
 
 const isLiked = computed(() => props.project.isLiked)
+
+console.log('✅ props:', props)
+
+// const thumbnailImageUrl = computed(() => props.images[0].imageUrl)
 </script>
