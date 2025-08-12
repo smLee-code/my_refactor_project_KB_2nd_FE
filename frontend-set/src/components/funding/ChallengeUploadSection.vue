@@ -70,7 +70,10 @@
                             </div>
 
                             <!-- 오늘 날짜이고 업로드하지 않은 경우 -->
-                            <div v-else-if="day.isToday && !day.image" class="w-full h-full">
+                            <div
+                                v-else-if="day.isToday && !day.image && props.userChallengeId"
+                                class="w-full h-full"
+                            >
                                 <input
                                     type="file"
                                     :id="`certification-file-${fundingId}`"
@@ -86,6 +89,17 @@
                                         class="fas fa-plus text-yellow-400 text-lg sm:text-xl md:text-2xl"
                                     ></i>
                                 </label>
+                            </div>
+
+                            <!-- 오늘 날짜이지만 참여하지 않은 경우 -->
+                            <div
+                                v-else-if="day.isToday && !day.image && !props.userChallengeId"
+                                class="w-full h-full flex items-center justify-center"
+                            >
+                                <div class="text-gray-400 text-xs sm:text-sm text-center">
+                                    <i class="fas fa-lock text-gray-300 mb-1"></i>
+                                    <br />참여 필요
+                                </div>
                             </div>
 
                             <!-- 과거 날짜이고 업로드하지 않은 경우 -->
@@ -108,7 +122,7 @@
             </div>
 
             <!-- 참여하지 않은 경우 안내 메시지 -->
-            <div v-else class="text-center py-4">
+            <div v-else-if="!props.userChallengeId" class="text-center py-4">
                 <div class="text-gray-600 text-sm">
                     <i class="fas fa-info-circle mr-2"></i>
                     챌린지에 참여한 후 인증샷을 업로드할 수 있습니다.
@@ -129,6 +143,7 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import { verifyChallenge, getChallengeLogs } from '@/api/fundingApi'
+import { useAuthStore } from '@/stores/auth'
 
 // Props 정의
 // @param {number} fundingId - 펀딩 ID
@@ -154,6 +169,11 @@ const props = defineProps({
         type: String,
         required: true,
     },
+    userChallengeId: {
+        type: Number,
+        required: false,
+        default: null,
+    },
 })
 
 // Emits 정의
@@ -161,6 +181,9 @@ const props = defineProps({
 // @emits {string} uploadError - 업로드 에러 이벤트
 
 const emit = defineEmits(['imageUploaded', 'uploadError'])
+
+// Auth store 사용
+const authStore = useAuthStore()
 
 // 오늘 날짜 계산 (한국 시간 기준)
 const today = new Date()
@@ -172,48 +195,46 @@ const todayString = koreaTime.toISOString().split('T')[0]
 console.log('오늘 날짜:', todayString)
 console.log('펀딩 시작일:', props.startDate)
 console.log('펀딩 종료일:', props.endDate)
+console.log('userChallengeId:', props.userChallengeId)
 
 // 챌린지 로그 데이터 로드
 const loadChallengeLogs = async () => {
     try {
         isLoadingLogs.value = true
-        // TODO: 실제 userChallengeId를 받아서 사용해야 함
-        // 현재는 임시로 1을 사용
-        const logs = await getChallengeLogs(1)
-        challengeLogs.value = logs
-        console.log('챌린지 로그 로드 완료:', logs)
+
+        // userChallengeId가 있으면 실제 API 호출, 없으면 certificationData 사용
+        if (props.userChallengeId && props.userChallengeId > 0) {
+            console.log('실제 API 호출 - userChallengeId:', props.userChallengeId)
+            try {
+                const logs = await getChallengeLogs(props.userChallengeId)
+                challengeLogs.value = logs
+                console.log('챌린지 로그 로드 완료:', logs)
+            } catch (error) {
+                console.warn('챌린지 로그 API 호출 실패, 빈 배열로 초기화:', error.message)
+                challengeLogs.value = []
+            }
+        } else if (props.certificationData && props.certificationData.length > 0) {
+            console.log('certificationData 사용:', props.certificationData)
+            // certificationData를 challengeLogs 형식으로 변환
+            challengeLogs.value = props.certificationData.map((cert, index) => ({
+                logId: index + 1,
+                userChallengeId: props.userChallengeId || 1,
+                userId: 1,
+                logDate: cert.uploadedAt,
+                imageUrl: cert.url,
+                verified: cert.isApproved,
+                verifiedResult: cert.isApproved ? '인증 성공' : '인증 실패',
+                createAt: cert.uploadedAt,
+            }))
+            console.log('certificationData 변환 완료:', challengeLogs.value)
+        } else {
+            console.log('데이터가 없어서 빈 배열 사용')
+            challengeLogs.value = []
+        }
     } catch (error) {
         console.error('챌린지 로그 로드 실패:', error)
-        // 에러 시 테스트용 임시 데이터 사용
-        const today = new Date()
-        const yesterday = new Date(today)
-        yesterday.setDate(today.getDate() - 1)
-        const twoDaysAgo = new Date(today)
-        twoDaysAgo.setDate(today.getDate() - 2)
-
-        challengeLogs.value = [
-            {
-                logId: 1,
-                userChallengeId: 1,
-                userId: 19,
-                logDate: twoDaysAgo.toISOString().split('T')[0], // 2일 전
-                imageUrl: '/public/images/logo.png',
-                verified: true,
-                verifiedResult: '인증 성공',
-                createAt: twoDaysAgo.toISOString(),
-            },
-            {
-                logId: 2,
-                userChallengeId: 1,
-                userId: 19,
-                logDate: yesterday.toISOString().split('T')[0], // 1일 전
-                imageUrl: '/public/images/logo.png',
-                verified: true,
-                verifiedResult: '인증 성공',
-                createAt: yesterday.toISOString(),
-            },
-        ]
-        console.log('테스트용 챌린지 로그 데이터 사용:', challengeLogs.value)
+        // 에러 시 빈 배열로 설정
+        challengeLogs.value = []
     } finally {
         isLoadingLogs.value = false
     }
@@ -311,9 +332,21 @@ const certificationDays = computed(() => {
 
 // 오늘 업로드 가능 여부
 const canUploadToday = computed(() => {
+    // 챌린지에 참여하지 않았으면 업로드 불가
+    if (!props.userChallengeId) {
+        return false
+    }
+
     const todayData = certificationDays.value.find((day) => day.isToday)
     const canUpload = todayData && !todayData.image
-    console.log('오늘 업로드 가능 여부:', canUpload, '오늘 데이터:', todayData)
+    console.log(
+        '오늘 업로드 가능 여부:',
+        canUpload,
+        '오늘 데이터:',
+        todayData,
+        'userChallengeId:',
+        props.userChallengeId,
+    )
     return canUpload
 })
 
@@ -334,7 +367,7 @@ const handleImageUpload = async (event) => {
         }
 
         // 서버에 업로드 요청
-        const result = await uploadCertificationImage(file, props.fundingId)
+        const result = await uploadCertificationImage(file)
 
         // 성공 시 이벤트 발생
         emit('imageUploaded', {
@@ -357,9 +390,14 @@ const triggerFileUpload = () => {
     fileInput?.click()
 }
 
-// 서버에 인증샷 업로드 및 검증 요청 (테스트 시뮬레이션)
-const uploadCertificationImage = async (file, fundingId) => {
+// 서버에 인증샷 업로드 및 검증 요청
+const uploadCertificationImage = async (file) => {
     try {
+        // userChallengeId가 없으면 에러 발생
+        if (!props.userChallengeId) {
+            throw new Error('챌린지에 참여하지 않았습니다. 먼저 챌린지에 참여해주세요.')
+        }
+
         const formData = new FormData()
         formData.append('file', file)
         formData.append('date', todayString)
@@ -368,34 +406,23 @@ const uploadCertificationImage = async (file, fundingId) => {
             file: file.name,
             fileSize: file.size,
             date: todayString,
+            userChallengeId: props.userChallengeId,
             formDataEntries: Array.from(formData.entries()),
         })
 
-        // 테스트용 시뮬레이션 - 실제 API 호출 대신 성공 응답 시뮬레이션
-        console.log('테스트 모드: API 호출을 성공으로 시뮬레이션합니다.')
-
-        // 2초 대기 (실제 API 호출과 비슷한 경험)
-        await new Promise((resolve) => setTimeout(resolve, 2000))
-
-        // 성공 응답 시뮬레이션
-        const mockResponse = {
-            success: true,
-            imageUrl: URL.createObjectURL(file),
-            verified: true,
-            message: '인증샷 업로드 및 검증 완료',
-        }
-
-        console.log('업로드 성공 (시뮬레이션):', mockResponse)
+        // 기존 API 함수 사용
+        const result = await verifyChallenge(props.userChallengeId, formData)
+        console.log('업로드 성공:', result)
 
         // 업로드된 이미지를 challengeLogs에 추가
         const newLog = {
-            logId: Date.now(),
-            userChallengeId: 1,
-            userId: 19,
+            logId: result.logId || Date.now(),
+            userChallengeId: props.userChallengeId,
+            userId: result.userId || 1,
             logDate: todayString,
-            imageUrl: URL.createObjectURL(file),
-            verified: true,
-            verifiedResult: '인증 성공',
+            imageUrl: result.imageUrl,
+            verified: result.verified,
+            verifiedResult: result.verifiedResult || (result.verified ? '인증 성공' : '인증 실패'),
             createAt: new Date().toISOString(),
         }
 
@@ -403,9 +430,9 @@ const uploadCertificationImage = async (file, fundingId) => {
         console.log('새로운 로그 추가:', newLog)
 
         return {
-            imageUrl: mockResponse.imageUrl,
-            isApproved: mockResponse.verified,
-            message: mockResponse.message,
+            imageUrl: result.imageUrl,
+            isApproved: result.verified,
+            message: result.message || '인증샷 업로드 및 검증 완료',
         }
     } catch (error) {
         console.error('인증샷 업로드 실패:', error)

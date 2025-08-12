@@ -75,6 +75,24 @@ export const useAuthStore = defineStore('auth', () => {
         return role.value === 'ROLE_FINANCE'
     }
 
+    function isNormalRole() {
+        return role.value === 'ROLE_NORMAL'
+    }
+
+    function initializeAuth() {
+        const savedToken = loadToken()
+        const savedRole = loadRole()
+        const savedUserId = loadUserId()
+
+        if (savedToken && savedRole && savedUserId) {
+            isLoggedIn.value = true
+            console.log('✅ 인증 정보 초기화 완료')
+        } else {
+            isLoggedIn.value = false
+            console.log('✅ 저장된 인증 정보 없음')
+        }
+    }
+
     return {
         isLoggedIn,
         token,
@@ -85,6 +103,8 @@ export const useAuthStore = defineStore('auth', () => {
         loadToken,
         loadRole,
         loadUserId,
+        initializeAuth,
         isFinanceRole,
+        isNormalRole,
     }
 })

@@ -96,11 +96,11 @@
                                     class="absolute right-0 mt-2 w-56 bg-white rounded-xl shadow-lg border border-gray-100 py-2 z-50"
                                 >
                                     <router-link
-                                        to="/mypage"
-                                        class="block px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 cursor-pointer transition-colors border-b border-gray-100"
+                                        :to="userMenuPath"
+                                        class="block px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 cursor-pointer transition-colors"
                                     >
-                                        <i class="fas fa-user-circle mr-3 text-gray-400"></i>
-                                        마이페이지
+                                        <i :class="userMenuIcon + ' mr-3 text-gray-400'"></i>
+                                        {{ userMenuText }}
                                     </router-link>
                                 </div>
                             </div>
@@ -119,7 +119,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onBeforeUnmount } from 'vue'
+import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
 import { useAuthStore } from '@/stores/auth'
 import { useRouter } from 'vue-router'
 
@@ -127,6 +127,14 @@ const auth = useAuthStore()
 const showUserMenu = ref(false)
 const showNotificationDropdown = ref(false)
 const router = useRouter()
+
+// 사용자 역할에 따른 computed 속성
+const isNormalUser = computed(() => auth.isNormalRole())
+const userMenuPath = computed(() => (isNormalUser.value ? '/mypage' : '/dashboard'))
+const userMenuText = computed(() => (isNormalUser.value ? '마이페이지' : '대시보드'))
+const userMenuIcon = computed(() =>
+    isNormalUser.value ? 'fas fa-user-circle' : 'fas fa-chart-line',
+)
 
 const goToLoginPage = () => {
     router.push('/auth/login')
