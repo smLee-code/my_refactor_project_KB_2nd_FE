@@ -1,7 +1,7 @@
 <template>
     <div
         @click="goToDetail"
-        class="bg-white rounded-xl shadow-lg hover:shadow-2xl transition-all duration-300 cursor-pointer transform hover:-translate-y-1 border border-red-100 p-6 flex items-start space-x-6"
+        class="bg-white rounded-xl shadow-lg hover:shadow-2xl transition-all duration-300 cursor-pointer transform hover:-translate-y-1 border border-gray-100 p-6 flex items-start space-x-6"
     >
         <!-- 썸네일 이미지 -->
         <div class="w-32 h-32 bg-gray-200 rounded-lg overflow-hidden flex-shrink-0 shadow-inner">

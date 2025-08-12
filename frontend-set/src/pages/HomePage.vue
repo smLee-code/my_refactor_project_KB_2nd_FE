@@ -326,6 +326,49 @@ onMounted(async () => {
         console.error('❌ 추천 프로젝트 로딩 실패:', err)
     }
     
+    // 마감임박 펀딩 로드 (펀딩 목록 페이지와 동일한 로직)
+    try {
+        const baseURL = import.meta.env.VITE_API_URL || 'http://localhost:8080'
+        const launchRes = await axios.get(`${baseURL}/api/fund/list`, { params: { progress: 'Launch' } })
+        const launchFunds = launchRes.data || []
+        
+        // 펀딩 목록 페이지와 동일한 정렬 및 필터링
+        const urgentFunds = [...launchFunds]
+            .sort((a, b) => {
+                const dateA = new Date(a.endAt)
+                const dateB = new Date(b.endAt)
+                const dateDiff = dateA - dateB
+                
+                // 마감일이 같으면 2차 정렬 기준 적용
+                if (dateDiff === 0) {
+                    // 1. 진행률이 높은 순
+                    const progressDiff = calculateProgress(b) - calculateProgress(a)
+                    if (progressDiff !== 0) return progressDiff
+                    
+                    // 2. 참여자(투표수)가 많은 순
+                    const votesDiff = (b.retryVotesCount || 0) - (a.retryVotesCount || 0)
+                    if (votesDiff !== 0) return votesDiff
+                    
+                    // 3. 펀딩 ID 순서
+                    return a.fundId - b.fundId
+                }
+                
+                return dateDiff
+            })
+            .slice(0, 2) // 상위 2개만
+        
+        visibleUrgentFundings.value = urgentFunds.map(fund => ({
+            id: fund.fundId,
+            image: fund.thumbnailImage?.imageUrl || '/images/logo.png',
+            title: fund.name,
+            timeLeft: getDaysLeft(fund.endAt),
+            participants: fund.retryVotesCount || 0,
+            progress: calculateProgress(fund),
+        }))
+    } catch (err) {
+        console.error('❌ 마감임박 펀딩 로딩 실패:', err)
+    }
+    
     // 키워드 기반 추천 펀딩 로드
     try {
         if (authStore.isLoggedIn && token) {
@@ -479,25 +522,25 @@ const popularFundings = ref([
     },
 ])
 
-const visibleUrgentFundings = [
-    // FundingUrgentCard용 mock data
+const visibleUrgentFundings = ref([
+    // FundingUrgentCard용 기본 데이터 (로딩 전)
     {
         id: 1,
         image: '/images/logo.png',
-        title: '마감임박 펀딩 1',
-        timeLeft: '3시간 남음',
-        participants: 30,
-        progress: 95,
+        title: '로딩 중...',
+        timeLeft: '계산 중',
+        participants: 0,
+        progress: 0,
     },
     {
         id: 2,
         image: '/images/logo.png',
-        title: '마감임박 펀딩 2',
-        timeLeft: '1시간 남음',
-        participants: 20,
-        progress: 80,
+        title: '로딩 중...',
+        timeLeft: '계산 중',
+        participants: 0,
+        progress: 0,
     },
-]
+])
 </script>
 
 <style scoped>

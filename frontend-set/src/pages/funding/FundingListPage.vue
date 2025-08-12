@@ -45,7 +45,7 @@
                     :title="funding.name"
                     :description="funding.financialInstitution || '금융기관 정보 없음'"
                     :daysLeft="getDaysLeft(funding.endAt)"
-                    :category="funding.fundType"
+                    :category="getFundTypeKorean(funding.fundType)"
                     :likes="funding.retryVotesCount || 0"
                     :progress="calculateProgress(funding)"
                 />
@@ -220,6 +220,17 @@ const getDaysLeft = (endAt) => {
     const today = new Date()
     const diff = Math.ceil((end - today) / (1000 * 60 * 60 * 24))
     return diff >= 0 ? diff : 0
+}
+
+// 펀딩 타입 한글 변환
+const getFundTypeKorean = (type) => {
+    const typeMap = {
+        'Savings': '저축형',
+        'Loan': '대출형',
+        'Donation': '기부형',
+        'Challenge': '챌린지형'
+    }
+    return typeMap[type] || type
 }
 
 // 진행률 계산 함수
