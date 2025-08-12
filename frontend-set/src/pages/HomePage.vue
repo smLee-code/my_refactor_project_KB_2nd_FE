@@ -15,16 +15,10 @@
                     />
                     <!-- 당신이 좋아할만한 펀딩 -->
                     <div>
-                        <div class="flex items-center justify-between mb-6">
+                        <div class="mb-6">
                             <h3 class="text-2xl font-bold text-gray-900 drop-shadow-sm">
                                 당신이 좋아할만한 펀딩
                             </h3>
-                            <a
-                                href="#"
-                                class="text-gray-700 hover:text-gray-900 border-b border-gray-700 hover:border-gray-900 pb-0.5 font-medium cursor-pointer whitespace-nowrap transition-all flex items-center space-x-1"
-                            >
-                                <span>더 보기</span></a
-                            >
                         </div>
                         <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                             <FundingCard
