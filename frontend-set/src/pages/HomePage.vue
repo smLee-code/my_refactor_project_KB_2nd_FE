@@ -14,28 +14,7 @@
                         @indicator-click="handleSlideChange"
                     />
                     <!-- 당신이 좋아할만한 펀딩 -->
-                    <div>
-                        <div class="mb-6">
-                            <h3 class="text-2xl font-bold text-gray-900 drop-shadow-sm">
-                                {{ authStore.isLoggedIn ? '당신이 좋아할만한 펀딩' : '인기 펀딩' }}
-                            </h3>
-                        </div>
-                        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                            <FundingCard
-                                v-for="item in popularFundings"
-                                :key="item.id"
-                                :id="item.id"
-                                :fundType="item.fundType"
-                                :image="item.image"
-                                :title="item.title"
-                                :description="item.description"
-                                :daysLeft="item.daysLeft"
-                                :category="item.category"
-                                :likes="item.likes"
-                                :progress="item.progress"
-                            />
-                        </div>
-                    </div>
+                    <RecommendedFundings :popularFundings="popularFundings" />
                 </div>
                 <!-- 우측: 인기 프로젝트 -->
                 <div class="h-full">
@@ -114,7 +93,7 @@
 import { useRouter } from 'vue-router'
 import { onMounted, onUnmounted, ref } from 'vue'
 import MainSlideBanner from '@/components/home/MainSlideBanner.vue'
-import FundingCard from '@/components/funding/FundingCard.vue'
+import RecommendedFundings from '@/components/home/RecommendedFundings.vue'
 import ProjectRankingCard from '@/components/project/ProjectRankingCard.vue'
 import ProjectCard from '@/components/project/list/ProjectCard.vue'
 import FundingUrgentCard from '@/components/funding/FundingUrgentCard.vue'
