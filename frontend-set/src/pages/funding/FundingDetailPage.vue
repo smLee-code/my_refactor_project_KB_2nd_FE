@@ -191,6 +191,7 @@ import SavingsFundingDetailSection from '@/components/funding/SavingsFundingDeta
 import ChallengeFundingDetailSection from '@/components/funding/ChallengeFundingDetailSection.vue'
 import SourceProjectSection from '@/components/funding/SourceProjectSection.vue'
 import CommentSection from '@/components/funding/CommentSection.vue'
+import { calculateFundingProgress } from '@/utils/fundingUtils'
 
 const route = useRoute()
 const router = useRouter()
@@ -355,50 +356,15 @@ const fetchFundingDetail = async () => {
                 return 365
             }
 
-            // 진행률 계산 (progressPercentage가 없으면 날짜 기반으로 계산)
-            const calculateProgressPercentage = (progressPercentage, launchAt, endAt) => {
-                // progressPercentage가 유효한 값이면 그대로 사용
-                if (
-                    progressPercentage !== null &&
-                    progressPercentage !== undefined &&
-                    progressPercentage >= 0
-                ) {
-                    return progressPercentage
+            // 유틸리티 함수를 사용한 진행률 계산
+            const getProgressPercentage = (data) => {
+                // API에서 progressPercentage가 있으면 우선 사용
+                if (data.progressPercentage !== null && data.progressPercentage !== undefined && data.progressPercentage >= 0) {
+                    return data.progressPercentage
                 }
-
-                // progressPercentage가 없으면 날짜 기반으로 계산
-                if (launchAt && endAt && launchAt.length >= 3 && endAt.length >= 3) {
-                    const [launchYear, launchMonth, launchDay] = launchAt
-                    const [endYear, endMonth, endDay] = endAt
-
-                    const launchDate = new Date(launchYear, launchMonth - 1, launchDay)
-                    const endDate = new Date(endYear, endMonth - 1, endDay)
-                    const today = new Date()
-
-                    // 전체 기간
-                    const totalDuration = endDate - launchDate
-                    // 경과 기간
-                    const elapsedDuration = today - launchDate
-
-                    // 진행률 계산 (0-100 범위로 제한)
-                    let percentage = (elapsedDuration / totalDuration) * 100
-                    percentage = Math.max(0, Math.min(100, percentage)) // 0-100 범위로 제한
-
-                    console.log('progressPercentage 계산:', {
-                        original: progressPercentage,
-                        calculated: percentage.toFixed(1),
-                        launchDate: launchDate.toISOString(),
-                        endDate: endDate.toISOString(),
-                        today: today.toISOString(),
-                        totalDuration: totalDuration / (1000 * 60 * 60 * 24) + '일',
-                        elapsedDuration: elapsedDuration / (1000 * 60 * 60 * 24) + '일',
-                    })
-
-                    return parseFloat(percentage.toFixed(1)) // 소수점 한 자리까지
-                }
-
-                // 날짜 정보도 없으면 기본값 0
-                return 0
+                
+                // 없으면 유틸리티 함수로 계산
+                return calculateFundingProgress(data)
             }
 
             // 펀딩 데이터 설정
@@ -408,11 +374,7 @@ const fetchFundingDetail = async () => {
                 targetAmount: data.targetAmount || 50000000,
                 currentAmount: data.currentAmount || 0,
                 progress: data.progress || '진행중', // progress 필드 추가
-                progressPercentage: calculateProgressPercentage(
-                    data.progressPercentage,
-                    data.launchAt,
-                    data.endAt,
-                ),
+                progressPercentage: getProgressPercentage(data),
                 participantCount: data.participantCount || 0,
                 daysLeft: calculateDaysLeft(data.endAt),
                 endDate: formatDateArray(data.endAt),

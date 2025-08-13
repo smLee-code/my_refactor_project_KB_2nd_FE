@@ -99,6 +99,22 @@ export const deleteChallenge = async (id) => {
     }
 }
 
+// 키워드 기반 펀딩 추천
+export const getRecommendedFundings = async () => {
+    try {
+        const response = await api.get('/fund/list/keyword', {
+            headers: {
+                Authorization: `Bearer ${localStorage.getItem('jwt')}`,
+            },
+        })
+        return response.data
+    } catch (error) {
+        console.error('키워드 기반 펀딩 추천 조회 실패:', error)
+        // 에러 발생 시 빈 배열 반환
+        return []
+    }
+}
+
 // 챌린지 인증 (인증샷 업로드)
 export const verifyChallenge = async (id, formData) => {
     const baseURL = import.meta.env.VITE_API_URL || 'http://localhost:8080'

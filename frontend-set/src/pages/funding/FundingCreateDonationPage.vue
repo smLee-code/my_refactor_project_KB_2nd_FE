@@ -431,24 +431,50 @@ const submitFunding = async () => {
 onMounted(async () => {
   if (projectId) {
     try {
-      const response = await axios.get(`/api/projects/${projectId}`)
-      const project = response.data
+      const response = await axios.get(`/project/list/detail/${projectId}/full`)
+      const projectData = response.data
       
       // 기본 정보 매핑
-      formData.value.name = project.title || ''
-      formData.value.detail = project.promotion || ''
+      formData.value.name = projectData.basicInfo.title || ''
+      formData.value.detail = projectData.basicInfo.promotion || ''
       
-      // 기부형 특성에 맞는 필드 매핑
-      if (project.type === 'donation') {
-        formData.value.targetAmount = project.targetAmount ? project.targetAmount.toLocaleString() : ''
-        formData.value.recipient = project.recipient || ''
-        formData.value.usagePlan = project.usagePlan || ''
-        formData.value.minDonationAmount = project.minDonationAmount ? project.minDonationAmount.toLocaleString() : ''
-        formData.value.maxDonationAmount = project.maxDonationAmount ? project.maxDonationAmount.toLocaleString() : ''
-        formData.value.joinCondition = project.joinCondition || ''
+      // 기부형 특정 정보 매핑
+      if (projectData.detailInfo) {
+        formData.value.targetAmount = projectData.detailInfo.targetAmount ? projectData.detailInfo.targetAmount.toLocaleString() : ''
+        // recipient 또는 recipientOrganization 필드 확인
+        formData.value.recipient = projectData.detailInfo.recipient || projectData.detailInfo.recipientOrganization || ''
+        formData.value.usagePlan = projectData.detailInfo.usagePlan || projectData.detailInfo.donationUsePlan || ''
+        
+        // 기부 금액 범위 설정
+        if (projectData.detailInfo.minDonationAmount) {
+          formData.value.minDonationAmount = projectData.detailInfo.minDonationAmount.toLocaleString()
+        }
+        if (projectData.detailInfo.maxDonationAmount) {
+          formData.value.maxDonationAmount = projectData.detailInfo.maxDonationAmount.toLocaleString()
+        }
+        
+        // 가입 조건 설정
+        formData.value.joinCondition = projectData.detailInfo.joinCondition || '누구나 참여 가능'
       }
+      
+      // 키워드 정보가 있다면 추가
+      if (projectData.basicInfo.keywords) {
+        formData.value.keywordIds = projectData.basicInfo.keywords.map(keyword => keyword.id)
+      }
+      
+      // 콘솔에 로드된 데이터 확인
+      console.log('프로젝트 데이터 로드 완료:', {
+        basicInfo: projectData.basicInfo,
+        detailInfo: projectData.detailInfo,
+        mappedData: {
+          name: formData.value.name,
+          recipient: formData.value.recipient,
+          usagePlan: formData.value.usagePlan,
+          targetAmount: formData.value.targetAmount
+        }
+      })
     } catch (error) {
-      console.error('프로젝트 정보 가져오기 실패:', error)
+      console.error('프로젝트 정보 조회 실패:', error)
     }
   }
 })

@@ -14,8 +14,8 @@
                 <h4 class="font-semibold text-gray-900 mb-1 line-clamp-1">{{ title }}</h4>
                 <p class="text-sm text-gray-600 mb-2 line-clamp-1">{{ promotion }}</p>
                 <div class="flex items-center justify-between text-sm">
-                    <span class="text-red-600 bg-pink-50 px-2 py-1 rounded-full"
-                        >좋아요: {{ voteCount }}</span
+                    <span class="text-red-600 flex items-center gap-1 inline-flex"
+                        ><i class="fas fa-heart"></i> {{ voteCount }}</span
                     >
                     <span class="text-grey-600 bg-grey-50 px-2 py-1 rounded-full"
                         >{{ typeMap[projectType] }}형</span
