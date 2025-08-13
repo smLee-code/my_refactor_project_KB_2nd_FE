@@ -6,7 +6,7 @@
                 <!-- 좌측: 메인 배너 + 당신이 좋아할만한 펀딩 -->
                 <div class="lg:col-span-2 space-y-6">
                     <!-- 메인 배너 슬라이더 -->
-                    <MainBannerSlider
+                    <MainSlideBanner
                         :banners="mainBanners"
                         v-model:current="currentSlide"
                         @mouseenter="stopAutoSlide"
@@ -113,7 +113,7 @@
 <script setup>
 import { useRouter } from 'vue-router'
 import { onMounted, onUnmounted, ref } from 'vue'
-import MainBannerSlider from '@/components/home/MainBannerSlider.vue'
+import MainSlideBanner from '@/components/home/MainSlideBanner.vue'
 import FundingCard from '@/components/funding/FundingCard.vue'
 import ProjectRankingCard from '@/components/project/ProjectRankingCard.vue'
 import ProjectCard from '@/components/project/list/ProjectCard.vue'
