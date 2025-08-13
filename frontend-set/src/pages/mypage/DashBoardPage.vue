@@ -11,8 +11,14 @@
                         title="펀딩 관리"
                         icon="fas fa-coins text-amber-600 text-xl"
                         iconColor="#2563EB"
-                        :totalFunding="1230"
-                        :activeFunding="160"
+                        :totalFunding="fundingStats.totalFunding"
+                        :progressFunding="fundingStats.progressFunding"
+                        :urgentFunding="fundingStats.urgentFunding"
+                        :todayProducts="fundingStats.todayProducts"
+                        :recentFunding="fundingStats.recentFunding"
+                        :bestFunding="fundingStats.bestFunding"
+                        :recentFundingId="fundingStats.recentFundingId"
+                        :bestFundingId="fundingStats.bestFundingId"
                     />
 
                     <div
@@ -88,6 +94,18 @@ const authStore = useAuthStore()
 const myfund = ref([])
 const myFundingList = ref([])
 
+// 펀딩 통계 데이터
+const fundingStats = ref({
+    totalFunding: 0,
+    progressFunding: 0,
+    urgentFunding: 0,
+    todayProducts: 0,
+    recentFunding: '',
+    bestFunding: '',
+    recentFundingId: null,
+    bestFundingId: null
+})
+
 // 펀딩 타입 한글 변환
 const getFundTypeKorean = (type) => {
     const typeMap = {
@@ -107,6 +125,7 @@ onMounted(async () => {
     }
 
     try {
+        // 내 펀딩 목록 가져오기
         const res = await axios.get('/fund/my/fund/all', {
             headers: {
                 Authorization: `Bearer ${authStore.token}`,
@@ -114,6 +133,14 @@ onMounted(async () => {
         })
         myfund.value = res.data
         console.log(`내 펀딩 관리: `, res.data)
+        
+        // 전체 펀딩 목록 가져오기 (통계용)
+        const baseURL = import.meta.env.VITE_API_URL || 'http://localhost:8080'
+        const allFundingsRes = await axios.get(`${baseURL}/api/fund/list`, {
+            params: { progress: 'Launch' }
+        })
+        const allFundings = allFundingsRes.data || []
+        console.log('전체 펀딩 목록:', allFundings)
         
         // 펀딩 리포트 테이블용 데이터 변환 - 각 펀딩의 상세 정보를 가져옴
         if (res.data && res.data.length > 0) {
@@ -200,6 +227,50 @@ onMounted(async () => {
             
             // 모든 Promise가 완료될 때까지 대기
             myFundingList.value = await Promise.all(fundingPromises)
+            
+            // 펀딩 통계 계산
+            // 총 펀딩 수와 진행 중인 펀딩은 전체 펀딩 기준
+            fundingStats.value.totalFunding = allFundings.length
+            fundingStats.value.progressFunding = allFundings.filter(f => f.progress === 'Launch').length
+            
+            // 마감 임박 (7일 이내) 펀딩 계산 - 내 펀딩 중에서
+            const urgentFundings = myFundingList.value.filter(f => {
+                const deadline = f.deadline
+                if (deadline.startsWith('D-')) {
+                    const days = parseInt(deadline.replace('D-', ''))
+                    return days <= 7 && days > 0
+                }
+                return false
+            })
+            fundingStats.value.urgentFunding = urgentFundings.length
+            
+            // 오늘 등록된 펀딩 계산 (launchAt이 오늘인 펀딩) - 내 펀딩 중에서
+            const today = new Date()
+            today.setHours(0, 0, 0, 0)
+            const tomorrow = new Date(today)
+            tomorrow.setDate(tomorrow.getDate() + 1)
+            
+            const todayFundings = res.data.filter(fund => {
+                const launchDate = new Date(fund.launchAt)
+                return launchDate >= today && launchDate < tomorrow
+            })
+            fundingStats.value.todayProducts = todayFundings.length
+            
+            // 최근 생성된 펀딩 2개 (launchAt 기준 정렬)
+            const sortedByRecent = [...res.data].sort((a, b) => {
+                const dateA = new Date(a.launchAt)
+                const dateB = new Date(b.launchAt)
+                return dateB - dateA // 최신순
+            })
+            
+            if (sortedByRecent.length > 0) {
+                fundingStats.value.recentFunding = sortedByRecent[0].productName || '없음'
+                fundingStats.value.recentFundingId = sortedByRecent[0].fundId
+            }
+            if (sortedByRecent.length > 1) {
+                fundingStats.value.bestFunding = sortedByRecent[1].productName || '없음'
+                fundingStats.value.bestFundingId = sortedByRecent[1].fundId
+            }
         } else {
             // 데이터가 없을 경우 기본값
             myFundingList.value = [
