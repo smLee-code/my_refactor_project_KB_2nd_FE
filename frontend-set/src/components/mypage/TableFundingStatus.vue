@@ -49,6 +49,7 @@
                         </td>
                         <td class="py-3 px-4">
                             <button
+                                @click="goToFundingDetail(item.fundId)"
                                 class="text-[#287EFF] hover:text-[#1B5FBF] text-sm cursor-pointer !rounded-button whitespace-nowrap px-2 py-1"
                             >
                                 바로가기
@@ -63,11 +64,20 @@
 
 <script setup>
 import Card from './Card.vue'
+import { useRouter } from 'vue-router'
+
+const router = useRouter()
 
 defineProps({
     headers: { type: Array, required: true },
     data: { type: Array, required: true },
 })
+
+const goToFundingDetail = (fundId) => {
+    if (fundId) {
+        router.push(`/funding/detail/${fundId}`)
+    }
+}
 </script>
 
 <style scoped>

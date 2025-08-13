@@ -405,7 +405,7 @@ const updateBannersWithFundings = () => {
         image: fund.thumbnailImage?.imageUrl || '/images/logo.png',
         fundId: fund.fundId,
         description: fund.financialInstitution || '금융기관 정보 없음',
-        progress: fund.progress || 0,
+        progress: calculateFundingProgress(fund), // 유틸리티 함수로 진행률 계산
         daysLeft: getDaysLeft(fund.endAt),
     }))
 }
