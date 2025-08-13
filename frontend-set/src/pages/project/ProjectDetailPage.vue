@@ -122,6 +122,8 @@ const fetchProjectData = async (projectId) => {
         const relatedRes = await axios.get(`/project/related/${projectId}`)
         relatedProjects.value = relatedRes.data
 
+        console.log('✅ relatedProjects:', relatedProjects.value)
+
         const isLikedRes = await axios.get(`/votes/${projectId}`, {
             headers: {
                 Authorization: `Bearer ${token}`,
