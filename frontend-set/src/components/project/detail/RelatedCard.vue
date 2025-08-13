@@ -6,7 +6,7 @@
         <!-- 썸네일 -->
         <div class="w-full h-48 bg-kb-ui-10 rounded-xl overflow-hidden mb-4">
             <img
-                :src="project.image"
+                :src="thumbnail"
                 :alt="project.title"
                 class="w-full h-full object-cover object-top"
             />
@@ -58,8 +58,14 @@
 </template>
 
 <script setup>
+import { computed } from 'vue'
+
 // project: 프로젝트 객체 (필수)
-defineProps({
+const props = defineProps({
     project: { type: Object, required: true },
+})
+
+const thumbnail = computed(() => {
+    return props.project.images[0]?.imageUrl || '/images/logo.png'
 })
 </script>
