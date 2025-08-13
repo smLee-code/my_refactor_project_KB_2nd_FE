@@ -27,9 +27,9 @@
                 <div class="mb-2">
                     <div class="flex justify-between text-sm text-gray-600 mb-1">
                         <span>진행률</span>
-                        <span>{{ daysLeft }}%</span>
+                        <span>{{ progress }}%</span>
                     </div>
-                    <ProgressBar :percent="daysLeft" />
+                    <ProgressBar :percent="progress" />
                 </div>
             </div>
         </div>

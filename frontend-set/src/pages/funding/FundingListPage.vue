@@ -45,9 +45,9 @@
                     :title="funding.name"
                     :description="funding.financialInstitution || '금융기관 정보 없음'"
                     :daysLeft="getDaysLeft(funding.endAt)"
-                    :category="funding.fundType"
+                    :category="getFundTypeKorean(funding.fundType)"
                     :likes="funding.retryVotesCount || 0"
-                    :progress="funding.progress"
+                    :progress="calculateFundingProgress(funding)"
                 />
             </div>
             <!-- 페이지네이션 -->
@@ -88,6 +88,7 @@ import CategoryFilter from '@/components/common/CategoryFilter.vue'
 import Pagination from '@/components/common/Pagination.vue'
 import { onMounted } from 'vue'
 import axios from 'axios'
+import { calculateFundingProgress, getFundTypeKorean, getDaysLeft } from '@/utils/fundingUtils'
 
 const fundingList = ref([])
 const launchFunds = ref([])
@@ -170,7 +171,7 @@ const urgentFundings = computed(() => {
             title: fund.name,
             timeLeft: getDaysLeft(fund.endAt),
             participants: fund.retryVotesCount || 0,
-            progress: fund.progress,
+            progress: calculateFundingProgress(fund),
         }))
 })
 
@@ -215,12 +216,7 @@ function handleSearch() {
     currentPage.value = 1
 }
 
-const getDaysLeft = (endAt) => {
-    const end = new Date(endAt)
-    const today = new Date()
-    const diff = Math.ceil((end - today) / (1000 * 60 * 60 * 24))
-    return diff >= 0 ? diff : 0
-}
+// 기존 함수들을 유틸리티로 이동함
 
 // 탭, 카테고리, 정렬이 변경되면 페이지를 1로 초기화
 // watch([activeTab, selectedCategory, selectedSort], () => {
