@@ -74,7 +74,7 @@ import UserDetailsModal from '@/components/common/UserDetailsModal.vue'
 
 const route = useRoute()
 const authStore = useAuthStore()
-const loanId = ref(1)
+const loanId = ref(Number(route.params.id))
 const allApplicants = ref([])
 const isLoading = ref(true)
 const error = ref(null)
