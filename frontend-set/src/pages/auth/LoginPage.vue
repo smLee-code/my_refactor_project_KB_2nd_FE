@@ -186,6 +186,10 @@ const handleLogin = async () => {
             email: email.value,
             password: password.value,
         })
+
+        const previousRoute = sessionStorage.getItem('previousRoute')
+        sessionStorage.removeItem('previousRoute')
+        router.push(previousRoute || '/')
     } catch (error) {
         loginError.value = '로그인에 실패했습니다. 이메일과 비밀번호를 확인해주세요.'
     } finally {

@@ -1,4 +1,5 @@
 import { createRouter, createWebHistory } from 'vue-router'
+import { useAuthStore } from '@/stores/auth'
 
 import HomePage from '@/pages/HomePage.vue'
 import NotFoundPage from '@/pages/NotFoundPage.vue'
@@ -61,6 +62,10 @@ router.beforeEach((to, from, next) => {
             next('/mypage')
             return
         }
+    }
+
+    if (to.name === 'login' && from.name !== 'login') {
+        sessionStorage.setItem('previousRoute', from.fullPath)
     }
 
     next()
