@@ -366,8 +366,11 @@ const sendVerification = async () => {
 
     try {
         const res = await axios.get(`/member/duplicated/email?email=${form.value.email}`)
+        const isDuplicated = res.data
 
-        if (!res.data) {
+        console.log('✅ isDuplicated:', isDuplicated)
+
+        if (isDuplicated) {
             errors.value.email = '이미 존재하는 이메일입니다'
             return
         }
