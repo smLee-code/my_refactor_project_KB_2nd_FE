@@ -184,6 +184,7 @@ export const getAllMyChallenges = async () => {
 export const getChallengeLogs = async (userChallengeId) => {
     try {
         const response = await api.get(`/challenge-logs/${userChallengeId}/all`, {
+
             headers: {
                 Authorization: `Bearer ${localStorage.getItem('jwt')}`,
             },

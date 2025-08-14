@@ -259,6 +259,7 @@ const fetchFundingDetail = async () => {
                 const userChallengesResponse = await api.get(`/user-challenge/user/all/v2`, {
                     headers: {
                         Authorization: `Bearer ${authStore.token}`,
+
                     },
                 })
                 const userChallenges = userChallengesResponse.data
