@@ -249,7 +249,6 @@ const fetchFundingDetail = async () => {
         // 사용자의 챌린지 참여 정보 조회 (챌린지 타입인 경우)
         let userChallengeId = null
         if (data.fundType === 'Challenge') {
-            const baseURL = import.meta.env.VITE_API_URL || ''
             try {
                 console.log(
                     '챌린지 참여 정보 조회 시작 - fundId:',
@@ -257,24 +256,24 @@ const fetchFundingDetail = async () => {
                     'data.id:',
                     data.id,
                 )
-                const userChallengesResponse = await axios.get(
-                    `${baseURL}/api/user-challenge/user/all/v2`,
-                    {
-                        headers: {
-                            Authorization: `Bearer ${authStore.token}`,
-                        },
+                const userChallengesResponse = await api.get(`/user-challenge/user/all/v2`, {
+                    headers: {
+                        Authorization: `Bearer ${authStore.token}`,
+
                     },
-                )
+                })
                 const userChallenges = userChallengesResponse.data
                 console.log('사용자 챌린지 목록:', userChallenges)
 
-                // fundId와 data.id 모두 시도
+                // productId로 매칭 시도 (백엔드 DTO 구조에 맞춤)
                 let userChallenge = userChallenges.find(
-                    (challenge) => challenge.fundId === data.fundId,
+                    (challenge) => challenge.productId === data.fundId,
                 )
 
                 if (!userChallenge) {
-                    userChallenge = userChallenges.find((challenge) => challenge.fundId === data.id)
+                    userChallenge = userChallenges.find(
+                        (challenge) => challenge.productId === data.id,
+                    )
                 }
 
                 if (userChallenge) {
@@ -289,7 +288,7 @@ const fetchFundingDetail = async () => {
                     console.log('해당 펀딩의 챌린지 참여 정보를 찾을 수 없음')
                 }
             } catch (error) {
-                // console.warn('사용자 챌린지 정보 조회 실패:', error)
+                console.warn('사용자 챌린지 정보 조회 실패:', error)
                 // 에러가 발생해도 계속 진행
             }
         }
@@ -361,10 +360,14 @@ const fetchFundingDetail = async () => {
             // 유틸리티 함수를 사용한 진행률 계산
             const getProgressPercentage = (data) => {
                 // API에서 progressPercentage가 있으면 우선 사용
-                if (data.progressPercentage !== null && data.progressPercentage !== undefined && data.progressPercentage >= 0) {
+                if (
+                    data.progressPercentage !== null &&
+                    data.progressPercentage !== undefined &&
+                    data.progressPercentage >= 0
+                ) {
                     return data.progressPercentage
                 }
-                
+
                 // 없으면 유틸리티 함수로 계산
                 return calculateFundingProgress(data)
             }

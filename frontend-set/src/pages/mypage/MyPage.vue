@@ -322,75 +322,80 @@ const loadParticipatingFundings = async () => {
         const allFundings = []
 
         // 저축 데이터 추가
+        console.log('저축 데이터 원본:', savings)
         savings.forEach((saving) => {
+            console.log('저축 데이터 처리 중:', saving)
             allFundings.push({
                 id: saving.userSavingId,
-                title: saving.fundName || '저축 상품',
-                joinDate: saving.createdAt
-                    ? new Date(saving.createdAt).toLocaleDateString('ko-KR')
-                    : '날짜 없음',
-                amount: saving.amount || 0,
+                title: saving.savingName || '저축 상품',
+                joinDate: `참여일: ${new Date().toLocaleDateString('ko-KR')}`, // 임시로 현재 날짜 사용
+                amount: saving.savingAmount || 0,
                 type: 'saving',
-                fundId: saving.fundId,
-                status: saving.status || '진행중',
+                fundId: saving.productId,
+                status: '진행중',
                 image:
-                    saving.imageUrl ||
-                    `https://readdy.ai/api/search-image?query=savings%20product&width=150&height=150&seq=saving${saving.userSavingId}`,
+                    saving.images && saving.images.length > 0
+                        ? saving.images[0].imageUrl
+                        : `https://readdy.ai/api/search-image?query=savings%20product&width=150&height=150&seq=saving${saving.userSavingId}`,
             })
         })
 
         // 대출 데이터 추가
+        console.log('대출 데이터 원본:', loans)
         loans.forEach((loan) => {
+            console.log('대출 데이터 처리 중:', loan)
             allFundings.push({
                 id: loan.userLoanId,
-                title: loan.fundName || '대출 상품',
-                joinDate: loan.createdAt
-                    ? new Date(loan.createdAt).toLocaleDateString('ko-KR')
-                    : '날짜 없음',
-                amount: loan.amount || 0,
+                title: loan.loanName || '대출 상품',
+                joinDate: `참여일: ${new Date().toLocaleDateString('ko-KR')}`, // 임시로 현재 날짜 사용
+                amount: loan.loanAmount || 0,
                 type: 'loan',
-                fundId: loan.fundId,
-                status: loan.status || '진행중',
+                fundId: loan.productId,
+                status: '진행중',
                 image:
-                    loan.imageUrl ||
-                    `https://readdy.ai/api/search-image?query=loan%20product&width=150&height=150&seq=loan${loan.userLoanId}`,
+                    loan.images && loan.images.length > 0
+                        ? loan.images[0].imageUrl
+                        : `https://readdy.ai/api/search-image?query=loan%20product&width=150&height=150&seq=loan${loan.userLoanId}`,
             })
         })
 
         // 기부 데이터 추가
+        console.log('기부 데이터 원본:', donations)
         donations.forEach((donation) => {
+            console.log('기부 데이터 처리 중:', donation)
             allFundings.push({
                 id: donation.userDonationId,
-                title: donation.fundName || '기부 상품',
-                joinDate: donation.createdAt
-                    ? new Date(donation.createdAt).toLocaleDateString('ko-KR')
-                    : '날짜 없음',
-                amount: donation.amount || 0,
+                title: donation.donationName || '기부 상품',
+                joinDate: `참여일: ${new Date().toLocaleDateString('ko-KR')}`, // 임시로 현재 날짜 사용
+                amount: donation.donationAmount || 0,
                 type: 'donation',
-                fundId: donation.fundId,
-                status: donation.status || '진행중',
+                fundId: donation.productId,
+                status: '진행중',
                 image:
-                    donation.imageUrl ||
-                    `https://readdy.ai/api/search-image?query=donation%20product&width=150&height=150&seq=donation${donation.userDonationId}`,
+                    donation.images && donation.images.length > 0
+                        ? donation.images[0].imageUrl
+                        : `https://readdy.ai/api/search-image?query=donation%20product&width=150&height=150&seq=donation${donation.userDonationId}`,
             })
         })
 
         // 챌린지 데이터 추가 (인증샷 포함)
+        console.log('챌린지 데이터 원본:', challenges)
         challenges.forEach((challenge) => {
+            console.log('챌린지 데이터 처리 중:', challenge)
             allFundings.push({
                 id: challenge.userChallengeId,
-                title: challenge.fundName || '챌린지',
-                joinDate: challenge.createdAt
-                    ? new Date(challenge.createdAt).toLocaleDateString('ko-KR')
-                    : '날짜 없음',
-                amount: challenge.amount || 0,
+                title: challenge.challengeName || '챌린지',
+                joinDate: `참여일: ${new Date().toLocaleDateString('ko-KR')}`, // 임시로 현재 날짜 사용
+                amount: 0, // 챌린지는 금액이 없음
                 type: 'challenge',
-                fundId: challenge.fundId,
-                status: challenge.status || '진행중',
+                fundId: challenge.productId,
+                status: challenge.challengeStatus || '진행중',
                 image:
-                    challenge.imageUrl ||
+                    challenge.challengeImageUrl ||
                     `https://readdy.ai/api/search-image?query=challenge%20product&width=150&height=150&seq=challenge${challenge.userChallengeId}`,
-                certificationImages: challenge.certificationImages || [],
+                certificationImages: [], // 챌린지 인증샷은 별도 API로 가져와야 함
+                startDate: challenge.challengeStartDate || '2024-01-01',
+                endDate: challenge.challengeEndDate || '2024-12-31',
                 userChallengeId: challenge.userChallengeId,
             })
         })

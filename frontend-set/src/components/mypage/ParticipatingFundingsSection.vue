@@ -103,6 +103,20 @@ const props = defineProps({
     },
 })
 
+// 데이터 디버깅을 위한 watch
+import { watch } from 'vue'
+
+watch(
+    () => props.participatingFundings,
+    (newFundings) => {
+        console.log('ParticipatingFundingsSection - 받은 데이터:', newFundings)
+        if (newFundings.length > 0) {
+            console.log('첫 번째 펀딩 상세 데이터:', newFundings[0])
+        }
+    },
+    { immediate: true },
+)
+
 // Emits 정의
 // @emits {Array} update:participatingFundings - 참여 펀딩 목록 업데이트 이벤트
 
