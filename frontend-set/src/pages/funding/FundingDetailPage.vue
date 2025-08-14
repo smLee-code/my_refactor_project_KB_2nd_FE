@@ -384,7 +384,7 @@ const fetchFundingDetail = async () => {
                 name: data.name,
                 detail: data.detail,
                 financialInstitution: data.financialInstitution,
-                interestRate: data.interestRate,
+                interestRate: data.interestRate || 0,
                 periodDays: calculatePeriodDays(data.periodDays, data.launchAt, data.endAt),
                 productCondition: data.productCondition,
                 successCondition: data.successCondition,
