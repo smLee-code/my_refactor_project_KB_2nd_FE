@@ -110,7 +110,7 @@
 <script setup>
 // @param {Array} applicants - 신청자 목록
 // @param {Set} processingIds - 현재 처리 중인 userLoanId Set
-defineProps({
+const props = defineProps({
     applicants: { type: Array, required: true },
     processingIds: { type: Set, required: true },
 })
@@ -120,9 +120,14 @@ const emit = defineEmits(['view-details', 'approve', 'reject', 'pay'])
 const isProcessing = (id) => props.processingIds.has(id)
 
 const formatDate = (dateString) => new Date(dateString).toLocaleDateString('ko-KR')
-
 const statusText = (status) => {
-    const map = { PENDING: '승인대기', APPROVED: '승인완료', REJECTED: '반려', PAID: '지급완료' }
+    const map = {
+        PENDING: '승인대기',
+        APPROVED: '승인완료',
+        REJECTED: '반려',
+        PAID: '지급완료',
+        DONE: '지급완료', 
+    }
     return map[status] || status
 }
 
@@ -132,6 +137,7 @@ const statusClass = (status) => {
         APPROVED: 'bg-blue-100 text-blue-800',
         REJECTED: 'bg-red-100 text-red-800',
         PAID: 'bg-green-100 text-green-800',
+        DONE: 'bg-green-100 text-green-800', 
     }
     return map[status] || 'bg-gray-100 text-gray-800'
 }
