@@ -223,7 +223,7 @@ import { useAuthStore } from '@/stores/auth'
 const authStore = useAuthStore()
 const route = useRoute()
 const router = useRouter()
-const fundingId = route.params.id
+const fundingId = route.params.id as string
 
 // 펀딩 정보
 const fundingData = ref(null)
@@ -347,22 +347,45 @@ const submitApplication = async () => {
     if (!canProceedApplication.value) return
 
     try {
-        const requestData = {
-            loanAmount: fundingType.value === 'loan'
-                ? parseInt(applicantInfo.value.requestedAmount.replace(/,/g, '') || '0')
-                : parseInt(applicantInfo.value.monthlyDeposit.replace(/,/g, '') || '0')
-        }
-
-        console.log('대출/저축 신청 요청 데이터:', requestData)
-        const response = await axios.post(
-            `/user-loan/${fundingId}`,
-            requestData,
-            {
-                headers: {
-                    Authorization: `Bearer ${authStore.loadToken()}`
-                }
+        let response
+        
+        if (fundingType.value === 'loan') {
+            // 대출 신청
+            const requestData = {
+                loanAmount: parseInt(applicantInfo.value.requestedAmount.replace(/,/g, '') || '0')
             }
-        )
+            console.log('대출 신청 요청 데이터:', requestData)
+            
+            // @ts-ignore
+            const baseURL = import.meta.env.VITE_API_URL || 'https://fund-ing.store'
+            response = await axios.post(
+                `${baseURL}/api/user-loan/${fundingId}`,
+                requestData,
+                {
+                    headers: {
+                        Authorization: `Bearer ${authStore.loadToken()}`
+                    }
+                }
+            )
+        } else {
+            // 저축 가입
+            const requestData = {
+                savingAmount: parseInt(applicantInfo.value.monthlyDeposit.replace(/,/g, '') || '0')
+            }
+            console.log('저축 가입 요청 데이터:', requestData)
+            
+            // @ts-ignore
+            const baseURL = import.meta.env.VITE_API_URL || 'https://fund-ing.store'
+            response = await axios.post(
+                `${baseURL}/api/user-saving/${fundingId}`,
+                requestData,
+                {
+                    headers: {
+                        Authorization: `Bearer ${authStore.loadToken()}`
+                    }
+                }
+            )
+        }
 
         console.log('응답 데이터:', response.data)
         

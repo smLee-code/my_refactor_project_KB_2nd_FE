@@ -243,6 +243,8 @@ const fetchFundingDetail = async () => {
         const data = response.data
 
         console.log('펀딩 상세 정보:', data)
+        console.log('joined 값:', data.joined)
+        console.log('펀딩 타입:', data.fundType)
 
         // 사용자의 챌린지 참여 정보 조회 (챌린지 타입인 경우)
         let userChallengeId = null
