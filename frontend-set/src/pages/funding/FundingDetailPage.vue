@@ -287,7 +287,7 @@ const fetchFundingDetail = async () => {
                     console.log('해당 펀딩의 챌린지 참여 정보를 찾을 수 없음')
                 }
             } catch (error) {
-                console.warn('사용자 챌린지 정보 조회 실패:', error)
+                // console.warn('사용자 챌린지 정보 조회 실패:', error)
                 // 에러가 발생해도 계속 진행
             }
         }

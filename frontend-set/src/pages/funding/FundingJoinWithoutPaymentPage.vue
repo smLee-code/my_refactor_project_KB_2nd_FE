@@ -218,7 +218,9 @@ import { ref, computed, onMounted } from 'vue'
 import api from '@/api'
 import { useRoute, useRouter } from 'vue-router'
 import axios from 'axios'
+import { useAuthStore } from '@/stores/auth'
 
+const authStore = useAuthStore()
 const route = useRoute()
 const router = useRouter()
 const fundingId = route.params.id
@@ -346,24 +348,26 @@ const submitApplication = async () => {
 
     try {
         const requestData = {
-            fundId: fundingId,
-            applicantInfo: {
-                ...applicantInfo.value,
-                requestedAmount:
-                    fundingType.value === 'loan'
-                        ? parseInt(applicantInfo.value.requestedAmount.replace(/,/g, '') || '0')
-                        : undefined,
-                monthlyDeposit:
-                    fundingType.value === 'savings'
-                        ? parseInt(applicantInfo.value.monthlyDeposit.replace(/,/g, '') || '0')
-                        : undefined,
-            },
-            fundingType: fundingType.value,
+            loanAmount: fundingType.value === 'loan'
+                ? parseInt(applicantInfo.value.requestedAmount.replace(/,/g, '') || '0')
+                : parseInt(applicantInfo.value.monthlyDeposit.replace(/,/g, '') || '0')
         }
 
-        const response = await api.post('/fund/apply', requestData)
+        console.log('대출/저축 신청 요청 데이터:', requestData)
+        const response = await axios.post(
+            `/user-loan/${fundingId}`,
+            requestData,
+            {
+                headers: {
+                    Authorization: `Bearer ${authStore.loadToken()}`
+                }
+            }
+        )
 
-        if (response.data.success) {
+        console.log('응답 데이터:', response.data)
+        
+        // response.data.success가 없거나 response.status가 200-299면 성공으로 처리
+        if (response.data.success || (response.status >= 200 && response.status < 300)) {
             alert(
                 `${fundingType.value === 'loan' ? '대출' : '저축'} 신청이 완료되었습니다!\n심사 결과는 영업일 기준 2-3일 내 안내드립니다.`,
             )
