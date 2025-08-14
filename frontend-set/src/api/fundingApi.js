@@ -172,7 +172,7 @@ export const getAllMyChallenges = async () => {
 export const getChallengeLogs = async (userChallengeId) => {
     const baseURL = import.meta.env.VITE_API_URL || 'http://localhost:8080'
     try {
-        const response = await axios.get(`${baseURL}/challenge-logs/${userChallengeId}/all`, {
+        const response = await axios.get(`${baseURL}/api/challenge-logs/${userChallengeId}/all`, {
             headers: {
                 Authorization: `Bearer ${localStorage.getItem('jwt')}`,
             },
