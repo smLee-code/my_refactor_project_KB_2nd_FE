@@ -106,6 +106,9 @@
                             class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm transition-all"
                             :class="{ 'border-red-500': errors.phoneNumber }"
                         />
+                        <p v-if="errors.phoneNumber" class="text-red-500 text-xs mt-1">
+                            {{ errors.phoneNumber }}
+                        </p>
                     </div>
                     <div class="md:col-span-2">
                         <label class="block text-sm font-medium text-gray-700 mb-2"
@@ -237,7 +240,7 @@
 </template>
 <script lang="ts" setup>
 import { useRouter } from 'vue-router'
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, watchEffect } from 'vue'
 import axios from 'axios'
 
 const router = useRouter()
@@ -277,44 +280,21 @@ const errors = ref({
     phoneNumber: '',
 })
 
-const products = [
-    {
-        title: '저축형',
-        description:
-            '정해진 주기와 금액으로 규칙적인 납입을 통해 만기 달성 시 혜택을 받을 수 있는 금융 상품',
-        icon: 'fas fa-piggy-bank',
-    },
-    {
-        title: '대출형',
-        description:
-            '일정 조건 충족 시 금융사가 대출 상품을 우대 조건으로 제공받을 수 있는 금융 상품',
-        icon: 'fas fa-hand-holding-usd',
-    },
-    {
-        title: '기부형',
-        description: '일정 금액 이상 기부금이 모이면 금융사가 동참하는 기부 상품',
-        icon: 'fas fa-gift',
-    },
-    {
-        title: '챌린지형',
-        description: '목표 달성을 인증하면 리워드가 제공되는 금융 상품',
-        icon: 'fas fa-trophy',
-    },
-]
-
 const isLoading = ref(false)
 const showPassword = ref(false)
 const showPasswordConfirm = ref(false)
 const isVerificationSent = ref(false)
+
+// 여기에 조건 상세히 추가
 const isFormValid = computed(() => {
     return (
-        form.value.username &&
-        form.value.nickname &&
-        form.value.email &&
-        form.value.password &&
-        form.value.passwordConfirm &&
-        form.value.selectedKeywordIds.length > 0 &&
-        form.value.phoneNumber &&
+        /^[가-힣a-zA-Z]{2,20}$/.test(form.value.username) &&
+        /^[가-힣a-zA-Z0-9]{2,15}$/.test(form.value.nickname) &&
+        /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.value.email) &&
+        /^(?=.*[A-Za-z])(?=.*\d)(?=.*[!@#$%^&*]).{8,}$/.test(form.value.password) &&
+        form.value.passwordConfirm === form.value.password &&
+        form.value.selectedKeywordIds.length === 3 &&
+        /^\d{3}-\d{4}-\d{4}$/.test(form.value.phoneNumber) &&
         form.value.termsAccepted &&
         !Object.values(errors.value).some((error) => error)
     )
@@ -323,15 +303,34 @@ const isFormValid = computed(() => {
 const validateForm = () => {
     console.log('⏹️ validateForm() 호출')
 
-    errors.value.username = !form.value.username ? '이름을 입력해주세요' : ''
-    errors.value.nickname = !form.value.nickname ? '아이디를 입력해주세요' : ''
-    errors.value.email = !form.value.email ? '이메일을 입력해주세요' : ''
-    errors.value.phoneNumber = !form.value.phoneNumber ? '전화번호를 입력해주세요' : ''
+    errors.value.username = !form.value.username
+        ? '이름을 입력해주세요'
+        : !/^[가-힣a-zA-Z]{2,20}$/.test(form.value.username)
+          ? '이름은 2~20자 이내 한글 및 영문 대소문자만 가능합니다.'
+          : ''
+
+    errors.value.nickname = !form.value.nickname
+        ? '닉네임을 입력해주세요'
+        : !/^[가-힣a-zA-Z0-9]{2,15}$/.test(form.value.nickname)
+          ? '닉네임은 2~15자 이내 한글 및 영문 대소문자, 숫자만 가능합니다.'
+          : ''
+
+    errors.value.email = !form.value.email
+        ? '이메일을 입력해주세요'
+        : !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.value.email)
+          ? '이메일 형식이 올바르지 않습니다. (xxx@xxx.xxx)'
+          : ''
+
+    errors.value.phoneNumber = !form.value.phoneNumber
+        ? '전화번호를 입력해주세요'
+        : !/^\d{3}-\d{4}-\d{4}$/.test(form.value.phoneNumber)
+          ? '전화번호 형식이 올바르지 않습니다. (xxx-xxxx-xxxx)'
+          : ''
 
     if (form.value.password.length < 8) {
         errors.value.password = '비밀번호는 8자 이상이어야 합니다'
     } else if (
-        !/^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*#?&])[A-Za-z\d@$!%*#?&]/.test(form.value.password)
+        !/^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*#?&])[A-Za-z\d@$!%*#&]/.test(form.value.password)
     ) {
         errors.value.password = '영문, 숫자, 특수문자를 모두 포함해야 합니다'
     } else {
@@ -344,6 +343,10 @@ const validateForm = () => {
         errors.value.passwordConfirm = ''
     }
 }
+
+watchEffect(() => {
+    validateForm()
+})
 
 const checkUsername = async () => {
     if (!form.value.nickname) {
@@ -391,7 +394,7 @@ const verifyCode = async () => {
 
 const handleSubmit = async () => {
     console.log('⏹️ handleSubmit() 호출')
-    validateForm()
+    // validateForm()
     if (!isFormValid.value) return
     isLoading.value = true
     try {
