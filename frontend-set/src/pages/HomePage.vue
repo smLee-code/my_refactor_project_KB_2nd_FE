@@ -125,9 +125,9 @@ const loadDefaultFundings = async () => {
         const fundings = res.data || []
         
         if (fundings.length > 0) {
-            console.log('전체 펀딩 데이터 구조 확인:', fundings[0]) // 첫 번째 펀딩 데이터 확인
+            console.log('펀딩 데이터 구조 확인:', fundings[0]) // 첫 번째 펀딩 데이터 확인
             
-            // 최신 펀딩 3개 표시
+            // 펀딩 3개 표시
             popularFundings.value = fundings.slice(0, 3).map(fund => {
                 const progress = calculateFundingProgress(fund)
                 
@@ -276,91 +276,94 @@ onMounted(async () => {
     }
     
     // 키워드 기반 추천 펀딩 로드 (이름/설명 기반 매칭)
-    try {
-        if (authStore.isLoggedIn && token) {
-            console.log('키워드 기반 펀딩 추천 시작...')
+    // API 500 에러로 인해 임시 주석 처리 - 기본 펀딩만 표시
+    await loadDefaultFundings()
+    
+    // try {
+    //     if (authStore.isLoggedIn && token) {
+    //         console.log('키워드 기반 펀딩 추천 시작...')
             
-            // 1. 사용자 키워드 조회
-            const userKeywordsRes = await axios.get('/user/keyword', {
-                headers: { Authorization: `Bearer ${token}` }
-            })
-            const userKeywords = userKeywordsRes.data || []
-            console.log('사용자 키워드:', userKeywords)
+    //         // 1. 사용자 키워드 조회
+    //         const userKeywordsRes = await axios.get('/user/keyword', {
+    //             headers: { Authorization: `Bearer ${token}` }
+    //         })
+    //         const userKeywords = userKeywordsRes.data || []
+    //         console.log('사용자 키워드:', userKeywords)
             
-            if (userKeywords.length === 0) {
-                console.log('사용자 키워드 없음 - 기본 펀딩 로드')
-                await loadDefaultFundings()
-                return
-            }
+    //         if (userKeywords.length === 0) {
+    //             console.log('사용자 키워드 없음 - 기본 펀딩 로드')
+    //             await loadDefaultFundings()
+    //             return
+    //         }
             
-            // 2. 전체 펀딩 목록 조회
-            const baseURL = import.meta.env.VITE_API_URL || 'http://localhost:8080'
-            const allFundingsRes = await axios.get(`${baseURL}/api/fund/list`, { 
-                params: { progress: 'Launch' } 
-            })
-            const allFundings = allFundingsRes.data || []
-            console.log('전체 펀딩 목록:', allFundings.length, '개')
+    //         // 2. 전체 펀딩 목록 조회
+    //         const baseURL = import.meta.env.VITE_API_URL || 'http://localhost:8080'
+    //         const allFundingsRes = await axios.get(`${baseURL}/api/fund/list`, { 
+    //             params: { progress: 'Launch' } 
+    //         })
+    //         const allFundings = allFundingsRes.data || []
+    //         console.log('전체 펀딩 목록:', allFundings.length, '개')
             
-            // 3. 키워드와 펀딩 이름/설명 매칭
-            const matchedFundings = allFundings.filter(fund => {
-                const searchText = [
-                    fund.name || '',
-                    fund.detail || '', 
-                    fund.financialInstitution || '',
-                    getFundTypeKorean(fund.fundType) || ''
-                ].join(' ').toLowerCase()
+    //         // 3. 키워드와 펀딩 이름/설명 매칭
+    //         const matchedFundings = allFundings.filter(fund => {
+    //             const searchText = [
+    //                 fund.name || '',
+    //                 fund.detail || '', 
+    //                 fund.financialInstitution || '',
+    //                 getFundTypeKorean(fund.fundType) || ''
+    //             ].join(' ').toLowerCase()
                 
-                // 사용자 키워드 중 하나라도 펀딩 정보에 포함되면 매칭
-                return userKeywords.some(keyword => 
-                    searchText.includes(keyword.toLowerCase())
-                )
-            })
+    //             // 사용자 키워드 중 하나라도 펀딩 정보에 포함되면 매칭
+    //             return userKeywords.some(keyword => 
+    //                 searchText.includes(keyword.toLowerCase())
+    //             )
+    //         })
             
-            console.log('키워드 매칭된 펀딩:', matchedFundings.length, '개')
+    //         console.log('키워드 매칭된 펀딩:', matchedFundings.length, '개')
             
-            if (matchedFundings.length > 0) {
-                // 매칭된 펀딩을 좋아요 순으로 정렬
-                const sortedFundings = matchedFundings.sort((a, b) => (b.retryVotesCount || 0) - (a.retryVotesCount || 0))
-                let recommendedFundings = sortedFundings.slice(0, 3)
+    //         if (matchedFundings.length > 0) {
+    //             // 매칭된 펀딩을 좋아요 순으로 정렬
+    //             const sortedFundings = matchedFundings.sort((a, b) => (b.retryVotesCount || 0) - (a.retryVotesCount || 0))
+    //             let recommendedFundings = sortedFundings.slice(0, 3)
                 
-                // 3개 미만이면 최신 펀딩으로 채우기
-                if (recommendedFundings.length < 3) {
-                    const remainingCount = 3 - recommendedFundings.length
-                    const usedIds = recommendedFundings.map(f => f.fundId)
-                    const additionalFundings = allFundings
-                        .filter(f => !usedIds.includes(f.fundId))
-                        .sort((a, b) => new Date(b.launchAt) - new Date(a.launchAt)) // 최신순 정렬
-                        .slice(0, remainingCount)
+    //             // 3개 미만이면 최신 펀딩으로 채우기
+    //             if (recommendedFundings.length < 3) {
+    //                 const remainingCount = 3 - recommendedFundings.length
+    //                 const usedIds = recommendedFundings.map(f => f.fundId)
+    //                 const additionalFundings = allFundings
+    //                     .filter(f => !usedIds.includes(f.fundId))
+    //                     .sort((a, b) => new Date(b.launchAt) - new Date(a.launchAt)) // 최신순 정렬
+    //                     .slice(0, remainingCount)
                     
-                    recommendedFundings = [...recommendedFundings, ...additionalFundings]
-                    console.log(`매칭된 펀딩 ${matchedFundings.length}개 + 추가 펀딩 ${additionalFundings.length}개`)
-                }
+    //                 recommendedFundings = [...recommendedFundings, ...additionalFundings]
+    //                 console.log(`매칭된 펀딩 ${matchedFundings.length}개 + 추가 펀딩 ${additionalFundings.length}개`)
+    //             }
                 
-                popularFundings.value = recommendedFundings.map(fund => ({
-                    id: fund.fundId,
-                    fundType: fund.fundType,
-                    image: fund.thumbnailImage?.imageUrl || '/images/logo.png',
-                    title: fund.name,
-                    description: fund.financialInstitution || '금융기관',
-                    daysLeft: getDaysLeft(fund.endAt),
-                    category: getFundTypeKorean(fund.fundType),
-                    likes: fund.retryVotesCount || 0,
-                    progress: calculateFundingProgress(fund),
-                }))
-                console.log('✅ 키워드 기반 추천 펀딩 사용 (부족한 경우 최신 펀딩으로 보완)')
-            } else {
-                console.log('매칭된 펀딩 없음 - 기본 펀딩 로드')
-                await loadDefaultFundings()
-            }
-        } else {
-            console.log('로그아웃 상태 - 기본 펀딩 로드')
-            await loadDefaultFundings()
-        }
-    } catch (err) {
-        console.error('❌ 키워드 기반 펀딩 추천 실패:', err)
-        console.log('에러 발생 - 기본 펀딩으로 fallback')
-        await loadDefaultFundings()
-    }
+    //             popularFundings.value = recommendedFundings.map(fund => ({
+    //                 id: fund.fundId,
+    //                 fundType: fund.fundType,
+    //                 image: fund.thumbnailImage?.imageUrl || '/images/logo.png',
+    //                 title: fund.name,
+    //                 description: fund.financialInstitution || '금융기관',
+    //                 daysLeft: getDaysLeft(fund.endAt),
+    //                 category: getFundTypeKorean(fund.fundType),
+    //                 likes: fund.retryVotesCount || 0,
+    //                 progress: calculateFundingProgress(fund),
+    //             }))
+    //             console.log('✅ 키워드 기반 추천 펀딩 사용 (부족한 경우 최신 펀딩으로 보완)')
+    //         } else {
+    //             console.log('매칭된 펀딩 없음 - 기본 펀딩 로드')
+    //             await loadDefaultFundings()
+    //         }
+    //     } else {
+    //         console.log('로그아웃 상태 - 기본 펀딩 로드')
+    //         await loadDefaultFundings()
+    //     }
+    // } catch (err) {
+    //     // console.error('❌ 키워드 기반 펀딩 추천 실패:', err)
+    //     // console.log('에러 발생 - 기본 펀딩으로 fallback')
+    //     await loadDefaultFundings()
+    // }
 })
 
 const goToProjectList = () => {
