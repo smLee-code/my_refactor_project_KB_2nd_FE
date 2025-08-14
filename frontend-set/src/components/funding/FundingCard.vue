@@ -5,13 +5,13 @@
     >
         <div class="p-3">
             <div class="w-full h-56 bg-gray-200 rounded-lg overflow-hidden mb-4 shadow-inner">
-                <a :href="link" target="_blank">
+                <!-- <a :href="link" target="_blank"> -->
                     <img
                         :src="image"
                         :alt="title"
                         class="w-full h-full object-cover object-top transition-transform duration-300 hover:scale-105"
                     />
-                </a>
+                <!-- </a> -->
             </div>
             <div class="px-3 pb-4">
                 <h4 class="font-semibold text-gray-900 mb-1">{{ title }}</h4>

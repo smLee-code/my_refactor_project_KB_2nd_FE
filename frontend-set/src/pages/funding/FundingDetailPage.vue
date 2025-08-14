@@ -243,6 +243,8 @@ const fetchFundingDetail = async () => {
         const data = response.data
 
         console.log('펀딩 상세 정보:', data)
+        console.log('joined 값:', data.joined)
+        console.log('펀딩 타입:', data.fundType)
 
         // 사용자의 챌린지 참여 정보 조회 (챌린지 타입인 경우)
         let userChallengeId = null
@@ -256,7 +258,7 @@ const fetchFundingDetail = async () => {
                     data.id,
                 )
                 const userChallengesResponse = await axios.get(
-                    `${baseURL}/user-challenge/user/all/v2`,
+                    `${baseURL}/api/user-challenge/user/all/v2`,
                     {
                         headers: {
                             Authorization: `Bearer ${authStore.token}`,
@@ -287,7 +289,7 @@ const fetchFundingDetail = async () => {
                     console.log('해당 펀딩의 챌린지 참여 정보를 찾을 수 없음')
                 }
             } catch (error) {
-                console.warn('사용자 챌린지 정보 조회 실패:', error)
+                // console.warn('사용자 챌린지 정보 조회 실패:', error)
                 // 에러가 발생해도 계속 진행
             }
         }
@@ -384,7 +386,7 @@ const fetchFundingDetail = async () => {
                 name: data.name,
                 detail: data.detail,
                 financialInstitution: data.financialInstitution,
-                interestRate: data.interestRate,
+                interestRate: data.interestRate || 0,
                 periodDays: calculatePeriodDays(data.periodDays, data.launchAt, data.endAt),
                 productCondition: data.productCondition,
                 successCondition: data.successCondition,
