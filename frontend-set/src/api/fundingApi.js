@@ -117,18 +117,34 @@ export const getRecommendedFundings = async () => {
 // 챌린지 인증 (인증샷 업로드)
 export const verifyChallenge = async (id, formData) => {
     try {
+        console.log('verifyChallenge API 호출 시작:', {
+            id: id,
+            formDataEntries: Array.from(formData.entries()),
+            headers: {
+                'Content-Type': 'multipart/form-data',
+                Authorization: `Bearer ${localStorage.getItem('jwt')}`,
+            },
+        })
+
         const response = await api.post(`/user-challenge/${id}/verify`, formData, {
             headers: {
                 'Content-Type': 'multipart/form-data',
                 Authorization: `Bearer ${localStorage.getItem('jwt')}`,
             },
         })
+
+        console.log('verifyChallenge API 응답 성공:', response.data)
         return response.data
     } catch (error) {
         console.error('챌린지 인증 실패:', error)
         if (error.response) {
-            console.error('서버 응답:', error.response.data)
-            console.error('상태 코드:', error.response.status)
+            console.error('서버 응답 데이터:', error.response.data)
+            console.error('서버 응답 상태:', error.response.status)
+            console.error('서버 응답 헤더:', error.response.headers)
+        } else if (error.request) {
+            console.error('요청은 전송되었지만 응답이 없음:', error.request)
+        } else {
+            console.error('요청 설정 중 오류:', error.message)
         }
         throw error
     }

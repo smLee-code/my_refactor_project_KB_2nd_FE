@@ -264,13 +264,15 @@ const fetchFundingDetail = async () => {
                 const userChallenges = userChallengesResponse.data
                 console.log('사용자 챌린지 목록:', userChallenges)
 
-                // fundId와 data.id 모두 시도
+                // productId로 매칭 시도 (백엔드 DTO 구조에 맞춤)
                 let userChallenge = userChallenges.find(
-                    (challenge) => challenge.fundId === data.fundId,
+                    (challenge) => challenge.productId === data.fundId,
                 )
 
                 if (!userChallenge) {
-                    userChallenge = userChallenges.find((challenge) => challenge.fundId === data.id)
+                    userChallenge = userChallenges.find(
+                        (challenge) => challenge.productId === data.id,
+                    )
                 }
 
                 if (userChallenge) {
@@ -285,7 +287,7 @@ const fetchFundingDetail = async () => {
                     console.log('해당 펀딩의 챌린지 참여 정보를 찾을 수 없음')
                 }
             } catch (error) {
-                // console.warn('사용자 챌린지 정보 조회 실패:', error)
+                console.warn('사용자 챌린지 정보 조회 실패:', error)
                 // 에러가 발생해도 계속 진행
             }
         }

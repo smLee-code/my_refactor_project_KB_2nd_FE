@@ -394,6 +394,8 @@ const loadParticipatingFundings = async () => {
                     challenge.challengeImageUrl ||
                     `https://readdy.ai/api/search-image?query=challenge%20product&width=150&height=150&seq=challenge${challenge.userChallengeId}`,
                 certificationImages: [], // 챌린지 인증샷은 별도 API로 가져와야 함
+                startDate: challenge.challengeStartDate || '2024-01-01',
+                endDate: challenge.challengeEndDate || '2024-12-31',
                 userChallengeId: challenge.userChallengeId,
             })
         })
