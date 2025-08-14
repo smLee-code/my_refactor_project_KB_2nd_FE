@@ -247,7 +247,6 @@ const fetchFundingDetail = async () => {
         // 사용자의 챌린지 참여 정보 조회 (챌린지 타입인 경우)
         let userChallengeId = null
         if (data.fundType === 'Challenge') {
-            const baseURL = import.meta.env.VITE_API_URL || ''
             try {
                 console.log(
                     '챌린지 참여 정보 조회 시작 - fundId:',
@@ -255,14 +254,11 @@ const fetchFundingDetail = async () => {
                     'data.id:',
                     data.id,
                 )
-                const userChallengesResponse = await axios.get(
-                    `${baseURL}/user-challenge/user/all/v2`,
-                    {
-                        headers: {
-                            Authorization: `Bearer ${authStore.token}`,
-                        },
+                const userChallengesResponse = await api.get(`/user-challenge/user/all/v2`, {
+                    headers: {
+                        Authorization: `Bearer ${authStore.token}`,
                     },
-                )
+                })
                 const userChallenges = userChallengesResponse.data
                 console.log('사용자 챌린지 목록:', userChallenges)
 
@@ -359,10 +355,14 @@ const fetchFundingDetail = async () => {
             // 유틸리티 함수를 사용한 진행률 계산
             const getProgressPercentage = (data) => {
                 // API에서 progressPercentage가 있으면 우선 사용
-                if (data.progressPercentage !== null && data.progressPercentage !== undefined && data.progressPercentage >= 0) {
+                if (
+                    data.progressPercentage !== null &&
+                    data.progressPercentage !== undefined &&
+                    data.progressPercentage >= 0
+                ) {
                     return data.progressPercentage
                 }
-                
+
                 // 없으면 유틸리티 함수로 계산
                 return calculateFundingProgress(data)
             }
