@@ -258,7 +258,7 @@ const fetchFundingDetail = async () => {
                     data.id,
                 )
                 const userChallengesResponse = await axios.get(
-                    `${baseURL}/user-challenge/user/all/v2`,
+                    `${baseURL}/api/user-challenge/user/all/v2`,
                     {
                         headers: {
                             Authorization: `Bearer ${authStore.token}`,
