@@ -218,10 +218,12 @@ import { ref, computed, onMounted } from 'vue'
 import api from '@/api'
 import { useRoute, useRouter } from 'vue-router'
 import axios from 'axios'
+import { useAuthStore } from '@/stores/auth'
 
+const authStore = useAuthStore()
 const route = useRoute()
 const router = useRouter()
-const fundingId = route.params.id
+const fundingId = route.params.id as string
 
 // 펀딩 정보
 const fundingData = ref(null)
@@ -345,25 +347,50 @@ const submitApplication = async () => {
     if (!canProceedApplication.value) return
 
     try {
-        const requestData = {
-            fundId: fundingId,
-            applicantInfo: {
-                ...applicantInfo.value,
-                requestedAmount:
-                    fundingType.value === 'loan'
-                        ? parseInt(applicantInfo.value.requestedAmount.replace(/,/g, '') || '0')
-                        : undefined,
-                monthlyDeposit:
-                    fundingType.value === 'savings'
-                        ? parseInt(applicantInfo.value.monthlyDeposit.replace(/,/g, '') || '0')
-                        : undefined,
-            },
-            fundingType: fundingType.value,
+        let response
+        
+        if (fundingType.value === 'loan') {
+            // 대출 신청
+            const requestData = {
+                loanAmount: parseInt(applicantInfo.value.requestedAmount.replace(/,/g, '') || '0')
+            }
+            console.log('대출 신청 요청 데이터:', requestData)
+            
+            // @ts-ignore
+            const baseURL = import.meta.env.VITE_API_URL || 'https://fund-ing.store'
+            response = await axios.post(
+                `${baseURL}/api/user-loan/${fundingId}`,
+                requestData,
+                {
+                    headers: {
+                        Authorization: `Bearer ${authStore.loadToken()}`
+                    }
+                }
+            )
+        } else {
+            // 저축 가입
+            const requestData = {
+                savingAmount: parseInt(applicantInfo.value.monthlyDeposit.replace(/,/g, '') || '0')
+            }
+            console.log('저축 가입 요청 데이터:', requestData)
+            
+            // @ts-ignore
+            const baseURL = import.meta.env.VITE_API_URL || 'https://fund-ing.store'
+            response = await axios.post(
+                `${baseURL}/api/user-saving/${fundingId}`,
+                requestData,
+                {
+                    headers: {
+                        Authorization: `Bearer ${authStore.loadToken()}`
+                    }
+                }
+            )
         }
 
-        const response = await api.post('/fund/apply', requestData)
-
-        if (response.data.success) {
+        console.log('응답 데이터:', response.data)
+        
+        // response.data.success가 없거나 response.status가 200-299면 성공으로 처리
+        if (response.data.success || (response.status >= 200 && response.status < 300)) {
             alert(
                 `${fundingType.value === 'loan' ? '대출' : '저축'} 신청이 완료되었습니다!\n심사 결과는 영업일 기준 2-3일 내 안내드립니다.`,
             )
