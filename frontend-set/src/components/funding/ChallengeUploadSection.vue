@@ -207,24 +207,34 @@ const loadChallengeLogs = async () => {
             console.log('실제 API 호출 - userChallengeId:', props.userChallengeId)
             try {
                 const logs = await getChallengeLogs(props.userChallengeId)
-                challengeLogs.value = logs
-                console.log('챌린지 로그 로드 완료:', logs)
+                console.log('API 응답 원본:', logs)
+                console.log('API 응답 타입:', typeof logs)
+                console.log('API 응답 길이:', Array.isArray(logs) ? logs.length : '배열 아님')
+
+                if (Array.isArray(logs)) {
+                    challengeLogs.value = logs
+                    console.log('챌린지 로그 로드 완료:', logs)
+                } else {
+                    console.warn('API 응답이 배열이 아님:', logs)
+                    challengeLogs.value = []
+                }
             } catch (error) {
                 console.warn('챌린지 로그 API 호출 실패, 빈 배열로 초기화:', error.message)
+                console.error('에러 상세:', error)
                 challengeLogs.value = []
             }
         } else if (props.certificationData && props.certificationData.length > 0) {
             console.log('certificationData 사용:', props.certificationData)
-            // certificationData를 challengeLogs 형식으로 변환
+            // certificationData를 challengeLogs 형식으로 변환 (더 유연한 구조 지원)
             challengeLogs.value = props.certificationData.map((cert, index) => ({
                 logId: index + 1,
                 userChallengeId: props.userChallengeId || 1,
                 userId: 1,
-                logDate: cert.uploadedAt,
-                imageUrl: cert.url,
+                logDate: cert.uploadedAt || cert.date || new Date().toISOString().split('T')[0],
+                imageUrl: cert.url || cert.image,
                 verified: cert.isApproved,
                 verifiedResult: cert.isApproved ? '인증 성공' : '인증 실패',
-                createAt: cert.uploadedAt,
+                createAt: cert.uploadedAt || cert.date || new Date().toISOString(),
             }))
             console.log('certificationData 변환 완료:', challengeLogs.value)
         } else {
@@ -384,6 +394,16 @@ const handleImageUpload = async (event) => {
     }
 }
 
+// 파일을 Data URL로 변환하는 함수
+const fileToDataURL = (file) => {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader()
+        reader.onload = () => resolve(reader.result)
+        reader.onerror = reject
+        reader.readAsDataURL(file)
+    })
+}
+
 // 파일 업로드 트리거
 const triggerFileUpload = () => {
     const fileInput = document.getElementById(`certification-file-${props.fundingId}`)
@@ -398,6 +418,26 @@ const uploadCertificationImage = async (file) => {
             throw new Error('챌린지에 참여하지 않았습니다. 먼저 챌린지에 참여해주세요.')
         }
 
+        // 파일 유효성 검사
+        if (!file || file.size === 0) {
+            throw new Error('유효하지 않은 파일입니다.')
+        }
+
+        // 날짜 형식 검증
+        const dateRegex = /^\d{4}-\d{2}-\d{2}$/
+        if (!dateRegex.test(todayString)) {
+            throw new Error('날짜 형식이 올바르지 않습니다.')
+        }
+
+        console.log('API 호출 전 데이터 검증:', {
+            userChallengeId: props.userChallengeId,
+            file: file.name,
+            fileSize: file.size,
+            fileType: file.type,
+            date: todayString,
+            dateValid: dateRegex.test(todayString),
+        })
+
         const formData = new FormData()
         formData.append('file', file)
         formData.append('date', todayString)
@@ -411,18 +451,39 @@ const uploadCertificationImage = async (file) => {
         })
 
         // 기존 API 함수 사용
-        const result = await verifyChallenge(props.userChallengeId, formData)
-        console.log('업로드 성공:', result)
-
-        // 업로드된 이미지를 challengeLogs에 추가
-        const newLog = {
-            logId: result.logId || Date.now(),
+        console.log('verifyChallenge API 호출 시작...')
+        console.log('전송할 데이터:', {
             userChallengeId: props.userChallengeId,
-            userId: result.userId || 1,
+            file: file.name,
+            fileSize: file.size,
+            date: todayString,
+        })
+
+        // 백엔드 API 호출 시도 (선택적)
+        let backendSuccess = false
+        try {
+            const result = await verifyChallenge(props.userChallengeId, formData)
+            console.log('업로드 성공:', result)
+            console.log('업로드 결과 타입:', typeof result)
+            console.log('업로드 결과 값:', result)
+            backendSuccess = true
+        } catch (error) {
+            console.warn('백엔드 API 호출 실패, 로컬에서 처리:', error.message)
+            // 백엔드 에러가 발생해도 로컬에서 처리
+        }
+
+        // 백엔드 성공/실패와 관계없이 로컬에서 로그 데이터 생성
+        // 실제 업로드된 파일을 Data URL로 변환하여 사용
+        const imageUrl = await fileToDataURL(file)
+
+        const newLog = {
+            logId: Date.now(),
+            userChallengeId: props.userChallengeId,
+            userId: 1,
             logDate: todayString,
-            imageUrl: result.imageUrl,
-            verified: result.verified,
-            verifiedResult: result.verifiedResult || (result.verified ? '인증 성공' : '인증 실패'),
+            imageUrl: imageUrl,
+            verified: backendSuccess, // 백엔드 성공 여부에 따라 결정
+            verifiedResult: backendSuccess ? '인증 성공' : '인증 실패',
             createAt: new Date().toISOString(),
         }
 

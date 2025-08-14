@@ -85,9 +85,8 @@ export const applyChallenge = async (id) => {
 
 // 챌린지 참여 취소
 export const deleteChallenge = async (id) => {
-    const baseURL = import.meta.env.VITE_API_URL || 'http://localhost:8080'
     try {
-        const response = await axios.delete(`${baseURL}/user-challenge/${id}`, {
+        const response = await api.delete(`/user-challenge/${id}`, {
             headers: {
                 Authorization: `Bearer ${localStorage.getItem('jwt')}`,
             },
@@ -117,20 +116,35 @@ export const getRecommendedFundings = async () => {
 
 // 챌린지 인증 (인증샷 업로드)
 export const verifyChallenge = async (id, formData) => {
-    const baseURL = import.meta.env.VITE_API_URL || 'http://localhost:8080'
     try {
-        const response = await axios.post(`${baseURL}/user-challenge/${id}/verify`, formData, {
+        console.log('verifyChallenge API 호출 시작:', {
+            id: id,
+            formDataEntries: Array.from(formData.entries()),
             headers: {
                 'Content-Type': 'multipart/form-data',
                 Authorization: `Bearer ${localStorage.getItem('jwt')}`,
             },
         })
+
+        const response = await api.post(`/user-challenge/${id}/verify`, formData, {
+            headers: {
+                'Content-Type': 'multipart/form-data',
+                Authorization: `Bearer ${localStorage.getItem('jwt')}`,
+            },
+        })
+
+        console.log('verifyChallenge API 응답 성공:', response.data)
         return response.data
     } catch (error) {
         console.error('챌린지 인증 실패:', error)
         if (error.response) {
-            console.error('서버 응답:', error.response.data)
-            console.error('상태 코드:', error.response.status)
+            console.error('서버 응답 데이터:', error.response.data)
+            console.error('서버 응답 상태:', error.response.status)
+            console.error('서버 응답 헤더:', error.response.headers)
+        } else if (error.request) {
+            console.error('요청은 전송되었지만 응답이 없음:', error.request)
+        } else {
+            console.error('요청 설정 중 오류:', error.message)
         }
         throw error
     }
@@ -138,9 +152,8 @@ export const verifyChallenge = async (id, formData) => {
 
 // 챌린지 상세 정보 조회
 export const getChallengeDetail = async (userChallengeId) => {
-    const baseURL = import.meta.env.VITE_API_URL || 'http://localhost:8080'
     try {
-        const response = await axios.get(`${baseURL}/user-challenge/${userChallengeId}`, {
+        const response = await api.get(`user-challenge/${userChallengeId}`, {
             headers: {
                 Authorization: `Bearer ${localStorage.getItem('jwt')}`,
             },
@@ -154,9 +167,8 @@ export const getChallengeDetail = async (userChallengeId) => {
 
 // 내 모든 챌린지 조회
 export const getAllMyChallenges = async () => {
-    const baseURL = import.meta.env.VITE_API_URL || 'http://localhost:8080'
     try {
-        const response = await axios.get(`${baseURL}/user-challenge/user/all/v2`, {
+        const response = await api.get(`/user-challenge/user/all/v2`, {
             headers: {
                 Authorization: `Bearer ${localStorage.getItem('jwt')}`,
             },
@@ -170,9 +182,9 @@ export const getAllMyChallenges = async () => {
 
 // 챌린지 로그 조회 (인증샷 이력)
 export const getChallengeLogs = async (userChallengeId) => {
-    const baseURL = import.meta.env.VITE_API_URL || 'http://localhost:8080'
     try {
-        const response = await axios.get(`${baseURL}/api/challenge-logs/${userChallengeId}/all`, {
+        const response = await api.get(`/challenge-logs/${userChallengeId}/all`, {
+
             headers: {
                 Authorization: `Bearer ${localStorage.getItem('jwt')}`,
             },

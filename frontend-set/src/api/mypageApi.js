@@ -95,10 +95,8 @@ export const getLikedFundings = async (token) => {
 
 // 내가 투표한 펀딩 조회
 export const getMyAllVotedFunds = async (token) => {
-    const baseURL = import.meta.env.VITE_API_URL || ''
-
     try {
-        const response = await axios.get(`${baseURL}/retryVotes/my-fund/list`, {
+        const response = await api.get(`/retryVotes/my-fund/list`, {
             headers: {
                 Authorization: `Bearer ${token}`,
             },
@@ -117,9 +115,8 @@ export const getParticipatingFundings = async () => {
 
 // 참여 중인 저축 조회
 export const getMyAllSavings = async (token) => {
-    const baseURL = import.meta.env.VITE_API_URL || ''
     try {
-        const response = await axios.get(`${baseURL}/user-saving/user/all/v2`, {
+        const response = await api.get(`/user-saving/user/all/v2`, {
             headers: {
                 Authorization: `Bearer ${token}`,
             },
@@ -132,9 +129,8 @@ export const getMyAllSavings = async (token) => {
 
 // 참여 중인 대출 조회
 export const getMyAllLoans = async (token) => {
-    const baseURL = import.meta.env.VITE_API_URL || ''
     try {
-        const response = await axios.get(`${baseURL}/user-loan/user/all/v2`, {
+        const response = await api.get(`/user-loan/user/all/v2`, {
             headers: {
                 Authorization: `Bearer ${token}`,
             },
@@ -147,9 +143,8 @@ export const getMyAllLoans = async (token) => {
 
 // 참여 중인 기부 조회
 export const getMyAllDonations = async (token) => {
-    const baseURL = import.meta.env.VITE_API_URL || ''
     try {
-        const response = await axios.get(`${baseURL}/user-donation/user/all/v2`, {
+        const response = await api.get(`/user-donation/user/all/v2`, {
             headers: {
                 Authorization: `Bearer ${token}`,
             },
@@ -162,9 +157,8 @@ export const getMyAllDonations = async (token) => {
 
 // 참여 중인 챌린지 조회
 export const getMyAllChallenges = async (token) => {
-    const baseURL = import.meta.env.VITE_API_URL || ''
     try {
-        const response = await axios.get(`${baseURL}/user-challenge/user/all/v2`, {
+        const response = await api.get(`/user-challenge/user/all/v2`, {
             headers: {
                 Authorization: `Bearer ${token}`,
             },
