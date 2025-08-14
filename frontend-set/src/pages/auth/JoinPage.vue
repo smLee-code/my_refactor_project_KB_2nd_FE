@@ -362,18 +362,30 @@ const sendVerification = async () => {
     if (!form.value.email) {
         errors.value.email = '이메일을 입력해주세요'
         return
-    } else {
-        try {
-            const res = await axios.post(`/mail/send?email=${form.value.email}`)
-            console.log(res.data.message)
-            errors.value.email = ''
-            isVerificationSent.value = true
-        } catch (err) {
-            if (err.response) {
-                errors.value.email = err.response.data.message || '오류 발생'
-            } else {
-                errors.value.email = '서버 연결 실패'
-            }
+    }
+
+    try {
+        const res = await axios.get(`/member/duplicated/email?email=${form.value.email}`)
+
+        if (!res.data) {
+            errors.value.email = '이미 존재하는 이메일입니다'
+            return
+        }
+    } catch (err) {
+        console.error('이메일 중복 확인 실패:', err)
+        return
+    }
+
+    try {
+        const res = await axios.post(`/mail/send?email=${form.value.email}`)
+        console.log(res.data.message)
+        errors.value.email = ''
+        isVerificationSent.value = true
+    } catch (err) {
+        if (err.response) {
+            console.error('이메일 인증 오류: ', err)
+        } else {
+            errors.value.email = '서버 연결 실패'
         }
     }
 }
