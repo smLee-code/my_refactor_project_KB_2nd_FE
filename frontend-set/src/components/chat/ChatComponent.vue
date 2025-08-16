@@ -60,6 +60,8 @@ import Stomp from 'stompjs'
 import axios from 'axios'
 import { useAuthStore } from '@/stores/auth'
 
+import { getChatHistory } from '@/api/chatApi'
+
 // ==== Props ====
 const props = defineProps({
     roomId: Number,
@@ -96,12 +98,19 @@ const loadHistory = async () => {
     try {
         console.log('✅ token:', token)
 
-        const res = await axios.get(`/chat/history/${props.roomId}`, {
-            headers: {
-                Authorization: `Bearer ${token}`,
-            },
-        })
-        messages.value = res.data.map((msg) => {
+        // const res = await axios.get(`/chat/history/${props.roomId}`, {
+        //     headers: {
+        //         Authorization: `Bearer ${token}`,
+        //     },
+        // })
+
+        const chatHistory = await getChatHistory(props.roomId)
+
+        console.log('✅ chatHistory:', chatHistory)
+
+        // console.log('✅ res.data:',chatHistory)
+
+        messages.value = chatHistory.map((msg) => {
             // const chatResponse = JSON.parse(msg.body)
             console.log('✅ msg:', msg)
             const chatResponse = msg
@@ -114,7 +123,7 @@ const loadHistory = async () => {
                 id: chatResponse.id,
                 content: chatResponse.content,
                 isSelf: chatResponse.userId === authStore.loadUserId(),
-                author: chatResponse.username, // UI 표시용
+                author: chatResponse.nickname, // UI 표시용
                 time: chatResponse.timestamp, // UI 표시용
             }
         })
