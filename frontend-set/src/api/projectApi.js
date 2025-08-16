@@ -76,11 +76,24 @@ export const getProjectFullDetail = async (projectId) => {
     try {
         const res = await api.get(`/project/list/detail/${projectId}/full`)
 
-        const projectList = res.data
+        const project = res.data
 
-        console.log('✅ getProjectFullDetail - projectList:', projectList)
+        console.log('✅ getProjectFullDetail - project:', project)
 
-        return projectList
+        const tempImage = {
+            imageType: 'Project',
+            imageUrl: '/images/logo.png',
+            postId: project.projectId,
+            createdAt: '',
+        }
+
+        if (project.imageList == undefined || project.imageList.length === 0) {
+            project.imageList = [tempImage]
+        }
+
+        console.log('✅ getProjectFullDetail - projectList:', project)
+
+        return project
     } catch (error) {
         console.error('프로젝트 Detail Full 조회 실패:', error)
         throw error
