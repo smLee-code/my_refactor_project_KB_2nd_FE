@@ -217,7 +217,6 @@
 import { ref, computed, onMounted } from 'vue'
 import api from '@/api'
 import { useRoute, useRouter } from 'vue-router'
-import axios from 'axios'
 import { useAuthStore } from '@/stores/auth'
 
 const authStore = useAuthStore()
@@ -356,16 +355,9 @@ const submitApplication = async () => {
             }
             console.log('대출 신청 요청 데이터:', requestData)
             
-            // @ts-ignore
-            const baseURL = import.meta.env.VITE_API_URL || 'https://fund-ing.store'
-            response = await axios.post(
-                `${baseURL}/api/user-loan/${fundingId}`,
-                requestData,
-                {
-                    headers: {
-                        Authorization: `Bearer ${authStore.loadToken()}`
-                    }
-                }
+            response = await api.post(
+                `/user-loan/${fundingId}`,
+                requestData
             )
         } else {
             // 저축 가입
@@ -374,16 +366,9 @@ const submitApplication = async () => {
             }
             console.log('저축 가입 요청 데이터:', requestData)
             
-            // @ts-ignore
-            const baseURL = import.meta.env.VITE_API_URL || 'https://fund-ing.store'
-            response = await axios.post(
-                `${baseURL}/api/user-saving/${fundingId}`,
-                requestData,
-                {
-                    headers: {
-                        Authorization: `Bearer ${authStore.loadToken()}`
-                    }
-                }
+            response = await api.post(
+                `/user-saving/${fundingId}`,
+                requestData
             )
         }
 
