@@ -238,6 +238,15 @@
             </section>
         </div>
     </div>
+    
+    <!-- 성공 팝업 -->
+    <SuccessPopup
+        v-model="showSuccessPopup"
+        title="가입이 완료되었습니다! 🎉"
+        :message="fundingType === 'Challenge' ? '챌린지 참여가 성공적으로 완료되었습니다.' : '기부가 성공적으로 완료되었습니다.'"
+        :subMessage="fundingType === 'Challenge' ? '챌린지를 완주하면 보증금이 환급됩니다!' : '따뜻한 마음을 나눠주셔서 감사합니다.'"
+        @confirm="handlePopupConfirm"
+    />
 </template>
 
 <script lang="ts" setup>
@@ -245,6 +254,7 @@ import { ref, computed, onMounted, nextTick } from 'vue'
 import api from '@/api'
 import { useRoute, useRouter } from 'vue-router'
 import axios from 'axios'
+import SuccessPopup from '@/components/common/SuccessPopup.vue'
 
 // IMP 타입 선언
 declare global {
@@ -264,6 +274,9 @@ const fundingType = ref('') // 'Challenge' | 'Donation' | 'Loan' | 'Savings'
 const fixedAmount = ref(50000) // 챌린지 고정 금액
 const minAmount = ref(1000) // 기부 최소 금액
 const maxAmount = ref(1000000) // 기부 최대 금액
+
+// 성공 팝업 관련
+const showSuccessPopup = ref(false)
 
 // 펀딩 정보 조회
 const fetchFundingInfo = async () => {
@@ -490,8 +503,8 @@ const createOrder = async () => {
     
     try {
         const requestData = {
-            fundId: parseInt(fundingId),
-            amount: parseInt(selectedAmount.value),
+            fundId: Number(fundingId),
+            amount: selectedAmount.value,
             metadata: { 
                 anonymous: agreements.value.anonymous,
                 fundingType: fundingType.value
@@ -518,9 +531,8 @@ const sendPaymentToBackend = async (paymentData: any) => {
         const response = await api.post('/payments/complete', paymentData)
         
         if (response.data.success) {
-            alert('결제가 완료되었습니다!')
-            // 결제 완료 후 펀딩 상세 페이지로 이동
-            router.push(`/funding/detail/${fundingId}`)
+            // 성공 팝업 표시
+            showSuccessPopup.value = true
         } else {
             alert('결제 검증 실패: ' + response.data.message)
         }
@@ -528,6 +540,15 @@ const sendPaymentToBackend = async (paymentData: any) => {
         console.error('결제 검증 오류:', error)
         alert('결제 검증 중 오류가 발생했습니다.')
     }
+}
+
+// 팝업 확인 버튼 클릭 시 페이지 이동
+const handlePopupConfirm = () => {
+    // 참여 완료 상태를 query parameter로 전달
+    router.push({
+        path: `/funding/detail/${fundingId}`,
+        query: { joined: 'true' }
+    })
 }
 </script>
 

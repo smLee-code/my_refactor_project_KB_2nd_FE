@@ -51,6 +51,42 @@
                 @participate="handleParticipate"
             />
 
+            <!-- 작성자 기업 정보 섹션 -->
+            <section v-if="fundingData && fundingData.financialInstitution" class="mb-8">
+                <div class="bg-white rounded-xl shadow-lg p-6 border border-gray-100">
+                    <div class="flex items-center space-x-4">
+                        <!-- 기업 프로필 이미지 -->
+                        <div class="flex-shrink-0">
+                            <div 
+                                class="w-16 h-16 rounded-full flex items-center justify-center"
+                                :class="getCompanyStyle(fundingData.financialInstitution).bg"
+                            >
+                                <i 
+                                    class="fas fa-building text-xl"
+                                    :class="getCompanyStyle(fundingData.financialInstitution).text"
+                                ></i>
+                            </div>
+                        </div>
+                        <!-- 기업 정보 -->
+                        <div class="flex-1">
+                            <div class="flex items-center space-x-2 mb-1">
+                                <h3 class="text-lg font-bold text-gray-900">{{ fundingData.financialInstitution }}</h3>
+                                <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                                    <i class="fas fa-check-circle mr-1"></i>
+                                    공식 금융기관
+                                </span>
+                            </div>
+                            <p class="text-sm text-gray-600">
+                                {{ getFundTypeKorean(fundingData.fundType) }} 상품 제공 · 
+                                <span v-if="fundingData.createdAt">
+                                    {{ new Date(fundingData.createdAt).toLocaleDateString('ko-KR') }} 등록
+                                </span>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
             <!-- 출처 프로젝트 섹션 -->
             <SourceProjectSection
                 v-if="!isLoading && fundingData && fundingData.projectId"
@@ -191,7 +227,7 @@ import SavingsFundingDetailSection from '@/components/funding/SavingsFundingDeta
 import ChallengeFundingDetailSection from '@/components/funding/ChallengeFundingDetailSection.vue'
 import SourceProjectSection from '@/components/funding/SourceProjectSection.vue'
 import CommentSection from '@/components/funding/CommentSection.vue'
-import { calculateFundingProgress } from '@/utils/fundingUtils'
+import { calculateFundingProgress, getFundTypeKorean } from '@/utils/fundingUtils'
 
 const route = useRoute()
 const router = useRouter()
@@ -467,6 +503,20 @@ const handleParticipate = () => {
     goToFundingJoin()
 }
 
+// 기업별 스타일 가져오기
+const getCompanyStyle = (companyName) => {
+    const styles = {
+        '신한은행': { bg: 'bg-gradient-to-br from-blue-100 to-blue-200', text: 'text-blue-600' },
+        '우리은행': { bg: 'bg-gradient-to-br from-sky-100 to-sky-200', text: 'text-sky-600' },
+        'KB국민은행': { bg: 'bg-gradient-to-br from-yellow-100 to-yellow-200', text: 'text-yellow-600' },
+        '하나은행': { bg: 'bg-gradient-to-br from-green-100 to-green-200', text: 'text-green-600' },
+        'NH농협': { bg: 'bg-gradient-to-br from-emerald-100 to-emerald-200', text: 'text-emerald-600' },
+        '카카오뱅크': { bg: 'bg-gradient-to-br from-amber-100 to-amber-200', text: 'text-amber-600' },
+        '토스뱅크': { bg: 'bg-gradient-to-br from-indigo-100 to-indigo-200', text: 'text-indigo-600' },
+    }
+    return styles[companyName] || { bg: 'bg-gradient-to-br from-gray-100 to-gray-200', text: 'text-gray-600' }
+}
+
 // 좋아요 토글
 const toggleLike = () => {
     isLiked.value = !isLiked.value
@@ -511,6 +561,23 @@ onMounted(() => {
     console.log('현재 유저 role:', authStore.userRole)
 
     fetchFundingDetail()
+    
+    // 가입 완료 후 돌아온 경우 참여자 수 증가
+    if (route.query.joined === 'true') {
+        // 약간의 딜레이 후 참여자 수 증가 (데이터 로드 후 적용)
+        setTimeout(() => {
+            if (fundingData.value) {
+                fundingData.value.participantCount = (fundingData.value.participantCount || 0) + 1
+                console.log('참여자 수 업데이트:', fundingData.value.participantCount)
+                
+                // query parameter 제거 (새로고침 시 중복 증가 방지)
+                router.replace({ 
+                    path: route.path,
+                    query: {}
+                })
+            }
+        }, 1000)
+    }
 })
 </script>
 
