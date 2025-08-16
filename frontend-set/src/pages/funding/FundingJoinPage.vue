@@ -295,11 +295,21 @@
             </section>
         </div>
     </div>
+    
+    <!-- 성공 팝업 -->
+    <SuccessPopup
+        v-model="showSuccessPopup"
+        title="가입이 완료되었습니다! 🎉"
+        message="펀딩 참여가 성공적으로 완료되었습니다."
+        subMessage="잠시 후 펀딩 상세 페이지로 이동합니다."
+        @confirm="handlePopupConfirm"
+    />
 </template>
 <script lang="ts" setup>
 import { ref, computed, onMounted, nextTick } from 'vue'
 import api from '@/api'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
+import SuccessPopup from '@/components/common/SuccessPopup.vue'
 
 // IMP 타입 선언
 declare global {
@@ -368,7 +378,11 @@ const canProceedPayment = computed(() => {
 })
 // 결제 관련 변수
 const route = useRoute()
+const router = useRouter()
 const fundingId = route.params.id
+
+// 성공 팝업 관련
+const showSuccessPopup = ref(false)
 
 // IMP 초기화
 onMounted(() => {
@@ -500,8 +514,8 @@ const sendPaymentToBackend = async (paymentData) => {
         const response = await api.post('/payments/complete', paymentData)
         
         if (response.data.success) {
-            // 결제 완료 후 펀딩 상세 페이지로 이동
-            router.push(`/funding/detail/${fundingId}`)
+            // 성공 팝업 표시
+            showSuccessPopup.value = true
         } else {
             alert('결제 검증 실패: ' + response.data.message)
         }
@@ -509,6 +523,11 @@ const sendPaymentToBackend = async (paymentData) => {
         console.error('결제 검증 오류:', error)
         alert('결제 검증 중 오류가 발생했습니다.')
     }
+}
+
+// 팝업 확인 버튼 클릭 시 페이지 이동
+const handlePopupConfirm = () => {
+    router.push(`/funding/detail/${fundingId}`)
 }
 </script>
 <style scoped>
