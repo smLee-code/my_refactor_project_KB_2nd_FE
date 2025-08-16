@@ -82,7 +82,22 @@ export const getProjectFullDetail = async (projectId) => {
 
         return projectList
     } catch (error) {
-        console.error('관심 기반 프로젝트 리스트 조회 실패:', error)
+        console.error('프로젝트 Detail Full 조회 실패:', error)
+        throw error
+    }
+}
+
+export const getRelatedProjects = async (projectId) => {
+    console.log('✅ getRelatedProjects 호출')
+
+    try {
+        const res = await api.get(`/project/related/${projectId}`)
+
+        const relatedProjects = res.data
+
+        return relatedProjects
+    } catch (error) {
+        console.error('관련 프로젝트 조회 실패:', error)
         throw error
     }
 }

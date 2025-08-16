@@ -77,7 +77,7 @@ import Footer from '@/components/layout/Footer.vue'
 import RecommendRelated from '@/components/project/detail/RecommendRelated.vue'
 import DetailHeader from '@/components/project/detail/DetailHeader.vue'
 
-import { getProjectFullDetail } from '@/api/projectApi'
+import { getProjectFullDetail, getRelatedProjects } from '@/api/projectApi'
 
 const authStore = useAuthStore()
 const userId = ref(5)
@@ -127,8 +127,10 @@ const fetchProjectData = async (projectId) => {
 
         console.log('✅ projectData:', projectData.value)
 
-        const relatedRes = await axios.get(`/project/related/${projectId}`)
-        relatedProjects.value = relatedRes.data
+        // const relatedRes = await axios.get(`/project/related/${projectId}`)
+        // relatedProjects.value = relatedRes.data
+
+        relatedProjects.value = await getRelatedProjects(projectId)
 
         console.log('✅ relatedProjects:', relatedProjects.value)
 

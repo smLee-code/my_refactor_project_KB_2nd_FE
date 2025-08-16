@@ -8,7 +8,7 @@
             <div>
                 <h4 class="font-medium text-gray-900">{{ detail.basicInfo.nickname }}</h4>
                 <div class="flex items-center gap-1">
-                    <p class="text-sm text-gray-600 m-0">뱃지등급:</p>
+                    <!-- <p class="text-sm text-gray-600 m-0">뱃지등급:</p> -->
                     <img
                         v-for="badge in detail.basicInfo.badges"
                         :key="badge.badgeId"
