@@ -391,9 +391,7 @@ const submitApplication = async () => {
         
         // response.data.success가 없거나 response.status가 200-299면 성공으로 처리
         if (response.data.success || (response.status >= 200 && response.status < 300)) {
-            alert(
-                `${fundingType.value === 'loan' ? '대출' : '저축'} 신청이 완료되었습니다!\n심사 결과는 영업일 기준 2-3일 내 안내드립니다.`,
-            )
+            // 신청 완료 후 펀딩 상세 페이지로 이동
             router.push(`/funding/detail/${fundingId}`)
         } else {
             alert('신청 처리 중 오류가 발생했습니다.')

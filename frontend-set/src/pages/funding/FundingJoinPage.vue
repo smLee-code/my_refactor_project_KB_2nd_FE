@@ -500,7 +500,6 @@ const sendPaymentToBackend = async (paymentData) => {
         const response = await api.post('/payments/complete', paymentData)
         
         if (response.data.success) {
-            alert('결제가 완료되었습니다!')
             // 결제 완료 후 펀딩 상세 페이지로 이동
             router.push(`/funding/detail/${fundingId}`)
         } else {

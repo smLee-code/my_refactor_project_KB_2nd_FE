@@ -393,7 +393,7 @@ const submitFunding = async () => {
         const response = await createSavingsFunding(formDataToSend)
         // 생성된 펀딩의 ID를 사용하여 상세 페이지로 이동
         if (response.data && response.data.fundingId) {
-            router.push(`/funding/${response.data.fundingId}`)
+            router.push(`/funding/detail/${response.data.fundingId}`)
         } else {
             router.push('/funding') // ID가 없으면 목록 페이지로 이동
         }
