@@ -83,13 +83,6 @@
                                 </span>
                             </p>
                         </div>
-                        <!-- 기업 페이지 바로가기 (선택적) -->
-                        <div class="flex-shrink-0">
-                            <button class="px-4 py-2 text-sm font-medium text-blue-600 bg-blue-50 rounded-lg hover:bg-blue-100 transition-colors">
-                                <i class="fas fa-external-link-alt mr-1"></i>
-                                기업 정보
-                            </button>
-                        </div>
                     </div>
                 </div>
             </section>
