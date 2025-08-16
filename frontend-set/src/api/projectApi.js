@@ -69,3 +69,20 @@ export const getRecommendedProjects = async () => {
         throw error
     }
 }
+
+export const getProjectFullDetail = async (projectId) => {
+    console.log('✅ getProjectFullDetail 호출!')
+
+    try {
+        const res = await api.get(`/project/list/detail/${projectId}/full`)
+
+        const projectList = res.data
+
+        console.log('✅ getProjectFullDetail - projectList:', projectList)
+
+        return projectList
+    } catch (error) {
+        console.error('관심 기반 프로젝트 리스트 조회 실패:', error)
+        throw error
+    }
+}

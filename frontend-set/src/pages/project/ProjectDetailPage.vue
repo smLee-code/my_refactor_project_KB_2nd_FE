@@ -77,6 +77,8 @@ import Footer from '@/components/layout/Footer.vue'
 import RecommendRelated from '@/components/project/detail/RecommendRelated.vue'
 import DetailHeader from '@/components/project/detail/DetailHeader.vue'
 
+import { getProjectFullDetail } from '@/api/projectApi'
+
 const authStore = useAuthStore()
 const userId = ref(5)
 const route = useRoute()
@@ -115,9 +117,15 @@ const fetchProjectData = async (projectId) => {
     loading.value = true
     projectData.value = null
 
+    console.log('✅✅✅if return 통과함')
+
     try {
-        const res = await axios.get(`/project/list/detail/${projectId}/full`)
-        projectData.value = res.data
+        // const res = await axios.get(`/project/list/detail/${projectId}/full`)
+        // projectData.value = res.data
+
+        projectData.value = await getProjectFullDetail(projectId)
+
+        console.log('✅ projectData:', projectData.value)
 
         const relatedRes = await axios.get(`/project/related/${projectId}`)
         relatedProjects.value = relatedRes.data
