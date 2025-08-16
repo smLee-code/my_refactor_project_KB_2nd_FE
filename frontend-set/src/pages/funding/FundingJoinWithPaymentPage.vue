@@ -503,8 +503,8 @@ const createOrder = async () => {
     
     try {
         const requestData = {
-            fundId: parseInt(fundingId),
-            amount: parseInt(selectedAmount.value),
+            fundId: Number(fundingId),
+            amount: selectedAmount.value,
             metadata: { 
                 anonymous: agreements.value.anonymous,
                 fundingType: fundingType.value
