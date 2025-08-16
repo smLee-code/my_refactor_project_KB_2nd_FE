@@ -211,14 +211,23 @@
             </section>
         </div>
     </div>
+    
+    <!-- 성공 팝업 -->
+    <SuccessPopup
+        v-model="showSuccessPopup"
+        title="신청이 완료되었습니다! 🎉"
+        :message="fundingType === 'loan' ? '대출 신청이 성공적으로 완료되었습니다.' : '저축 가입이 성공적으로 완료되었습니다.'"
+        :subMessage="fundingType === 'loan' ? '심사 결과는 영업일 기준 2-3일 내 안내됩니다.' : '함께 꾸준히 저축해요!'"
+        @confirm="handlePopupConfirm"
+    />
 </template>
 
 <script lang="ts" setup>
 import { ref, computed, onMounted } from 'vue'
 import api from '@/api'
 import { useRoute, useRouter } from 'vue-router'
-import axios from 'axios'
 import { useAuthStore } from '@/stores/auth'
+import SuccessPopup from '@/components/common/SuccessPopup.vue'
 
 const authStore = useAuthStore()
 const route = useRoute()
@@ -230,6 +239,9 @@ const fundingData = ref(null)
 const fundingTitle = ref('')
 const fundingType = ref('') // 'loan' 또는 'savings' - 초기값 없음
 const loanLimit = ref(50000000) // 대출 한도
+
+// 성공 팝업 관련
+const showSuccessPopup = ref(false)
 const minInterestRate = ref(2.5) // 최소 금리
 const maxInterestRate = ref(4.5) // 최대 금리
 const targetAmount = ref(10000000) // 저축 목표 금액
@@ -278,6 +290,14 @@ const fetchFundingInfo = async () => {
 onMounted(() => {
     fetchFundingInfo()
 })
+
+// 팝업 확인 시 페이지 이동 (2초 후 자동 이동)
+const handlePopupConfirm = () => {
+    router.push({
+        path: `/funding/detail/${fundingId}`,
+        query: { joined: 'true' }
+    })
+}
 
 // 신청자 정보
 const applicantInfo = ref({
@@ -356,16 +376,9 @@ const submitApplication = async () => {
             }
             console.log('대출 신청 요청 데이터:', requestData)
             
-            // @ts-ignore
-            const baseURL = import.meta.env.VITE_API_URL || 'https://fund-ing.store'
-            response = await axios.post(
-                `${baseURL}/api/user-loan/${fundingId}`,
-                requestData,
-                {
-                    headers: {
-                        Authorization: `Bearer ${authStore.loadToken()}`
-                    }
-                }
+            response = await api.post(
+                `/user-loan/${fundingId}`,
+                requestData
             )
         } else {
             // 저축 가입
@@ -374,16 +387,9 @@ const submitApplication = async () => {
             }
             console.log('저축 가입 요청 데이터:', requestData)
             
-            // @ts-ignore
-            const baseURL = import.meta.env.VITE_API_URL || 'https://fund-ing.store'
-            response = await axios.post(
-                `${baseURL}/api/user-saving/${fundingId}`,
-                requestData,
-                {
-                    headers: {
-                        Authorization: `Bearer ${authStore.loadToken()}`
-                    }
-                }
+            response = await api.post(
+                `/user-saving/${fundingId}`,
+                requestData
             )
         }
 
@@ -391,10 +397,8 @@ const submitApplication = async () => {
         
         // response.data.success가 없거나 response.status가 200-299면 성공으로 처리
         if (response.data.success || (response.status >= 200 && response.status < 300)) {
-            alert(
-                `${fundingType.value === 'loan' ? '대출' : '저축'} 신청이 완료되었습니다!\n심사 결과는 영업일 기준 2-3일 내 안내드립니다.`,
-            )
-            router.push(`/funding/detail/${fundingId}`)
+            // 성공 팝업 표시
+            showSuccessPopup.value = true
         } else {
             alert('신청 처리 중 오류가 발생했습니다.')
         }

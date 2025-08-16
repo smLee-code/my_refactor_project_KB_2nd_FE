@@ -30,10 +30,11 @@
                 목표 모금액 <span class="text-red-500">*</span>
             </label>
             <input
-                v-model="form.targetAmount"
-                type="number"
+                v-model="displayAmount"
+                type="text"
                 class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
                 placeholder="목표 금액을 원 단위로 입력하세요"
+                @input="handleAmountInput"
                 required
             />
         </div>
@@ -47,6 +48,30 @@ const form = ref({
     recipient: '',
     usagePlan: '',
     targetAmount: 0,
+})
+
+const displayAmount = ref('')
+
+const formatNumber = (num) => {
+    if (!num) return ''
+    return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',')
+}
+
+const parseNumber = (str) => {
+    return parseInt(str.replace(/,/g, '')) || 0
+}
+
+const handleAmountInput = (event) => {
+    const value = event.target.value
+    const numericValue = parseNumber(value)
+    form.value.targetAmount = numericValue
+    displayAmount.value = formatNumber(numericValue)
+}
+
+watch(() => form.value.targetAmount, (newVal) => {
+    if (newVal && displayAmount.value !== formatNumber(newVal)) {
+        displayAmount.value = formatNumber(newVal)
+    }
 })
 
 const isFormValid = computed(() => {

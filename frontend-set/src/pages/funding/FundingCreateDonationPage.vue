@@ -419,8 +419,12 @@ const submitFunding = async () => {
     console.log('업로드 파일 수:', uploadedFiles.value.length)
     
     const response = await createDonationFunding(formDataToSend)
-    alert('기부 펀딩 프로젝트가 성공적으로 생성되었습니다.')
-    router.push('/funding') // 펀딩 목록 페이지로 이동
+    // 생성된 펀딩의 ID를 사용하여 상세 페이지로 이동
+    if (response.data && response.data.fundingId) {
+      router.push(`/funding/detail/${response.data.fundingId}`)
+    } else {
+      router.push('/funding') // ID가 없으면 목록 페이지로 이동
+    }
   } catch (error) {
     console.error('기부 펀딩 생성 실패:', error)
     alert('기부 펀딩 프로젝트 생성에 실패했습니다. 다시 시도해주세요.')

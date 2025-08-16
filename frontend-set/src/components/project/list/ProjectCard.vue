@@ -40,7 +40,7 @@
         <!-- 구분선 -->
         <div class="border-t border-kb-ui-09 pt-3">
             <div class="flex items-center justify-between caption text-kb-ui-05">
-                <span>{{ project.createdAt }}</span>
+                <span>{{ formatDate(project.createdAt) }}</span>
             </div>
         </div>
 
@@ -73,6 +73,17 @@ const props = defineProps({
 })
 
 const isLiked = computed(() => props.project.isLiked)
+
+const formatDate = (dateString) => {
+    if (!dateString) return ''
+    
+    const date = new Date(dateString)
+    const year = date.getFullYear()
+    const month = String(date.getMonth() + 1).padStart(2, '0')
+    const day = String(date.getDate()).padStart(2, '0')
+    
+    return `${year}.${month}.${day}`
+}
 
 console.log('✅ props:', props)
 
