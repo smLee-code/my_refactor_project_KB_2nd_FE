@@ -568,6 +568,23 @@ onMounted(() => {
     console.log('현재 유저 role:', authStore.userRole)
 
     fetchFundingDetail()
+    
+    // 가입 완료 후 돌아온 경우 참여자 수 증가
+    if (route.query.joined === 'true') {
+        // 약간의 딜레이 후 참여자 수 증가 (데이터 로드 후 적용)
+        setTimeout(() => {
+            if (fundingData.value) {
+                fundingData.value.participantCount = (fundingData.value.participantCount || 0) + 1
+                console.log('참여자 수 업데이트:', fundingData.value.participantCount)
+                
+                // query parameter 제거 (새로고침 시 중복 증가 방지)
+                router.replace({ 
+                    path: route.path,
+                    query: {}
+                })
+            }
+        }, 1000)
+    }
 })
 </script>
 

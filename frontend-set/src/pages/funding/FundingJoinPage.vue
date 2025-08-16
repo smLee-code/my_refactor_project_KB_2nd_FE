@@ -527,7 +527,11 @@ const sendPaymentToBackend = async (paymentData) => {
 
 // 팝업 확인 버튼 클릭 시 페이지 이동
 const handlePopupConfirm = () => {
-    router.push(`/funding/detail/${fundingId}`)
+    // 참여 완료 상태를 query parameter로 전달
+    router.push({
+        path: `/funding/detail/${fundingId}`,
+        query: { joined: 'true' }
+    })
 }
 </script>
 <style scoped>
