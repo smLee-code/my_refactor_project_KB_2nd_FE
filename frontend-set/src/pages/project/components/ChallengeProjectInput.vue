@@ -15,30 +15,6 @@
         </div>
         <div>
             <label class="block text-sm font-medium text-gray-700 mb-2">
-                가입 조건 <span class="text-red-500">*</span>
-            </label>
-            <input
-                v-model="form.joinCondition"
-                type="text"
-                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
-                placeholder="예: 누구나 참여 가능"
-                required
-            />
-        </div>
-        <div>
-            <label class="block text-sm font-medium text-gray-700 mb-2">
-                검증 기준 <span class="text-red-500">*</span>
-            </label>
-            <input
-                v-model="form.verifyStandard"
-                type="text"
-                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
-                placeholder="예: 영수증 인증 또는 계좌 내역 확인"
-                required
-            />
-        </div>
-        <div>
-            <label class="block text-sm font-medium text-gray-700 mb-2">
                 리워드 <span class="text-red-500">*</span>
             </label>
             <input
@@ -69,8 +45,6 @@ import { ref, computed, watch } from 'vue'
 
 const form = ref({
     challengePeriodDays: 0,
-    joinCondition: '',
-    verifyStandard: '',
     reward: '',
     rewardCondition: '',
 })
@@ -78,8 +52,6 @@ const form = ref({
 const isFormValid = computed(() => {
     return (
         form.value.challengePeriodDays > 0 &&
-        form.value.joinCondition.trim() !== '' &&
-        form.value.verifyStandard.trim() !== '' &&
         form.value.reward.trim() !== '' &&
         form.value.rewardCondition.trim() !== ''
     )

@@ -252,6 +252,7 @@
 <script setup>
 import { ref, computed, watch, onMounted } from 'vue'
 import { useAuthStore } from '@/stores/auth'
+import { useRouter, useRoute } from 'vue-router'
 import axios from 'axios'
 
 import SavingsProjectInput from './components/SavingsProjectInput.vue'
@@ -259,7 +260,11 @@ import LoanProjectInput from './components/LoanProjectInput.vue'
 import DonationProjectInput from './components/DonationProjectInput.vue'
 import ChallengeProjectInput from './components/ChallengeProjectInput.vue'
 
+import projectList from '@/router/project.js'
+
 const authStore = useAuthStore()
+
+const router = useRouter()
 
 const categoryAndKeywords = ref([])
 
@@ -554,6 +559,8 @@ const createProject = async () => {
 
         selectedKeywordIds.value = []
         imagePreviews.value = [] // 이미지 미리보기 초기화
+
+        router.push({ name: 'projectList' })
     } catch (error) {
         console.error('프로젝트 생성 실패:', error)
     } finally {
