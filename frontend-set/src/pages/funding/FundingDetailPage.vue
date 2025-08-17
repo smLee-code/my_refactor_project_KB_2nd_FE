@@ -73,7 +73,7 @@
                                 </span>
                             </div>
                             <p class="text-sm text-gray-600">
-                                {{ getFundTypeKorean(fundingData.fundType) }} 상품 제공 ·
+                                {{ getFundTypeKorean(fundingData.fundType) }} 상품 제공
                                 <span v-if="fundingData.createdAt">
                                     {{
                                         new Date(fundingData.createdAt).toLocaleDateString('ko-KR')
@@ -136,67 +136,75 @@
 
             <section class="mb-8">
                 <h3 class="text-2xl font-bold text-gray-900 mb-6">다른 펀딩 둘러보기</h3>
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+
+                <!-- 로딩 상태 -->
+                <div v-if="isRecommendLoading" class="flex justify-center items-center py-12">
                     <div
+                        class="animate-spin rounded-full h-8 w-8 border-b-2 border-yellow-400"
+                    ></div>
+                    <span class="ml-3 text-gray-600">추천 펀딩을 찾는 중...</span>
+                </div>
+
+                <!-- 추천 펀딩 목록 -->
+                <div
+                    v-else-if="recommendedFunds.length > 0"
+                    class="grid grid-cols-1 md:grid-cols-3 gap-6"
+                >
+                    <div
+                        v-for="fund in recommendedFunds"
+                        :key="fund.fundId"
+                        @click="goToFundingDetail(fund.fundId)"
                         class="bg-white rounded-xl shadow-lg hover:shadow-2xl transition-all duration-300 cursor-pointer transform hover:-translate-y-1 border border-gray-100"
                     >
                         <div class="w-full h-48 bg-gray-200 rounded-t-xl overflow-hidden">
                             <img
-                                src="https://readdy.ai/api/search-image?query=local%20art%20community%20funding%20project%20with%20clean%20white%20background%2C%20creative%20arts%20initiative%2C%20colorful%20artistic%20elements%2C%20modern%20cultural%20design%2C%203D%20depth%20effect&width=300&height=200&seq=rec1&orientation=landscape"
-                                alt="추천 펀딩 1"
+                                :src="getFundImageUrl(fund)"
+                                :alt="fund.name || '추천 펀딩'"
                                 class="w-full h-full object-cover object-top"
                             />
                         </div>
                         <div class="p-4">
-                            <h4 class="font-bold text-gray-900 mb-2">Local Art Fund Raising</h4>
-                            <p class="text-sm text-gray-600 mb-3">
-                                지역 예술가들을 위한 창작 지원 프로젝트
-                            </p>
+                            <h4 class="font-bold text-gray-900 mb-2">{{ fund.name }}</h4>
+                            <p class="text-sm text-gray-600 mb-3">{{ fund.detail }}</p>
                             <div class="flex items-center justify-between text-sm">
-                                <span class="text-gray-500">8일 남음</span>
-                                <span class="text-blue-600 font-medium">60% 달성</span>
+                                <span class="text-gray-500"
+                                    >{{ calculateDaysLeft(fund.endAt) }}일 남음</span
+                                >
+                                <span class="text-blue-600 font-medium">{{
+                                    getFundTypeKorean(fund.progress)
+                                }}</span>
+                            </div>
+                            <div class="mt-2 text-xs text-gray-500">
+                                <div class="flex items-center justify-between">
+                                    <span v-if="fund.financialInstitution">{{
+                                        fund.financialInstitution
+                                    }}</span>
+                                    <span v-if="fund.retryVotesCount"
+                                        >투표 {{ fund.retryVotesCount }}회</span
+                                    >
+                                </div>
+                                <div v-if="fund.interestRate" class="mt-1">
+                                    <span class="text-green-600 font-medium"
+                                        >연 {{ fund.interestRate }}%</span
+                                    >
+                                    <span v-if="fund.periodDays" class="ml-2"
+                                        >{{ fund.periodDays }}일</span
+                                    >
+                                </div>
+                                <div v-if="fund.nickname" class="mt-1 text-gray-400">
+                                    {{ fund.nickname }}
+                                </div>
                             </div>
                         </div>
                     </div>
-                    <div
-                        class="bg-white rounded-xl shadow-lg hover:shadow-2xl transition-all duration-300 cursor-pointer transform hover:-translate-y-1 border border-gray-100"
-                    >
-                        <div class="w-full h-48 bg-gray-200 rounded-t-xl overflow-hidden">
-                            <img
-                                src="https://readdy.ai/api/search-image?query=technology%20innovation%20for%20everyone%20with%20clean%20white%20background%2C%20inclusive%20tech%20development%2C%20modern%20digital%20elements%2C%20professional%20tech%20design%2C%203D%20depth%20effect&width=300&height=200&seq=rec2&orientation=landscape"
-                                alt="추천 펀딩 2"
-                                class="w-full h-full object-cover object-top"
-                            />
-                        </div>
-                        <div class="p-4">
-                            <h4 class="font-bold text-gray-900 mb-2">Tech Innovations for All</h4>
-                            <p class="text-sm text-gray-600 mb-3">
-                                모든 사람을 위한 기술 혁신 프로젝트
-                            </p>
-                            <div class="flex items-center justify-between text-sm">
-                                <span class="text-gray-500">12일 남음</span>
-                                <span class="text-blue-600 font-medium">45% 달성</span>
-                            </div>
-                        </div>
-                    </div>
-                    <div
-                        class="bg-white rounded-xl shadow-lg hover:shadow-2xl transition-all duration-300 cursor-pointer transform hover:-translate-y-1 border border-gray-100"
-                    >
-                        <div class="w-full h-48 bg-gray-200 rounded-t-xl overflow-hidden">
-                            <img
-                                src="https://readdy.ai/api/search-image?query=community%20health%20initiative%20project%20with%20clean%20white%20background%2C%20healthcare%20accessibility%20program%2C%20medical%20care%20elements%2C%20professional%20health%20design%2C%203D%20depth%20effect&width=300&height=200&seq=rec3&orientation=landscape"
-                                alt="추천 펀딩 3"
-                                class="w-full h-full object-cover object-top"
-                            />
-                        </div>
-                        <div class="p-4">
-                            <h4 class="font-bold text-gray-900 mb-2">Community Health Drive</h4>
-                            <p class="text-sm text-gray-600 mb-3">지역 사회 건강 증진 프로그램</p>
-                            <div class="flex items-center justify-between text-sm">
-                                <span class="text-gray-500">30일 남음</span>
-                                <span class="text-blue-600 font-medium">30% 달성</span>
-                            </div>
-                        </div>
+                </div>
+
+                <!-- 추천 펀딩이 없는 경우 -->
+                <div v-else class="text-center py-12">
+                    <div class="text-gray-500">
+                        <i class="fas fa-search text-4xl mb-4"></i>
+                        <p class="text-lg">현재 추천할 펀딩이 없습니다.</p>
+                        <p class="text-sm mt-2">다른 펀딩을 둘러보세요!</p>
                     </div>
                 </div>
             </section>
@@ -304,6 +312,10 @@ const fundingData = ref({
 })
 const isLiked = ref(false)
 const isLoading = ref(true)
+
+// AI 추천 펀딩 데이터
+const recommendedFunds = ref([])
+const isRecommendLoading = ref(false)
 
 // 펀딩 타입
 const fundingType = ref('')
@@ -555,6 +567,123 @@ const fetchFundingDetail = async () => {
     } finally {
         isLoading.value = false
     }
+
+    return Promise.resolve() // Promise 반환
+}
+
+// AI 추천 펀딩 데이터 조회
+const fetchRecommendedFunds = async () => {
+    isRecommendLoading.value = true
+    try {
+        const response = await api.get(`/ai/${fundingId}/ai-recommend`)
+
+        // 각 추천 펀딩의 상세 정보를 조회
+        const detailedFunds = await Promise.all(
+            response.data.map(async (fund) => {
+                try {
+                    // fundId를 projectId로 사용하여 상세 정보 조회
+                    const projectDetailResponse = await api.get(
+                        `/project/list/detail/${fund.fundId}/full`,
+                        {
+                            headers: {
+                                Authorization: `Bearer ${authStore.token}`,
+                            },
+                        },
+                    )
+
+                    const projectDetail = projectDetailResponse.data
+
+                    return {
+                        ...fund,
+                        // 프로젝트 상세 정보에서 가져온 데이터
+                        name: projectDetail.basicInfo?.title || `펀딩 상품 ${fund.fundId}`,
+                        detail: projectDetail.basicInfo?.promotion || '펀딩 상품에 대한 상세 정보',
+                        imageUrls: projectDetail.imageList || [],
+                        // 기존 AI 추천 데이터
+                        endAt: fund.endAt,
+                        launchAt: fund.launchAt,
+                        progress: fund.progress || 'Launch',
+                        financialInstitution: fund.financialInstitution,
+                        retryVotesCount: fund.retryVotesCount,
+                        // 추가 정보
+                        projectType: projectDetail.basicInfo?.projectType,
+                        periodDays: projectDetail.detailInfo?.periodDays,
+                        interestRate: projectDetail.detailInfo?.interestRate,
+                        successCondition: projectDetail.detailInfo?.successCondition,
+                        voteCount: projectDetail.voteCount,
+                        nickname: projectDetail.basicInfo?.nickname,
+                    }
+                } catch (error) {
+                    console.error(`펀딩 ${fund.fundId} 상세 정보 조회 실패:`, error)
+                    // 에러가 발생해도 기본 정보로 반환
+                    return {
+                        ...fund,
+                        name: `펀딩 상품 ${fund.fundId}`,
+                        detail: '펀딩 상품에 대한 상세 정보',
+                        imageUrls: [],
+                        endAt: fund.endAt,
+                        launchAt: fund.launchAt,
+                        progress: fund.progress || 'Launch',
+                        financialInstitution: fund.financialInstitution,
+                        retryVotesCount: fund.retryVotesCount,
+                        projectType: null,
+                        periodDays: null,
+                        interestRate: null,
+                        successCondition: null,
+                        voteCount: 0,
+                        nickname: null,
+                    }
+                }
+            }),
+        )
+
+        // 최대 3개만 표시
+        recommendedFunds.value = detailedFunds.slice(0, 3)
+        console.log('추천 펀딩 목록 (상세 정보 포함, 최대 3개):', recommendedFunds.value)
+    } catch (error) {
+        console.error('추천 펀딩 데이터 조회 실패:', error)
+        recommendedFunds.value = []
+    } finally {
+        isRecommendLoading.value = false
+    }
+}
+
+// 펀딩 상세 페이지로 이동
+const goToFundingDetail = (fundId) => {
+    router.push(`/funding/detail/${fundId}`)
+}
+
+// 펀딩 이미지 URL 가져오기
+const getFundImageUrl = (fund) => {
+    // imageList 배열에서 첫 번째 이미지 사용
+    if (fund.imageUrls && fund.imageUrls.length > 0) {
+        return fund.imageUrls[0].imageUrl
+    }
+
+    // 기본 이미지 URL
+    return '/public/images/logo.png'
+}
+
+// 남은 일수 계산
+const calculateDaysLeft = (endAt) => {
+    if (!endAt) return 0
+
+    try {
+        const endDate = new Date(endAt)
+        const today = new Date()
+
+        // 오늘 날짜를 자정으로 설정
+        today.setHours(0, 0, 0, 0)
+        endDate.setHours(0, 0, 0, 0)
+
+        const diffTime = endDate - today
+        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
+
+        return Math.max(0, diffDays)
+    } catch (error) {
+        console.error('날짜 계산 오류:', error)
+        return 0
+    }
 }
 
 // 펀딩 참여하기 버튼 클릭 (incoming 브랜치의 분기 처리 로직 적용)
@@ -653,7 +782,10 @@ onMounted(() => {
     authStore.loadRole()
     console.log('현재 유저 role:', authStore.userRole)
 
-    fetchFundingDetail()
+    fetchFundingDetail().then(() => {
+        // 펀딩 데이터 로드 완료 후 추천 데이터 로드
+        fetchRecommendedFunds()
+    })
 
     // 가입 완료 후 돌아온 경우 참여자 수 증가
     if (route.query.joined === 'true') {

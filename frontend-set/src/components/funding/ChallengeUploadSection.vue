@@ -1,6 +1,8 @@
 <template>
     <section class="mb-8">
-        <div class="bg-white rounded-xl shadow-lg p-6 border border-gray-100">
+        <div
+            class="bg-white rounded-xl shadow-lg p-6 border border-gray-100 hover:shadow-xl transition-shadow duration-300"
+        >
             <div class="flex items-center mb-4">
                 <i class="fas fa-camera text-yellow-500 text-xl mr-3"></i>
                 <h3 class="text-xl font-bold text-gray-900">인증샷 업로드</h3>
@@ -26,10 +28,10 @@
                     <div
                         v-for="(day, index) in certificationDays"
                         :key="index"
-                        class="relative w-full aspect-square border border-gray-200 rounded-lg p-2 sm:p-3"
+                        class="relative w-full aspect-square border border-gray-200 rounded-lg p-2 sm:p-3 hover:border-yellow-300 hover:shadow-md transition-all duration-200 group"
                     >
                         <!-- 날짜 표시 -->
-                        <div class="text-xs sm:text-sm text-gray-500 mb-1 sm:mb-2">
+                        <div class="text-xs sm:text-sm text-gray-500 mb-1 sm:mb-2 font-medium">
                             {{ day.date }}
                         </div>
 
@@ -43,22 +45,33 @@
                                 <img
                                     :src="day.image"
                                     :alt="`인증샷 ${day.date}`"
-                                    class="w-full h-full object-cover rounded"
+                                    class="w-full h-full object-cover rounded cursor-pointer hover:opacity-90 transition-opacity duration-200"
+                                    @click="openImageModal(day.image, day.date, day.verifiedResult)"
                                 />
-                                <!-- 성공/실패 태그 (툴팁 포함) -->
+                                <!-- 성공/실패/검토 태그 (툴팁 포함) -->
                                 <div
                                     :class="[
-                                        'absolute -top-1 -right-1 px-1 py-0.5 rounded-full text-xs font-medium text-white cursor-help relative group flex items-center justify-center text-center',
-                                        day.isApproved ? 'bg-green-500' : 'bg-red-500',
+                                        'absolute -top-1 -right-1 px-1 py-0.5 rounded-full text-xs font-medium text-white cursor-help relative group flex items-center justify-center text-center shadow-lg',
+                                        day.status === 'success'
+                                            ? 'bg-green-500'
+                                            : day.status === 'review'
+                                              ? 'bg-orange-500'
+                                              : 'bg-red-500',
                                     ]"
                                     :title="day.verifiedResult"
                                 >
-                                    {{ day.isApproved ? '성공' : '실패' }}
+                                    {{
+                                        day.status === 'success'
+                                            ? '성공'
+                                            : day.status === 'review'
+                                              ? '검토중'
+                                              : '실패'
+                                    }}
 
                                     <!-- 커스텀 툴팁 -->
                                     <div
                                         v-if="day.verifiedResult"
-                                        class="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 bg-gray-800 text-white text-xs rounded shadow-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-10"
+                                        class="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-2 bg-gray-800 text-white text-xs rounded-lg shadow-xl opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-10 max-w-xs backdrop-blur-sm"
                                     >
                                         {{ day.verifiedResult }}
                                         <!-- 툴팁 화살표 -->
@@ -71,7 +84,11 @@
 
                             <!-- 오늘 날짜이고 업로드하지 않은 경우 -->
                             <div
-                                v-else-if="day.isToday && !day.image && props.userChallengeId"
+                                v-else-if="
+                                    day.isToday &&
+                                    (!day.image || day.status === null) &&
+                                    props.userChallengeId
+                                "
                                 class="w-full h-full"
                             >
                                 <input
@@ -83,17 +100,28 @@
                                 />
                                 <label
                                     :for="`certification-file-${fundingId}`"
-                                    class="w-full h-full border-2 border-dashed border-yellow-400 rounded flex items-center justify-center cursor-pointer hover:bg-yellow-50 transition-colors"
+                                    class="w-full h-full border-2 border-dashed border-yellow-400 rounded flex items-center justify-center cursor-pointer hover:bg-yellow-50 hover:border-yellow-500 transition-all duration-200 group"
                                 >
-                                    <i
-                                        class="fas fa-plus text-yellow-400 text-lg sm:text-xl md:text-2xl"
-                                    ></i>
+                                    <div class="text-center">
+                                        <i
+                                            class="fas fa-plus text-yellow-400 text-lg sm:text-xl md:text-2xl group-hover:text-yellow-500 transition-colors duration-200"
+                                        ></i>
+                                        <div
+                                            class="text-xs text-yellow-500 mt-1 group-hover:text-yellow-600"
+                                        >
+                                            업로드
+                                        </div>
+                                    </div>
                                 </label>
                             </div>
 
                             <!-- 오늘 날짜이지만 참여하지 않은 경우 -->
                             <div
-                                v-else-if="day.isToday && !day.image && !props.userChallengeId"
+                                v-else-if="
+                                    day.isToday &&
+                                    (!day.image || day.status === null) &&
+                                    !props.userChallengeId
+                                "
                                 class="w-full h-full flex items-center justify-center"
                             >
                                 <div class="text-gray-400 text-xs sm:text-sm text-center">
@@ -115,25 +143,75 @@
             <div v-if="canUploadToday" class="flex justify-end">
                 <button
                     @click="triggerFileUpload"
-                    class="bg-yellow-400 text-gray-900 px-4 py-2 rounded-button font-medium hover:bg-yellow-500 cursor-pointer whitespace-nowrap transition-all"
+                    :disabled="isUploading"
+                    class="bg-gradient-to-r from-yellow-400 to-yellow-500 text-gray-900 px-6 py-3 rounded-button font-medium hover:from-yellow-500 hover:to-yellow-600 cursor-pointer whitespace-nowrap transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
                 >
-                    인증샷 업로드
+                    <i v-if="isUploading" class="fas fa-spinner fa-spin mr-2"></i>
+                    <i v-else class="fas fa-upload mr-2"></i>
+                    {{ isUploading ? '업로드 중...' : '인증샷 업로드' }}
                 </button>
+            </div>
+
+            <!-- 업로드 로딩 상태 -->
+            <div v-if="isUploading" class="text-center py-4">
+                <div class="flex items-center justify-center space-x-3">
+                    <div
+                        class="animate-spin rounded-full h-6 w-6 border-b-2 border-yellow-400"
+                    ></div>
+                    <div class="text-yellow-600 text-sm">
+                        인증샷이 전송되었습니다. 검증 결과를 불러옵니다.
+                    </div>
+                </div>
             </div>
 
             <!-- 참여하지 않은 경우 안내 메시지 -->
             <div v-else-if="!props.userChallengeId" class="text-center py-4">
-                <div class="text-gray-600 text-sm">
-                    <i class="fas fa-info-circle mr-2"></i>
+                <div class="text-gray-600 text-sm bg-gray-50 rounded-lg p-4">
+                    <i class="fas fa-info-circle mr-2 text-blue-500"></i>
                     챌린지에 참여한 후 인증샷을 업로드할 수 있습니다.
                 </div>
             </div>
 
             <!-- 오늘 이미 업로드한 경우 안내 메시지 -->
-            <div v-else class="text-center py-4">
-                <div class="text-green-600 text-sm">
+            <div v-else-if="hasUploadedToday && !isUploading" class="text-center py-4">
+                <div class="text-green-600 text-sm bg-green-50 rounded-lg p-4">
                     <i class="fas fa-check-circle mr-2"></i>
                     오늘의 인증샷을 이미 업로드했습니다.
+                </div>
+            </div>
+        </div>
+
+        <!-- 이미지 모달 -->
+        <div
+            v-if="showImageModal"
+            class="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4"
+            @click="closeImageModal"
+        >
+            <div class="relative max-w-4xl max-h-full">
+                <!-- 모달 닫기 버튼 -->
+                <button
+                    @click="closeImageModal"
+                    class="absolute -top-12 right-0 text-white hover:text-gray-300 transition-colors duration-200 z-10"
+                >
+                    <i class="fas fa-times text-2xl"></i>
+                </button>
+
+                <!-- 이미지 컨테이너 -->
+                <div class="bg-white rounded-lg overflow-hidden shadow-2xl">
+                    <img
+                        :src="modalImage"
+                        :alt="`인증샷 ${modalDate}`"
+                        class="max-w-full max-h-[80vh] object-contain"
+                        @click.stop
+                    />
+
+                    <!-- 이미지 정보 -->
+                    <div v-if="modalResult" class="p-4 bg-gray-50 border-t">
+                        <div class="text-sm text-gray-700">
+                            <div class="font-medium mb-2">검증 결과:</div>
+                            <div class="text-gray-600">{{ modalResult }}</div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -198,7 +276,7 @@ console.log('펀딩 종료일:', props.endDate)
 console.log('userChallengeId:', props.userChallengeId)
 
 // 챌린지 로그 데이터 로드
-const loadChallengeLogs = async () => {
+const loadChallengeLogs = async (isAfterUpload = false) => {
     try {
         isLoadingLogs.value = true
 
@@ -258,6 +336,29 @@ onMounted(() => {
 // 실제 챌린지 로그 데이터
 const challengeLogs = ref([])
 const isLoadingLogs = ref(false)
+const isUploading = ref(false)
+
+// 이미지 모달 상태 및 데이터
+const showImageModal = ref(false)
+const modalImage = ref('')
+const modalDate = ref('')
+const modalResult = ref('')
+
+// 이미지 모달 열기
+const openImageModal = (imageUrl, date, result) => {
+    modalImage.value = imageUrl
+    modalDate.value = date
+    modalResult.value = result
+    showImageModal.value = true
+}
+
+// 이미지 모달 닫기
+const closeImageModal = () => {
+    showImageModal.value = false
+    modalImage.value = ''
+    modalDate.value = ''
+    modalResult.value = ''
+}
 
 // 챌린지 로그 데이터를 날짜별로 매핑
 const certificationMap = computed(() => {
@@ -265,12 +366,56 @@ const certificationMap = computed(() => {
     console.log('certificationMap 계산 중, challengeLogs:', challengeLogs.value)
 
     challengeLogs.value.forEach((log) => {
-        const dateString = log.logDate
+        // logDate가 배열 형태 [year, month, day]로 오므로 문자열로 변환
+        const dateString = Array.isArray(log.logDate)
+            ? `${log.logDate[0]}-${String(log.logDate[1]).padStart(2, '0')}-${String(log.logDate[2]).padStart(2, '0')}`
+            : log.logDate
+
+        // 점수 추출 및 상태 결정
+        let status = 'pending' // 기본값
+        let score = 0
+
+        if (log.verifiedResult) {
+            const scoreMatch = log.verifiedResult.match(/\[점수:\s*(\d+)\]/)
+            if (scoreMatch) {
+                score = parseInt(scoreMatch[1])
+                if (score >= 71) {
+                    status = 'success'
+                } else if (score >= 21) {
+                    status = 'review'
+                } else {
+                    status = 'failed'
+                }
+            } else {
+                // 점수가 없는 경우 verified 필드로 판단
+                if (log.verified === 'Verified') {
+                    status = 'success'
+                } else if (log.verified === 'UnVerified') {
+                    status = 'failed'
+                }
+            }
+        } else {
+            // verifiedResult가 없는 경우 verified 필드로 판단
+            if (log.verified === 'Verified') {
+                status = 'success'
+            } else if (log.verified === 'UnVerified') {
+                status = 'failed'
+            }
+        }
+
+        // 점수 부분을 제외한 메시지 추출
+        let displayMessage = log.verifiedResult || ''
+        if (displayMessage) {
+            displayMessage = displayMessage.replace(/\[점수:\s*\d+\]\s*/, '').trim()
+        }
+
         map[dateString] = {
             image: log.imageUrl,
-            isApproved: log.verified,
+            status: status,
+            score: score,
             uploadedAt: log.createAt,
-            verifiedResult: log.verifiedResult,
+            verifiedResult: displayMessage,
+            originalVerified: log.verified,
         }
         console.log(`날짜 ${dateString} 매핑:`, map[dateString])
     })
@@ -297,7 +442,13 @@ const certificationDays = computed(() => {
 
     // 로그 데이터가 있는 날짜들을 과거순으로 정렬
     const logDates = challengeLogs.value
-        .map((log) => log.logDate)
+        .map((log) => {
+            // logDate가 배열 형태인 경우 문자열로 변환
+            if (Array.isArray(log.logDate)) {
+                return `${log.logDate[0]}-${String(log.logDate[1]).padStart(2, '0')}-${String(log.logDate[2]).padStart(2, '0')}`
+            }
+            return log.logDate
+        })
         .sort((a, b) => new Date(a) - new Date(b))
 
     console.log('정렬된 로그 날짜들:', logDates)
@@ -312,7 +463,8 @@ const certificationDays = computed(() => {
             date: `${date.getMonth() + 1}/${date.getDate()}`,
             dateString: dateString,
             image: certificationMap.value[dateString]?.image || null,
-            isApproved: certificationMap.value[dateString]?.isApproved || null,
+            status: certificationMap.value[dateString]?.status || null,
+            score: certificationMap.value[dateString]?.score || 0,
             isToday: isToday,
             uploadedAt: certificationMap.value[dateString]?.uploadedAt || null,
             verifiedResult: certificationMap.value[dateString]?.verifiedResult || null,
@@ -325,7 +477,8 @@ const certificationDays = computed(() => {
             date: `${today.getMonth() + 1}/${today.getDate()}`,
             dateString: todayString,
             image: null,
-            isApproved: null,
+            status: null,
+            score: 0,
             isToday: true,
             uploadedAt: null,
         })
@@ -348,16 +501,35 @@ const canUploadToday = computed(() => {
     }
 
     const todayData = certificationDays.value.find((day) => day.isToday)
-    const canUpload = todayData && !todayData.image
-    console.log(
-        '오늘 업로드 가능 여부:',
-        canUpload,
-        '오늘 데이터:',
-        todayData,
-        'userChallengeId:',
-        props.userChallengeId,
-    )
-    return canUpload
+
+    // 오늘 데이터가 없으면 업로드 가능
+    if (!todayData) {
+        console.log('오늘 업로드 가능 여부: true (오늘 데이터 없음)')
+        return true
+    }
+
+    // 오늘 이미지가 있으면 업로드 불가 (이미 업로드됨)
+    if (todayData.image) {
+        console.log('오늘 업로드 가능 여부: false (이미 업로드됨)', todayData)
+        return false
+    }
+
+    // 오늘 이미지가 없으면 업로드 가능
+    console.log('오늘 업로드 가능 여부: true (이미지 없음)', todayData)
+    return true
+})
+
+// 오늘 이미 업로드했는지 여부
+const hasUploadedToday = computed(() => {
+    // 챌린지에 참여하지 않았으면 업로드하지 않은 것으로 간주
+    if (!props.userChallengeId) {
+        return false
+    }
+
+    const todayData = certificationDays.value.find((day) => day.isToday)
+
+    // 오늘 데이터가 있고 이미지가 있으면 업로드됨
+    return todayData && todayData.image
 })
 
 // 파일 업로드 처리
@@ -376,6 +548,9 @@ const handleImageUpload = async (event) => {
             throw new Error('파일 크기는 5MB 이하여야 합니다.')
         }
 
+        // 업로드 로딩 상태 시작
+        isUploading.value = true
+
         // 서버에 업로드 요청
         const result = await uploadCertificationImage(file)
 
@@ -391,6 +566,8 @@ const handleImageUpload = async (event) => {
         event.target.value = ''
     } catch (error) {
         emit('uploadError', error.message)
+    } finally {
+        isUploading.value = false
     }
 }
 
@@ -450,49 +627,18 @@ const uploadCertificationImage = async (file) => {
             formDataEntries: Array.from(formData.entries()),
         })
 
-        // 기존 API 함수 사용
+        // 백엔드 API 호출
         console.log('verifyChallenge API 호출 시작...')
-        console.log('전송할 데이터:', {
-            userChallengeId: props.userChallengeId,
-            file: file.name,
-            fileSize: file.size,
-            date: todayString,
-        })
+        const result = await verifyChallenge(props.userChallengeId, formData)
+        console.log('업로드 성공:', result)
 
-        // 백엔드 API 호출 시도 (선택적)
-        let backendSuccess = false
-        try {
-            const result = await verifyChallenge(props.userChallengeId, formData)
-            console.log('업로드 성공:', result)
-            console.log('업로드 결과 타입:', typeof result)
-            console.log('업로드 결과 값:', result)
-            backendSuccess = true
-        } catch (error) {
-            console.warn('백엔드 API 호출 실패, 로컬에서 처리:', error.message)
-            // 백엔드 에러가 발생해도 로컬에서 처리
-        }
-
-        // 백엔드 성공/실패와 관계없이 로컬에서 로그 데이터 생성
-        // 실제 업로드된 파일을 Data URL로 변환하여 사용
-        const imageUrl = await fileToDataURL(file)
-
-        const newLog = {
-            logId: Date.now(),
-            userChallengeId: props.userChallengeId,
-            userId: 1,
-            logDate: todayString,
-            imageUrl: imageUrl,
-            verified: backendSuccess, // 백엔드 성공 여부에 따라 결정
-            verifiedResult: backendSuccess ? '인증 성공' : '인증 실패',
-            createAt: new Date().toISOString(),
-        }
-
-        challengeLogs.value.push(newLog)
-        console.log('새로운 로그 추가:', newLog)
+        // 업로드 성공 후 서버에서 최신 로그 다시 가져오기
+        console.log('최신 로그 데이터 다시 가져오기 시작...')
+        await loadChallengeLogs(true) // 업로드 후 로딩 상태 표시
 
         return {
-            imageUrl: result.imageUrl,
-            isApproved: result.verified,
+            imageUrl: result.imageUrl || result.data?.imageUrl,
+            isApproved: result.verified || result.data?.verified,
             message: result.message || '인증샷 업로드 및 검증 완료',
         }
     } catch (error) {
