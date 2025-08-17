@@ -137,7 +137,7 @@ const loadHistory = async () => {
 const connectWebSocket = () => {
     console.log('🧪 WebSocket 연결 시도 중...') // 👈 여기도 로그 추가
 
-    const wsUrl = 'ws://localhost:8080/chat-app'
+    const wsUrl = 'wss://fund-ing.store/chat-app'
     stompClient.value = Stomp.client(wsUrl)
 
     stompClient.value.debug = (msg) => console.log('[STOMP]', msg)
@@ -151,17 +151,11 @@ const connectWebSocket = () => {
 
                 console.log('✅ 메시지 수신:', chatResponse)
 
-                // const now = new Date()
-                // const now = chatResponse.timestamp
-                // const hours = String(now.getHours()).padStart(2, '0')
-                // const minutes = String(now.getMinutes()).padStart(2, '0')
-                // const currentTime = `${hours}:${minutes}`
-
                 const processedMessage = {
                     id: chatResponse.id,
                     content: chatResponse.content,
                     isSelf: chatResponse.userId === authStore.loadUserId(),
-                    author: chatResponse.username, // UI 표시용
+                    author: chatResponse.nickname, // UI 표시용
                     time: chatResponse.timestamp, // UI 표시용
                 }
                 messages.value.push(processedMessage)
@@ -207,14 +201,6 @@ const sendMessage = () => {
 
         // 1. 메시지 전송
         stompClient.value.send(`/app/chat/${props.roomId}`, {}, inputMessage.value.trim())
-
-        // 2. 메시지 화면에 반영
-        // messages.value.push({
-        //     ...chatMessage,
-        //     isSelf: true,
-        //     author: mySenderId.value,
-        //     time: currentTime,
-        // })
 
         // 3. 입력창 비우기
         inputMessage.value = ''
