@@ -1,15 +1,11 @@
-<!-- The exported code uses Tailwind CSS. Install Tailwind CSS in your dev environment to ensure all styles work. -->
 <template>
     <div class="min-h-screen bg-gray-50 w-full">
-        <!-- 메인 콘텐츠 영역 -->
         <div class="container mx-auto px-4 sm:px-6 lg:px-32 py-8">
-            <!-- 로딩 상태 -->
             <div v-if="isLoading" class="flex justify-center items-center py-20">
                 <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-yellow-400"></div>
                 <span class="ml-3 text-gray-600">펀딩 정보를 불러오는 중...</span>
             </div>
 
-            <!-- 펀딩 메인 비주얼 -->
             <FundingHeaderSection
                 v-if="!isLoading && fundingData"
                 :funding-image="
@@ -35,7 +31,6 @@
                 @share="shareProject"
             />
 
-            <!-- 펀딩 현황 카드 -->
             <FundingProgressCard
                 v-if="fundingData"
                 :target-amount="fundingData.targetAmount"
@@ -51,11 +46,9 @@
                 @participate="handleParticipate"
             />
 
-            <!-- 작성자 기업 정보 섹션 -->
             <section v-if="fundingData && fundingData.financialInstitution" class="mb-8">
                 <div class="bg-white rounded-xl shadow-lg p-6 border border-gray-100">
                     <div class="flex items-center space-x-4">
-                        <!-- 기업 프로필 이미지 -->
                         <div class="flex-shrink-0">
                             <div
                                 class="w-16 h-16 rounded-full flex items-center justify-center"
@@ -67,7 +60,6 @@
                                 ></i>
                             </div>
                         </div>
-                        <!-- 기업 정보 -->
                         <div class="flex-1">
                             <div class="flex items-center space-x-2 mb-1">
                                 <h3 class="text-lg font-bold text-gray-900">
@@ -94,15 +86,11 @@
                 </div>
             </section>
 
-            <!-- 출처 프로젝트 섹션 -->
             <SourceProjectSection
                 v-if="!isLoading && fundingData && fundingData.projectId"
                 :project-id="fundingData.projectId"
             />
 
-            <!-- 상세 정보 섹션 - fundType에 따라 다른 컴포넌트 렌더링 -->
-
-            <!-- Savings 타입 -->
             <SavingsFundingDetailSection
                 v-if="!isLoading && fundingData && fundingData.fundType === 'Savings'"
                 :product-name="fundingData.name"
@@ -116,7 +104,6 @@
                 :keywords="fundingData.keywords"
             />
 
-            <!-- Challenge 타입 -->
             <ChallengeFundingDetailSection
                 v-if="!isLoading && fundingData && fundingData.fundType === 'Challenge'"
                 :challenge-name="fundingData.name"
@@ -130,7 +117,6 @@
                 :keywords="fundingData.keywords"
             />
 
-            <!-- 인증샷 업로드 영역 (챌린지 타입이고 참여 중인 경우에만 표시) -->
             <ChallengeUploadSection
                 v-if="fundingData && fundingType === 'Challenge' && fundingData.joined"
                 :funding-id="fundingData.id"
@@ -142,14 +128,12 @@
                 @upload-error="handleUploadError"
             />
 
-            <!-- 참여자 피드백 영역 -->
             <CommentSection
                 v-if="!isLoading && fundingData"
                 target-type="Funding"
                 :target-id="fundingData.id"
             />
 
-            <!-- 추천 펀딩 섹션 -->
             <section class="mb-8">
                 <h3 class="text-2xl font-bold text-gray-900 mb-6">다른 펀딩 둘러보기</h3>
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -217,6 +201,54 @@
                 </div>
             </section>
         </div>
+
+        <button
+            @click="openSummaryModal"
+            class="fixed bottom-6 right-6 bg-yellow-400 hover:bg-yellow-500 text-gray-800 font-bold py-3 px-5 rounded-full shadow-lg flex items-center transition-transform transform hover:scale-105"
+        >
+            <i class="fas fa-robot mr-2"></i>
+            <span>AI 요약</span>
+        </button>
+
+        <div
+            v-if="isModalOpen"
+            class="fixed inset-0 bg-black bg-opacity-60 flex justify-center items-center z-50 p-4"
+            @click.self="closeModal"
+        >
+            <div
+                class="bg-white rounded-2xl shadow-2xl w-full max-w-lg p-6 relative animate-fade-in-up"
+            >
+                <button
+                    @click="closeModal"
+                    class="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition-colors"
+                >
+                    <i class="fas fa-times text-2xl"></i>
+                </button>
+
+                <div v-if="isSummarizing" class="text-center py-12">
+                    <div class="flex justify-center items-center mb-4">
+                        <div
+                            class="animate-spin rounded-full h-10 w-10 border-b-2 border-yellow-400"
+                        ></div>
+                    </div>
+                    <p class="text-lg font-semibold text-gray-700 animate-pulse">
+                        AI가 펀딩 정보를 요약중이에요...
+                    </p>
+                </div>
+
+                <div v-if="!isSummarizing && summaryText">
+                    <h3 class="text-2xl font-bold text-gray-900 mb-4 flex items-center">
+                        <i class="fas fa-robot text-yellow-400 mr-3"></i>
+                        AI 펀딩 요약
+                    </h3>
+                    <div
+                        class="text-gray-700 leading-relaxed whitespace-pre-line bg-gray-50 p-4 rounded-lg"
+                    >
+                        {{ summaryText }}
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 </template>
 
@@ -278,6 +310,48 @@ const fundingType = ref('')
 
 // 인증샷 데이터 (날짜별)
 const certificationData = ref([])
+
+// ============== AI 요약 관련 상태 추가 ==============
+const isModalOpen = ref(false)
+const isSummarizing = ref(false)
+const summaryText = ref('')
+
+// AI 요약 모달 열기
+const openSummaryModal = () => {
+    isModalOpen.value = true
+    isSummarizing.value = true
+    summaryText.value = '' // 이전 요약 내용 초기화
+
+    // 5초 후 요약 내용 생성 (실제로는 API 호출)
+    setTimeout(() => {
+        if (fundingData.value) {
+            const fd = fundingData.value
+            summaryText.value = `이 펀딩은 '${fd.name}' 프로젝트로, ${
+                fd.financialInstitution ? `${fd.financialInstitution}에서 제공하는 ` : ''
+            }${getFundTypeKorean(
+                fd.fundType,
+            )} 상품입니다.\n\n주요 내용은 '${fd.detail}'이며, 목표 금액은 ${fd.targetAmount.toLocaleString()}원입니다.\n현재까지 ${fd.participantCount}명이 참여하여 ${fd.currentAmount.toLocaleString()}원이 모였습니다. (달성률 ${fd.progressPercentage.toFixed(1)}%)\n\n${
+                fd.fundType === 'Savings'
+                    ? `만기는 ${fd.periodDays}일이며, 금리는 연 ${fd.interestRate}%입니다.`
+                    : ''
+            }${
+                fd.fundType === 'Challenge'
+                    ? `챌린지 기간은 ${fd.challengePeriodDays}일이며, 성공 시 '${fd.challengeReward}' 보상이 제공됩니다.`
+                    : ''
+            }\n\n펀딩 마감까지 ${fd.daysLeft}일 남았습니다.`
+        } else {
+            summaryText.value = '펀딩 정보를 요약할 수 없습니다.'
+        }
+        isSummarizing.value = false
+    }, 5000)
+}
+
+// AI 요약 모달 닫기
+const closeModal = () => {
+    isModalOpen.value = false
+}
+// ===============================================
+// ===============================================
 
 // 펀딩 정보 조회
 const fetchFundingDetail = async () => {
@@ -622,7 +696,6 @@ input[type='number'] {
     }
 }
 
-/* 모바일 최적화 스타일 */
 @media (max-width: 768px) {
     .h-96 {
         height: 16rem;
@@ -645,5 +718,29 @@ input[type='number'] {
     .p-6 {
         padding: 1rem;
     }
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+.animate-fade-in-up {
+    animation:
+        fadeIn 0.3s ease-out,
+        fadeInUp 0.3s ease-out;
 }
 </style>
