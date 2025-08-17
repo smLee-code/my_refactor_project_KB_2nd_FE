@@ -27,16 +27,36 @@
                 :key="participation.id"
                 class="bg-white rounded-2xl shadow-lg p-6 border border-gray-100"
             >
-                <div class="flex items-start justify-between">
-                    <div class="flex-1">
+                <div class="flex items-start space-x-4">
+                    <!-- 썸네일 이미지 -->
+                    <div class="flex-shrink-0">
+                        <div
+                            class="w-20 h-20 rounded-lg overflow-hidden bg-gray-100 flex items-center justify-center"
+                            @click="goToFundingDetail(participation.fundId, participation.type)"
+                        >
+                            <img
+                                v-if="participation.thumbnail"
+                                :src="participation.thumbnail"
+                                :alt="participation.title"
+                                class="w-full h-full object-cover cursor-pointer hover:opacity-80 transition-opacity"
+                                @error="handleImageError"
+                            />
+                            <div v-else class="text-gray-400 text-2xl">
+                                <i class="fas fa-image"></i>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 펀딩 정보 -->
+                    <div class="flex-1 min-w-0">
                         <div class="flex items-center justify-between mb-2">
                             <h3
-                                class="font-bold text-lg text-gray-900 cursor-pointer hover:text-blue-600 transition-colors"
-                                @click="goToFundingDetail(participation.fundId)"
+                                class="font-bold text-lg text-gray-900 cursor-pointer hover:text-blue-600 transition-colors truncate"
+                                @click="goToFundingDetail(participation.fundId, participation.type)"
                             >
                                 {{ participation.title }}
                             </h3>
-                            <div class="flex items-center space-x-2">
+                            <div class="flex items-center space-x-2 flex-shrink-0">
                                 <!-- 타입별 아이콘 -->
                                 <span
                                     :class="getTypeBadgeClass(participation.type)"
@@ -66,19 +86,6 @@
                                 >
                             </div>
                         </div>
-
-                        <!-- 챌린지 타입인 경우 ChallengeUploadSection 컴포넌트 사용 -->
-                        <div v-if="participation.type === 'challenge'" class="mt-4">
-                            <ChallengeUploadSection
-                                :funding-id="participation.fundId"
-                                :certification-data="participation.certificationImages || []"
-                                :start-date="participation.startDate || '2024-01-01'"
-                                :end-date="participation.endDate || '2024-12-31'"
-                                :user-challenge-id="participation.userChallengeId"
-                                @imageUploaded="handleCertificationUploaded"
-                                @uploadError="handleUploadError"
-                            />
-                        </div>
                     </div>
                 </div>
             </div>
@@ -89,7 +96,6 @@
 <script setup>
 import { ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
-import ChallengeUploadSection from '@/components/funding/ChallengeUploadSection.vue'
 
 const router = useRouter()
 
@@ -112,6 +118,10 @@ watch(
         console.log('ParticipatingFundingsSection - 받은 데이터:', newFundings)
         if (newFundings.length > 0) {
             console.log('첫 번째 펀딩 상세 데이터:', newFundings[0])
+            console.log('첫 번째 펀딩 이미지 정보:', {
+                thumbnail: newFundings[0].thumbnail,
+                type: newFundings[0].type,
+            })
         }
     },
     { immediate: true },
@@ -165,35 +175,18 @@ const goToFundingDetail = (fundId) => {
     }
 }
 
-// 인증샷 업로드 완료 처리
-const handleCertificationUploaded = (data) => {
-    // 새로운 인증샷 데이터 추가
-    const newCertification = {
-        url: data.image,
-        isApproved: data.isApproved,
-        uploadedAt: data.uploadedAt,
+// 이미지 로딩 에러 처리
+const handleImageError = (event) => {
+    console.log('이미지 로딩 실패:', event.target.src)
+    // 기본 이미지로 대체
+    event.target.style.display = 'none'
+    const parent = event.target.parentElement
+    if (parent) {
+        const fallbackDiv = document.createElement('div')
+        fallbackDiv.className = 'text-gray-400 text-2xl'
+        fallbackDiv.innerHTML = '<i class="fas fa-image"></i>'
+        parent.appendChild(fallbackDiv)
     }
-
-    // 펀딩 목록 업데이트
-    const updatedFundings = props.participatingFundings.map((funding) => {
-        if (funding.fundId === data.fundingId) {
-            const certificationImages = funding.certificationImages || []
-            return {
-                ...funding,
-                certificationImages: [...certificationImages, newCertification],
-            }
-        }
-        return funding
-    })
-
-    emit('update:participatingFundings', updatedFundings)
-    console.log('인증샷 업로드 완료:', data)
-}
-
-// 업로드 에러 처리
-const handleUploadError = (errorMessage) => {
-    alert(errorMessage)
-    console.error('업로드 에러:', errorMessage)
 }
 </script>
 

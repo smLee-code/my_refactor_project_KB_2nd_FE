@@ -18,7 +18,7 @@ export const getMyCreatedLoans = (token) => {
  */
 export const getMyCreatedChallenges = (token) => {
     // 기존 API를 재활용하여 fundType으로 필터링
-    return axios.get('/api/my/fund/all?fundType=Challenge', {
+    return axios.get('/fund/my/fund/all?fundType=Challenge', {
         headers: {
             Authorization: `Bearer ${token}`,
         },
