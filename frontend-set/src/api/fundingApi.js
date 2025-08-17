@@ -1,5 +1,4 @@
 import api from '@/api'
-import axios from 'axios'
 
 // 펀딩 생성 (대출)
 export const createLoanFunding = async (formData) => {
@@ -65,17 +64,8 @@ export const createChallengeFunding = async (formData) => {
 
 // 챌린지 가입 신청
 export const applyChallenge = async (id) => {
-    const baseURL = import.meta.env.VITE_API_URL || 'http://localhost:8080'
     try {
-        const response = await axios.post(
-            `${baseURL}/user-challenge/${id}`,
-            {},
-            {
-                headers: {
-                    Authorization: `Bearer ${localStorage.getItem('jwt')}`,
-                },
-            },
-        )
+        const response = await api.post(`/user-challenge/${id}`, {})
         return response.data
     } catch (error) {
         console.error('챌린지 가입 신청 실패:', error)
