@@ -8,14 +8,6 @@
             </li>
             <li class="flex items-start">
                 <i class="fas fa-check-circle text-green-500 mt-1 mr-2"></i>
-                <span>가입 조건: {{ detail.joinCondition || '누구나 참여 가능' }}</span>
-            </li>
-            <li class="flex items-start">
-                <i class="fas fa-check-circle text-green-500 mt-1 mr-2"></i>
-                <span>검증 기준: {{ detail.verifyStandard || '검증 기준 없음' }}</span>
-            </li>
-            <li class="flex items-start">
-                <i class="fas fa-check-circle text-green-500 mt-1 mr-2"></i>
                 <span>성공 보상: {{ detail.reward }}</span>
             </li>
             <li class="flex items-start">

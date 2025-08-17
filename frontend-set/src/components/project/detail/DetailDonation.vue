@@ -4,7 +4,7 @@
         <ul class="space-y-1">
             <li class="flex items-start">
                 <i class="fas fa-check-circle text-green-500 mt-1 mr-2"></i>
-                <span>기부: {{ detail.recipient.toLocaleString() }}원</span>
+                <span>기부처: {{ detail.recipient.toLocaleString() }}</span>
             </li>
             <li class="flex items-start">
                 <i class="fas fa-check-circle text-green-500 mt-1 mr-2"></i>
