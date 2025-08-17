@@ -325,18 +325,20 @@ const loadParticipatingFundings = async () => {
         console.log('저축 데이터 원본:', savings)
         savings.forEach((saving) => {
             console.log('저축 데이터 처리 중:', saving)
+            const savingImage =
+                saving.images && saving.images.length > 0
+                    ? saving.images[0].imageUrl
+                    : `https://readdy.ai/api/search-image?query=savings%20product&width=150&height=150&seq=saving${saving.userSavingId}`
+
             allFundings.push({
                 id: saving.userSavingId,
                 title: saving.savingName || '저축 상품',
-                joinDate: `참여일: ${new Date().toLocaleDateString('ko-KR')}`, // 임시로 현재 날짜 사용
+                joinDate: `참여일: ${new Date().toLocaleDateString('ko-KR')}`,
                 amount: saving.savingAmount || 0,
                 type: 'saving',
                 fundId: saving.productId,
                 status: '진행중',
-                image:
-                    saving.images && saving.images.length > 0
-                        ? saving.images[0].imageUrl
-                        : `https://readdy.ai/api/search-image?query=savings%20product&width=150&height=150&seq=saving${saving.userSavingId}`,
+                thumbnail: savingImage,
             })
         })
 
@@ -344,18 +346,20 @@ const loadParticipatingFundings = async () => {
         console.log('대출 데이터 원본:', loans)
         loans.forEach((loan) => {
             console.log('대출 데이터 처리 중:', loan)
+            const loanImage =
+                loan.images && loan.images.length > 0
+                    ? loan.images[0].imageUrl
+                    : `https://readdy.ai/api/search-image?query=loan%20product&width=150&height=150&seq=loan${loan.userLoanId}`
+
             allFundings.push({
                 id: loan.userLoanId,
                 title: loan.loanName || '대출 상품',
-                joinDate: `참여일: ${new Date().toLocaleDateString('ko-KR')}`, // 임시로 현재 날짜 사용
+                joinDate: `참여일: ${new Date().toLocaleDateString('ko-KR')}`,
                 amount: loan.loanAmount || 0,
                 type: 'loan',
                 fundId: loan.productId,
                 status: '진행중',
-                image:
-                    loan.images && loan.images.length > 0
-                        ? loan.images[0].imageUrl
-                        : `https://readdy.ai/api/search-image?query=loan%20product&width=150&height=150&seq=loan${loan.userLoanId}`,
+                thumbnail: loanImage,
             })
         })
 
@@ -363,47 +367,62 @@ const loadParticipatingFundings = async () => {
         console.log('기부 데이터 원본:', donations)
         donations.forEach((donation) => {
             console.log('기부 데이터 처리 중:', donation)
+            const donationImage =
+                donation.images && donation.images.length > 0
+                    ? donation.images[0].imageUrl
+                    : `https://readdy.ai/api/search-image?query=donation%20product&width=150&height=150&seq=donation${donation.userDonationId}`
+
             allFundings.push({
                 id: donation.userDonationId,
                 title: donation.donationName || '기부 상품',
-                joinDate: `참여일: ${new Date().toLocaleDateString('ko-KR')}`, // 임시로 현재 날짜 사용
+                joinDate: `참여일: ${new Date().toLocaleDateString('ko-KR')}`,
                 amount: donation.donationAmount || 0,
                 type: 'donation',
                 fundId: donation.productId,
                 status: '진행중',
-                image:
-                    donation.images && donation.images.length > 0
-                        ? donation.images[0].imageUrl
-                        : `https://readdy.ai/api/search-image?query=donation%20product&width=150&height=150&seq=donation${donation.userDonationId}`,
+                thumbnail: donationImage,
             })
         })
 
-        // 챌린지 데이터 추가 (인증샷 포함)
+        // 챌린지 데이터 추가
         console.log('챌린지 데이터 원본:', challenges)
         challenges.forEach((challenge) => {
             console.log('챌린지 데이터 처리 중:', challenge)
-            allFundings.push({
+            console.log('챌린지 productId:', challenge.productId)
+            console.log('챌린지 userChallengeId:', challenge.userChallengeId)
+
+            const challengeImage =
+                challenge.challengeImageUrl ||
+                `https://readdy.ai/api/search-image?query=challenge%20product&width=150&height=150&seq=challenge${challenge.userChallengeId}`
+
+            const challengeData = {
                 id: challenge.userChallengeId,
                 title: challenge.challengeName || '챌린지',
-                joinDate: `참여일: ${new Date().toLocaleDateString('ko-KR')}`, // 임시로 현재 날짜 사용
-                amount: 0, // 챌린지는 금액이 없음
+                joinDate: `참여일: ${new Date().toLocaleDateString('ko-KR')}`,
+                amount: 0,
                 type: 'challenge',
-                fundId: challenge.productId,
+                fundId: challenge.userChallengeId, // userChallengeId를 사용해보기
                 status: challenge.challengeStatus || '진행중',
-                image:
-                    challenge.challengeImageUrl ||
-                    `https://readdy.ai/api/search-image?query=challenge%20product&width=150&height=150&seq=challenge${challenge.userChallengeId}`,
-                certificationImages: [], // 챌린지 인증샷은 별도 API로 가져와야 함
-                startDate: challenge.challengeStartDate || '2024-01-01',
-                endDate: challenge.challengeEndDate || '2024-12-31',
-                userChallengeId: challenge.userChallengeId,
-            })
+                thumbnail: challengeImage,
+            }
+
+            console.log('생성된 챌린지 데이터:', challengeData)
+            allFundings.push(challengeData)
         })
 
         participatingFundings.value = allFundings
         console.log('참여중인 펀딩 데이터:', participatingFundings.value)
+        console.log('총 참여 펀딩 수:', allFundings.length)
+
+        // 각 타입별 개수 로깅
+        const typeCounts = allFundings.reduce((acc, funding) => {
+            acc[funding.type] = (acc[funding.type] || 0) + 1
+            return acc
+        }, {})
+        console.log('타입별 참여 펀딩 개수:', typeCounts)
     } catch (err) {
         console.error('참여 중인 펀딩 로드 실패:', err)
+        console.error('에러 상세:', err.response?.data)
         // API 실패 시 빈 배열로 설정
         participatingFundings.value = []
         console.log('API 실패로 빈 배열 설정')

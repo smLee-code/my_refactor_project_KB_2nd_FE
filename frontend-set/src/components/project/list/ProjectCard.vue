@@ -6,7 +6,7 @@
         <!-- 썸네일 -->
         <div class="w-full h-48 bg-kb-ui-10 rounded-xl overflow-hidden mb-4">
             <img
-                :src="project.thumbnailUrl"
+                :src="thumbnailImageUrl"
                 :alt="project.title"
                 class="w-full h-full object-cover object-top"
             />
@@ -74,18 +74,38 @@ const props = defineProps({
 
 const isLiked = computed(() => props.project.isLiked)
 
+// 이미지 URL 계산 - thumbnailUrl, image, imageList 순서로 우선순위 적용
+const thumbnailImageUrl = computed(() => {
+    // 1. thumbnailUrl이 있으면 사용
+    if (props.project.thumbnailUrl) {
+        return props.project.thumbnailUrl
+    }
+
+    // 2. image 속성이 있으면 사용 (MyPage에서 변환한 데이터)
+    if (props.project.image) {
+        return props.project.image
+    }
+
+    // 3. imageList 배열이 있으면 첫 번째 이미지 사용
+    if (props.project.imageList && props.project.imageList.length > 0) {
+        return props.project.imageList[0].imageUrl
+    }
+
+    // 4. 기본 이미지 반환
+    return '/public/images/logo.png'
+})
+
 const formatDate = (dateString) => {
     if (!dateString) return ''
-    
+
     const date = new Date(dateString)
     const year = date.getFullYear()
     const month = String(date.getMonth() + 1).padStart(2, '0')
     const day = String(date.getDate()).padStart(2, '0')
-    
+
     return `${year}.${month}.${day}`
 }
 
 console.log('✅ props:', props)
-
-// const thumbnailImageUrl = computed(() => props.images[0].imageUrl)
+console.log('✅ thumbnailImageUrl:', thumbnailImageUrl.value)
 </script>
