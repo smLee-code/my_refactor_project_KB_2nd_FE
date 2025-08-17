@@ -137,7 +137,7 @@ const loadHistory = async () => {
 const connectWebSocket = () => {
     console.log('🧪 WebSocket 연결 시도 중...') // 👈 여기도 로그 추가
 
-    const wsUrl = 'ws://localhost:8080/chat-app'
+    const wsUrl = 'wss://fund-ing.store/chat-app'
     stompClient.value = Stomp.client(wsUrl)
 
     stompClient.value.debug = (msg) => console.log('[STOMP]', msg)
