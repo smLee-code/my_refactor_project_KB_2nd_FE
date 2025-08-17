@@ -1,5 +1,5 @@
 <template>
-    <header class="bg-kb-ui-11 shadow-card sticky top-0 z-50 w-full">
+    <header :class="['shadow-card sticky top-0 z-50 w-full', !isFinanceUser ? 'bg-kb-ui-11' : '']" :style="isFinanceUser ? 'background-color: rgb(254, 252, 232)' : ''">
         <div class="max-w-[1200px] mx-auto px-5 lg:px-10">
             <div class="flex items-center justify-between h-16">
                 <!-- 로고 -->
@@ -87,8 +87,9 @@
                                 <button
                                     id="user-menu-button"
                                     @click="toggleUserMenu"
-                                    class="p-2 text-gray-600 hover:text-gray-900 cursor-pointer transition-colors"
+                                    class="p-2 text-gray-600 hover:text-gray-900 cursor-pointer transition-colors flex items-center gap-2"
                                 >
+                                    <i v-if="isFinanceUser" class="fas fa-building text-lg text-yellow-600"></i>
                                     <i class="fas fa-user text-lg"></i>
                                 </button>
                                 <div
@@ -130,6 +131,7 @@ const router = useRouter()
 
 // 사용자 역할에 따른 computed 속성
 const isNormalUser = computed(() => auth.isNormalRole())
+const isFinanceUser = computed(() => auth.isFinanceRole())
 const userMenuPath = computed(() => (isNormalUser.value ? '/mypage' : '/dashboard'))
 const userMenuText = computed(() => (isNormalUser.value ? '마이페이지' : '대시보드'))
 const userMenuIcon = computed(() =>
