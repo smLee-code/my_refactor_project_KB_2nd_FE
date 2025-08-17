@@ -73,7 +73,7 @@
                                 </span>
                             </div>
                             <p class="text-sm text-gray-600">
-                                {{ getFundTypeKorean(fundingData.fundType) }} 상품 제공 ·
+                                {{ getFundTypeKorean(fundingData.fundType) }} 상품 제공
                                 <span v-if="fundingData.createdAt">
                                     {{
                                         new Date(fundingData.createdAt).toLocaleDateString('ko-KR')
