@@ -72,6 +72,27 @@
             </div>
         </div>
     </div>
+    <div class="min-h-screen bg-gray-50 p-8">
+        <div class="container mx-auto"></div>
+
+        <AlertModal
+            :show="alertModal.show"
+            :type="alertModal.type"
+            :title="alertModal.title"
+            :message="alertModal.message"
+            @close="alertModal.show = false"
+        />
+
+        <ConfirmationModal
+            :show="confirmationModal.show"
+            :title="confirmationModal.title"
+            :message="confirmationModal.message"
+            :confirm-text="confirmationModal.confirmText"
+            :confirm-type="confirmationModal.confirmType"
+            @close="confirmationModal.show = false"
+            @confirm="executeConfirmation"
+        />
+    </div>
 </template>
 
 <script setup>
@@ -79,6 +100,8 @@ import { ref, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import { getParticipantLogs, manuallyApproveLog, manuallyRejectLog } from '@/api/challengeAdminApi'
+import AlertModal from '@/components/common/AlertModal.vue'
+import ConfirmationModal from '@/components/common/ConfirmationModal.vue'
 
 const route = useRoute()
 const authStore = useAuthStore()
@@ -87,6 +110,18 @@ const logs = ref([])
 const isLoading = ref(true)
 const error = ref(null)
 const activeTab = ref('HumanVerify')
+
+// 알림 모달 상태
+const alertModal = ref({ show: false, type: 'success', title: '', message: '' })
+
+// 확인 모달 상태
+const confirmationModal = ref({
+    show: false,
+    title: '',
+    message: '',
+    confirmType: 'primary',
+    action: null,
+})
 
 const tabs = [
     { key: 'HumanVerify', name: '수동 검증 필요' },
@@ -117,23 +152,50 @@ const changeTab = (status) => {
     fetchLogs()
 }
 
-const handleVerification = async (logId, isApproved) => {
-    if (!confirm(`해당 인증을 '${isApproved ? '승인' : '반려'}' 처리하시겠습니까?`)) return
+const handleVerification = (logId, isApproved) => {
+    confirmationModal.value = {
+        show: true,
+        title: isApproved ? '인증 승인' : '인증 반려',
+        message: `해당 인증을 '${isApproved ? '승인' : '반려'}' 처리하시겠습니까?`,
+        confirmText: isApproved ? '승인' : '반려',
+        confirmType: isApproved ? 'success' : 'danger',
+        action: () => processVerification(logId, isApproved),
+    }
+}
 
+const processVerification = async (logId, isApproved) => {
     try {
         const apiCall = isApproved ? manuallyApproveLog : manuallyRejectLog
         await apiCall(logId, authStore.token)
 
-        // UI 즉시 업데이트
         const targetLog = logs.value.find((log) => log.logId === logId)
         if (targetLog) {
             targetLog.verified = isApproved ? 'Verified' : 'UnVerified'
         }
-        alert('처리가 완료되었습니다.')
+
+        alertModal.value = {
+            show: true,
+            type: 'success',
+            title: '처리 완료',
+            message: '성공적으로 처리되었습니다.',
+        }
     } catch (err) {
-        alert('처리 중 오류가 발생했습니다.')
+        alertModal.value = {
+            show: true,
+            type: 'error',
+            title: '오류 발생',
+            message: '처리 중 오류가 발생했습니다. 다시 시도해주세요.',
+        }
         console.error(err)
     }
+}
+
+// ◀ 5. 확인 모달에서 '확인'을 눌렀을 때 실행될 함수
+const executeConfirmation = () => {
+    if (confirmationModal.value.action) {
+        confirmationModal.value.action()
+    }
+    confirmationModal.value.show = false
 }
 
 const statusText = (status) =>
