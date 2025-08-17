@@ -57,11 +57,11 @@
                     <div class="flex items-center space-x-4">
                         <!-- 기업 프로필 이미지 -->
                         <div class="flex-shrink-0">
-                            <div 
+                            <div
                                 class="w-16 h-16 rounded-full flex items-center justify-center"
                                 :class="getCompanyStyle(fundingData.financialInstitution).bg"
                             >
-                                <i 
+                                <i
                                     class="fas fa-building text-xl"
                                     :class="getCompanyStyle(fundingData.financialInstitution).text"
                                 ></i>
@@ -70,16 +70,23 @@
                         <!-- 기업 정보 -->
                         <div class="flex-1">
                             <div class="flex items-center space-x-2 mb-1">
-                                <h3 class="text-lg font-bold text-gray-900">{{ fundingData.financialInstitution }}</h3>
-                                <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                                <h3 class="text-lg font-bold text-gray-900">
+                                    {{ fundingData.financialInstitution }}
+                                </h3>
+                                <span
+                                    class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800"
+                                >
                                     <i class="fas fa-check-circle mr-1"></i>
                                     공식 금융기관
                                 </span>
                             </div>
                             <p class="text-sm text-gray-600">
-                                {{ getFundTypeKorean(fundingData.fundType) }} 상품 제공 · 
+                                {{ getFundTypeKorean(fundingData.fundType) }} 상품 제공 ·
                                 <span v-if="fundingData.createdAt">
-                                    {{ new Date(fundingData.createdAt).toLocaleDateString('ko-KR') }} 등록
+                                    {{
+                                        new Date(fundingData.createdAt).toLocaleDateString('ko-KR')
+                                    }}
+                                    등록
                                 </span>
                             </p>
                         </div>
@@ -286,12 +293,14 @@ const fetchFundingDetail = async () => {
         let userChallengeId = null
         if (data.fundType === 'Challenge') {
             try {
-                console.log(
-                    '챌린지 참여 정보 조회 시작 - fundId:',
-                    data.fundId,
-                    'data.id:',
-                    data.id,
-                )
+                console.log('=== 챌린지 참여 정보 조회 시작 ===')
+                console.log('현재 펀딩 정보:', {
+                    fundId: data.fundId,
+                    id: data.id,
+                    fundType: data.fundType,
+                    name: data.name,
+                })
+
                 const userChallengesResponse = await api.get(`/user-challenge/user/all/v2`, {
                     headers: {
                         Authorization: `Bearer ${authStore.token}`,
@@ -300,27 +309,24 @@ const fetchFundingDetail = async () => {
                 const userChallenges = userChallengesResponse.data
                 console.log('사용자 챌린지 목록:', userChallenges)
 
-                // productId로 매칭 시도 (백엔드 DTO 구조에 맞춤)
+                // name과 challengeName으로 매칭 시도
                 let userChallenge = userChallenges.find(
-                    (challenge) => challenge.productId === data.fundId,
+                    (challenge) => challenge.challengeName === data.name,
                 )
-
-                if (!userChallenge) {
-                    userChallenge = userChallenges.find(
-                        (challenge) => challenge.productId === data.id,
-                    )
-                }
 
                 if (userChallenge) {
                     userChallengeId = userChallenge.userChallengeId
-                    console.log(
-                        '사용자 챌린지 ID 찾음:',
-                        userChallengeId,
-                        '매칭된 챌린지:',
-                        userChallenge,
-                    )
+                    console.log('=== 챌린지 매칭 성공 ===')
+                    console.log('매칭된 챌린지 정보:', userChallenge)
+                    console.log('설정된 userChallengeId:', userChallengeId)
                 } else {
+                    console.log('=== 챌린지 매칭 실패 ===')
                     console.log('해당 펀딩의 챌린지 참여 정보를 찾을 수 없음')
+                    console.log('찾으려는 펀딩 이름:', data.name)
+                    console.log(
+                        '사용자 챌린지 목록의 challengeName들:',
+                        userChallenges.map((c) => c.challengeName),
+                    )
                 }
             } catch (error) {
                 console.warn('사용자 챌린지 정보 조회 실패:', error)
@@ -505,15 +511,29 @@ const handleParticipate = () => {
 // 기업별 스타일 가져오기
 const getCompanyStyle = (companyName) => {
     const styles = {
-        '신한은행': { bg: 'bg-gradient-to-br from-blue-100 to-blue-200', text: 'text-blue-600' },
-        '우리은행': { bg: 'bg-gradient-to-br from-sky-100 to-sky-200', text: 'text-sky-600' },
-        'KB국민은행': { bg: 'bg-gradient-to-br from-yellow-100 to-yellow-200', text: 'text-yellow-600' },
-        '하나은행': { bg: 'bg-gradient-to-br from-green-100 to-green-200', text: 'text-green-600' },
-        'NH농협': { bg: 'bg-gradient-to-br from-emerald-100 to-emerald-200', text: 'text-emerald-600' },
-        '카카오뱅크': { bg: 'bg-gradient-to-br from-amber-100 to-amber-200', text: 'text-amber-600' },
-        '토스뱅크': { bg: 'bg-gradient-to-br from-indigo-100 to-indigo-200', text: 'text-indigo-600' },
+        신한은행: { bg: 'bg-gradient-to-br from-blue-100 to-blue-200', text: 'text-blue-600' },
+        우리은행: { bg: 'bg-gradient-to-br from-sky-100 to-sky-200', text: 'text-sky-600' },
+        KB국민은행: {
+            bg: 'bg-gradient-to-br from-yellow-100 to-yellow-200',
+            text: 'text-yellow-600',
+        },
+        하나은행: { bg: 'bg-gradient-to-br from-green-100 to-green-200', text: 'text-green-600' },
+        NH농협: {
+            bg: 'bg-gradient-to-br from-emerald-100 to-emerald-200',
+            text: 'text-emerald-600',
+        },
+        카카오뱅크: { bg: 'bg-gradient-to-br from-amber-100 to-amber-200', text: 'text-amber-600' },
+        토스뱅크: {
+            bg: 'bg-gradient-to-br from-indigo-100 to-indigo-200',
+            text: 'text-indigo-600',
+        },
     }
-    return styles[companyName] || { bg: 'bg-gradient-to-br from-gray-100 to-gray-200', text: 'text-gray-600' }
+    return (
+        styles[companyName] || {
+            bg: 'bg-gradient-to-br from-gray-100 to-gray-200',
+            text: 'text-gray-600',
+        }
+    )
 }
 
 // 좋아요 토글
@@ -560,7 +580,7 @@ onMounted(() => {
     console.log('현재 유저 role:', authStore.userRole)
 
     fetchFundingDetail()
-    
+
     // 가입 완료 후 돌아온 경우 참여자 수 증가
     if (route.query.joined === 'true') {
         // 약간의 딜레이 후 참여자 수 증가 (데이터 로드 후 적용)
@@ -568,11 +588,11 @@ onMounted(() => {
             if (fundingData.value) {
                 fundingData.value.participantCount = (fundingData.value.participantCount || 0) + 1
                 console.log('참여자 수 업데이트:', fundingData.value.participantCount)
-                
+
                 // query parameter 제거 (새로고침 시 중복 증가 방지)
-                router.replace({ 
+                router.replace({
                     path: route.path,
-                    query: {}
+                    query: {},
                 })
             }
         }, 1000)
