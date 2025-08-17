@@ -6,7 +6,7 @@
         <!-- 썸네일 -->
         <div class="w-full h-48 bg-kb-ui-10 rounded-xl overflow-hidden mb-4">
             <img
-                :src="project.image"
+                :src="project.thumbnailUrl"
                 :alt="project.title"
                 class="w-full h-full object-cover object-top"
             />
