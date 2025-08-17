@@ -66,7 +66,6 @@ import { ref, onMounted, computed } from 'vue'
 import { useRoute } from 'vue-router'
 import { getLoanApplicants } from '@/api/adminApi'
 import { approveLoan, rejectLoan, processLoanPayment } from '@/api/userLoanApi'
-
 import ApplicantList from '@/components/admin/ApplicantList.vue'
 import ConfirmationModal from '@/components/common/ConfirmationModal.vue'
 import { useAuthStore } from '@/stores/auth'
@@ -194,8 +193,17 @@ const callApiAction = async (type, userLoanId) => {
             reject: rejectLoan,
             pay: processLoanPayment,
         }
-        // [수정] 각 API 함수 호출 시 authStore.token 전달
         await apiMap[type](userLoanId, authStore.token)
+
+        // --- [추가] API 성공 후 화면 데이터 즉시 업데이트 ---
+        const targetIndex = allApplicants.value.findIndex(
+            (applicant) => applicant.userLoanId === userLoanId,
+        )
+
+        if (targetIndex !== -1) {
+            const newStatusMap = { approve: 'APPROVED', reject: 'REJECTED', pay: 'PAID' }
+            allApplicants.value[targetIndex].status = newStatusMap[type]
+        }
 
         // ... (성공 시 데이터 업데이트 로직은 동일)
     } catch (err) {

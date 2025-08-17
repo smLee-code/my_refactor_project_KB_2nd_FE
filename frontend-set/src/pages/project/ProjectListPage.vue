@@ -68,6 +68,9 @@ import Pagination from '@/components/common/Pagination.vue'
 import '@/assets/styles/projectList.css'
 import { useAuthStore } from '@/stores/auth'
 
+// api import
+import { getProjects } from '@/api/projectApi'
+
 const currentPage = ref(1)
 const itemsPerPage = 9 // 한 페이지당 카드 수 (3열 * 3행 기준, 필요시 조정)
 const totalPages = computed(() => {
@@ -243,13 +246,14 @@ const toggleLike = async (projectId) => {
 /* ---------- 데이터 로딩 ---------- */
 onMounted(async () => {
     try {
-        const res = await axios.get('/project/list', {
-            headers: {
-                Authorization: `Bearer ${authStore.loadToken()}`,
-            },
-        }) // DB에서 받아온 응답
+        // const res = await axios.get('/project/list', {
+        //     headers: {
+        //         Authorization: `Bearer ${authStore.loadToken()}`,
+        //     },
+        // }) // DB에서 받아온 응답
+        const res = await getProjects()
 
-        projects.value = res.data.map((item) => {
+        projects.value = res.map((item) => {
             const createdAt = toDate(item.createAt)
             const deadline = toDate(item.deadline)
 
@@ -268,11 +272,14 @@ onMounted(async () => {
                 proposer: `작성자 ${item.userId}`,
 
                 type: item.projectType || '기타',
-                image: pickImageUrl(item),
                 description: item.promotion || '설명이 없습니다.',
 
                 likes: item.likes ?? 0,
                 isLiked: item.isLiked,
+
+                images: item.images,
+                thumbnailImage: item.thumbnailImage,
+                thumbnailUrl: item.thumbnailUrl,
 
                 status:
                     item.progress === 'Active'
@@ -283,7 +290,7 @@ onMounted(async () => {
             }
         })
 
-        console.log('⏹️res data: ', res.data)
+        console.log('⏹️res data: ', res)
         console.log('⏹️projects value: ', projects.value)
     } catch (err) {
         console.error('❌ 프로젝트 불러오기 실패:', err)

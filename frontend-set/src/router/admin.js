@@ -18,6 +18,18 @@ const adminRoutes = [
             requiresAdmin: true,
         },
     },
+    {
+        path: '/admin/challenge/:fundId/participants',
+        name: 'ChallengeParticipantList',
+        component: () => import('@/pages/admin/ChallengeParticipantListPage.vue'),
+        meta: { requiresAuth: true, requiresAdmin: true },
+    },
+    {
+        path: '/admin/challenge/logs/:userChallengeId',
+        name: 'ChallengeLogVerification',
+        component: () => import('@/pages/admin/ChallengeLogVerificationPage.vue'),
+        meta: { requiresAuth: true, requiresAdmin: true },
+    },
 ]
 
 export default adminRoutes

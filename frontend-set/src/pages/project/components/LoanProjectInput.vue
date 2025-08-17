@@ -7,10 +7,11 @@
                 대출 한도 <span class="text-red-500">*</span>
             </label>
             <input
-                v-model="form.loanLimit"
-                type="number"
+                v-model="displayLoanLimit"
+                type="text"
                 class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
                 placeholder="대출 한도를 입력하세요"
+                @input="handleLoanLimitInput"
                 required
             />
         </div>
@@ -62,6 +63,30 @@ const form = ref({
     desiredInterestRate: 0.0,
     reward: '',
     rewardCondition: '',
+})
+
+const displayLoanLimit = ref('')
+
+const formatNumber = (num) => {
+    if (!num) return ''
+    return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',')
+}
+
+const parseNumber = (str) => {
+    return parseInt(str.replace(/,/g, '')) || 0
+}
+
+const handleLoanLimitInput = (event) => {
+    const value = event.target.value
+    const numericValue = parseNumber(value)
+    form.value.loanLimit = numericValue
+    displayLoanLimit.value = formatNumber(numericValue)
+}
+
+watch(() => form.value.loanLimit, (newVal) => {
+    if (newVal && displayLoanLimit.value !== formatNumber(newVal)) {
+        displayLoanLimit.value = formatNumber(newVal)
+    }
 })
 
 const isFormValid = computed(() => {
