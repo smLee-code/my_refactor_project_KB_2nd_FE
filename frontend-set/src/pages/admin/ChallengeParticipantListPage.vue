@@ -2,7 +2,7 @@
     <div class="min-h-screen bg-gray-50 p-8">
         <div class="container mx-auto">
             <h1 class="text-3xl font-bold text-gray-900 mb-2">챌린지 참여자 관리</h1>
-            <p class="text-gray-600 mb-8">펀딩 ID: {{ fundId }}</p>
+            <p class="text-gray-600 mb-8"></p>
 
             <div v-if="isLoading" class="text-center py-20">
                 <div
@@ -33,11 +33,11 @@
                             >
                                 성공/실패
                             </th>
-                            <th
+                            <!-- <th
                                 class="px-6 py-3 text-left text-xs font-bold text-gray-600 uppercase"
                             >
                                 참여일
-                            </th>
+                            </th> -->
                             <th
                                 class="px-6 py-3 text-center text-xs font-bold text-gray-600 uppercase"
                             >
@@ -63,9 +63,9 @@
                                 /
                                 <span class="text-red-600 font-semibold">{{ p.failCount }}회</span>
                             </td>
-                            <td class="px-6 py-4 text-sm text-gray-600">
+                            <!-- <td class="px-6 py-4 text-sm text-gray-600">
                                 {{ formatDate(p.joinAt) }}
-                            </td>
+                            </td> -->
                             <td class="px-6 py-4 text-center">
                                 <router-link
                                     :to="`/admin/challenge/logs/${p.userChallengeId}`"

@@ -2,7 +2,6 @@
     <div class="min-h-screen bg-gray-50 p-8">
         <div class="container mx-auto">
             <h1 class="text-3xl font-bold text-gray-900 mb-2">참여자 인증 기록 관리</h1>
-            <p class="text-gray-600 mb-8">참여 ID: {{ userChallengeId }}</p>
 
             <div class="mb-6 border-b border-gray-200">
                 <nav class="-mb-px flex space-x-6">
@@ -39,7 +38,9 @@
                     <img :src="log.imageUrl" alt="인증샷" class="w-full h-56 object-cover" />
                     <div class="p-4 flex-grow flex flex-col">
                         <div class="mb-2">
-                            <span class="font-bold text-gray-800">{{ log.logDate }} 인증</span>
+                            <span class="font-bold text-gray-800"
+                                >{{ formatDate(log.logDate) }} 인증</span
+                            >
                             <span
                                 class="ml-2 px-2 py-1 text-xs rounded-full"
                                 :class="statusClass(log.verified)"
@@ -190,12 +191,20 @@ const processVerification = async (logId, isApproved) => {
     }
 }
 
-// ◀ 5. 확인 모달에서 '확인'을 눌렀을 때 실행될 함수
+// 확인 모달에서 '확인'을 눌렀을 때 실행될 함수
 const executeConfirmation = () => {
     if (confirmationModal.value.action) {
         confirmationModal.value.action()
     }
     confirmationModal.value.show = false
+}
+
+// 날짜 포맷팅 함수
+const formatDate = (dateArray) => {
+    if (!dateArray || dateArray.length < 3) return '날짜 정보 없음'
+    const [year, month, day] = dateArray
+    // 월과 일이 한 자릿수일 때 앞에 0을 붙여줍니다.
+    return `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`
 }
 
 const statusText = (status) =>
