@@ -286,7 +286,7 @@ const formData = ref({
   progress: 'Launch',
   launchDate: '',
   endDate: '',
-  financialInstitution: '하나은행', // 임시값
+  financialInstitution: '국민은행', // 임시값
   keywordIds: []
 })
 
