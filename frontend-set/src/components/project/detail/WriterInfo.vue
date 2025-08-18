@@ -2,19 +2,16 @@
     <div v-if="detail && detail.basicInfo" class="bg-white rounded-xl shadow-lg p-6">
         <h3 class="text-lg font-semibold text-gray-900 mb-4">작성자 정보</h3>
         <div class="flex items-center space-x-4 mb-4">
-            <div class="w-12 h-12 bg-gray-300 rounded-full flex items-center justify-center">
-                <i class="fas fa-user text-gray-600"></i>
-            </div>
             <div>
-                <h4 class="font-medium text-gray-900">{{ detail.basicInfo.nickname }}</h4>
+                <h4
+                    class="text-xl font-bold text-gray-900 mb-2 bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent"
+                >
+                    {{ detail.basicInfo.nickname
+                    }}<span class="text-lg text-gray-400 font-normal"> 님</span>
+                </h4>
                 <div class="flex items-center gap-1">
                     <!-- <p class="text-sm text-gray-600 m-0">뱃지등급:</p> -->
-                    <img
-                        v-for="badge in detail.basicInfo.badges"
-                        :key="badge.badgeId"
-                        class="w-8 h-8"
-                        :src="`/images/badges/${badge.badgeId}.webp`"
-                    />
+                    <BadgeDisplay :badges="detail.basicInfo.badges || []" />
                 </div>
             </div>
         </div>
@@ -40,6 +37,7 @@
 
 <script setup>
 import { computed } from 'vue'
+import BadgeDisplay from '@/components/common/BadgeDisplay.vue'
 
 defineProps({
     detail: Object,
