@@ -3,13 +3,26 @@
 // 날짜 기반 진행률 계산
 const calculateTimeProgress = (launchAt, endAt) => {
     try {
+        // 배열 형태: [year, month, day, hour, minute, second] 또는 [year, month, day]
         const launchDate = Array.isArray(launchAt) 
-            ? new Date(launchAt[0], launchAt[1] - 1, launchAt[2])
+            ? new Date(launchAt[0], (launchAt[1] || 1) - 1, launchAt[2] || 1, launchAt[3] || 0, launchAt[4] || 0, launchAt[5] || 0)
             : new Date(launchAt)
         const endDate = Array.isArray(endAt)
-            ? new Date(endAt[0], endAt[1] - 1, endAt[2])
+            ? new Date(endAt[0], (endAt[1] || 1) - 1, endAt[2] || 1, endAt[3] || 0, endAt[4] || 0, endAt[5] || 0)
             : new Date(endAt)
         const today = new Date()
+        
+        // 아직 시작하지 않은 펀딩인 경우 0% 반환
+        if (today < launchDate) {
+            console.log('펀딩이 아직 시작되지 않음 - 진행률 0%')
+            return 0
+        }
+        
+        // 이미 종료된 펀딩인 경우 100% 반환
+        if (today > endDate) {
+            console.log('펀딩이 이미 종료됨 - 진행률 100%')
+            return 100
+        }
         
         const totalDuration = endDate - launchDate
         const elapsedDuration = today - launchDate
@@ -24,40 +37,17 @@ const calculateTimeProgress = (launchAt, endAt) => {
     return 0
 }
 
-// 가중 평균 방식으로 펀딩 진행률 계산
+// 날짜 기반으로만 펀딩 진행률 계산
 export const calculateFundingProgress = (fund) => {
-    let progress = 0
-    let weights = 0
-    
-    // 1. 날짜 기반 진행률 (가중치 80%)
+    // 날짜 기반 진행률만 사용
     if (fund.launchAt && fund.endAt) {
         const timeProgress = calculateTimeProgress(fund.launchAt, fund.endAt)
-        progress += timeProgress * 0.8
-        weights += 0.8
+        // 최대 100%로 제한
+        return Math.min(100, Math.max(0, timeProgress))
     }
     
-    // 2. 참여 인원 기반 진행률 (가중치 15%)
-    if (fund.participantCount !== undefined || fund.retryVotesCount !== undefined) {
-        const participantCount = fund.participantCount || fund.retryVotesCount || 0
-        // 목표 인원이 없으면 100명 기준
-        const targetParticipants = fund.targetParticipantCount || 100
-        const participantProgress = Math.min(100, (participantCount / targetParticipants) * 100)
-        progress += participantProgress * 0.15
-        weights += 0.15
-    }
-    
-    // 3. 기부형인 경우 목표금액 진행률 추가 (가중치 5%)
-    if (fund.fundType === 'Donation' && fund.targetAmount && fund.currentAmount !== undefined) {
-        const amountProgress = Math.min(100, (fund.currentAmount / fund.targetAmount) * 100)
-        progress += amountProgress * 0.05
-        weights += 0.05
-    }
-    
-    // 가중치로 나누어 최종 진행률 계산
-    const finalProgress = weights > 0 ? Math.round(progress / weights) : 0
-    
-    // 최대 100%로 제한
-    return Math.min(100, Math.max(0, finalProgress))
+    // 날짜 정보가 없으면 0% 반환
+    return 0
 }
 
 // 펀딩 타입 한글 변환

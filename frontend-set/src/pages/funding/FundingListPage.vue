@@ -49,6 +49,8 @@
                     :likes="funding.retryVotesCount || 0"
                     :participants="funding.participantCount || 0"
                     :progress="calculateFundingProgress(funding)"
+                    :targetAmount="funding.targetAmount || 0"
+                    :currentAmount="funding.currentAmount || 0"
                 />
             </div>
             <!-- 페이지네이션 -->
@@ -250,7 +252,7 @@ onMounted(async () => {
             end: endRes.data
         })
         
-        // 각 펀딩의 상세 정보에서 participantCount 가져오기
+        // 각 펀딩의 상세 정보에서 participantCount, currentAmount, targetAmount 가져오기
         const fetchParticipantCounts = async (funds) => {
             return await Promise.all(
                 funds.map(async (fund) => {
@@ -258,13 +260,17 @@ onMounted(async () => {
                         const detailRes = await axios.get(`${import.meta.env.VITE_API_URL}/api/fund/${fund.fundId}`)
                         return {
                             ...fund,
-                            participantCount: detailRes.data.participantCount || 0
+                            participantCount: detailRes.data.participantCount || 0,
+                            currentAmount: detailRes.data.currentAmount || 0,
+                            targetAmount: detailRes.data.targetAmount || 0
                         }
                     } catch (error) {
                         console.warn(`펀딩 ${fund.fundId} 상세 정보 조회 실패:`, error)
                         return {
                             ...fund,
-                            participantCount: 0
+                            participantCount: 0,
+                            currentAmount: 0,
+                            targetAmount: 0
                         }
                     }
                 })
