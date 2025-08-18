@@ -234,25 +234,30 @@ const getProgressValue = () => {
     }
 }
 
-// 실제 진행률 계산 (기부 펀딩은 목표 대비 현재 금액으로 계산, 챌린지는 날짜 기반)
+// 실제 진행률 계산
 const getActualProgress = () => {
+    console.log(`[FundingProgressCard] fundType: ${props.fundType}, launchAt:`, props.launchAt, ', endAt:', props.endAt)
+    
     // 기부형: 목표 금액 대비 현재 금액으로 계산
     if (props.fundType === 'Donation' && props.targetAmount > 0) {
         const calculatedProgress = (props.currentAmount / props.targetAmount) * 100
         return Math.min(100, Math.round(calculatedProgress * 10) / 10) // 소수점 1자리, 최대 100%
     }
     
-    // 챌린지형: 날짜 기반 진행률 계산 (리스트와 동일)
-    if (props.fundType === 'Challenge' && props.launchAt && props.endAt) {
+    // 저축형, 대출형, 챌린지형: 날짜 기반 진행률 계산 (리스트와 동일)
+    if ((props.fundType === 'Savings' || props.fundType === 'Loan' || props.fundType === 'Challenge') && props.launchAt && props.endAt) {
         const fundData = {
             launchAt: props.launchAt,
             endAt: props.endAt
         }
-        return Math.round(calculateFundingProgress(fundData) * 10) / 10 // 소수점 1자리
+        const progress = calculateFundingProgress(fundData)
+        console.log(`[FundingProgressCard] 계산된 진행률: ${progress}%`)
+        return Math.round(progress * 10) / 10 // 소수점 1자리
     }
     
-    // 저축형, 대출형: 백엔드에서 받은 진행률 사용
-    return props.progressPercentage
+    // 날짜 정보가 없으면 0 반환
+    console.log(`[FundingProgressCard] 날짜 정보 없음 - 진행률 0% 반환`)
+    return 0
 }
 </script>
 

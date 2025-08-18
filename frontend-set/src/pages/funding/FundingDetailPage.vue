@@ -504,6 +504,16 @@ const fetchFundingDetail = async () => {
                 return calculateFundingProgress(data)
             }
 
+            // 펀딩 데이터 디버깅
+            console.log('=== 펀딩 ID', data.fundId, '데이터 ===')
+            console.log('fundType:', data.fundType)
+            console.log('launchAt:', data.launchAt)
+            console.log('endAt:', data.endAt)
+            console.log('targetAmount:', data.targetAmount)
+            console.log('currentAmount:', data.currentAmount)
+            console.log('progressPercentage (from API):', data.progressPercentage)
+            console.log('===========================')
+            
             // 펀딩 데이터 설정
             fundingData.value = {
                 id: data.fundId,

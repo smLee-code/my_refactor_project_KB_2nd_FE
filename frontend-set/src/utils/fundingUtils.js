@@ -12,6 +12,18 @@ const calculateTimeProgress = (launchAt, endAt) => {
             : new Date(endAt)
         const today = new Date()
         
+        // 아직 시작하지 않은 펀딩인 경우 0% 반환
+        if (today < launchDate) {
+            console.log('펀딩이 아직 시작되지 않음 - 진행률 0%')
+            return 0
+        }
+        
+        // 이미 종료된 펀딩인 경우 100% 반환
+        if (today > endDate) {
+            console.log('펀딩이 이미 종료됨 - 진행률 100%')
+            return 100
+        }
+        
         const totalDuration = endDate - launchDate
         const elapsedDuration = today - launchDate
         
