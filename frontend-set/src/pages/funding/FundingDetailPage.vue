@@ -89,6 +89,7 @@
             <SourceProjectSection
                 v-if="!isLoading && fundingData && fundingData.projectId"
                 :project-id="fundingData.projectId"
+                @view-project-detail="goToProjectDetail"
             />
 
             <SavingsFundingDetailSection
@@ -651,6 +652,11 @@ const fetchRecommendedFunds = async () => {
     } finally {
         isRecommendLoading.value = false
     }
+}
+
+// 프로젝트 상세 페이지로 이동
+const goToProjectDetail = (projectId) => {
+    router.push(`/project/detail/${projectId}`)
 }
 
 // 펀딩 상세 페이지로 이동
