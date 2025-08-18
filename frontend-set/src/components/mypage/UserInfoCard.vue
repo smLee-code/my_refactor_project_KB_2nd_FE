@@ -7,9 +7,7 @@
                     <div>
                         <label class="block text-sm font-medium text-gray-600 mb-1">이름</label>
                         <div v-if="!editMode">
-                            <p class="text-lg text-gray-900">
-                                {{ userInfo.username || '로딩 중...' }}
-                            </p>
+                            <p class="text-lg text-gray-900">{{ userInfo.username || '...' }}</p>
                         </div>
                         <div v-else>
                             <input
@@ -26,9 +24,7 @@
                     <div>
                         <label class="block text-sm font-medium text-gray-600 mb-1">닉네임</label>
                         <div v-if="!editMode">
-                            <p class="text-lg text-gray-900">
-                                {{ userInfo.nickname || '로딩 중...' }}
-                            </p>
+                            <p class="text-lg text-gray-900">{{ userInfo.nickname || '...' }}</p>
                         </div>
                         <div v-else>
                             <input
@@ -44,9 +40,7 @@
                     <div class="w-4 h-4 bg-yellow-400 rounded-full"></div>
                     <div>
                         <label class="block text-sm font-medium text-gray-600 mb-1">이메일</label>
-                        <p class="text-lg text-gray-900">
-                            {{ userInfo.email || '로딩 중...' }}
-                        </p>
+                        <p class="text-lg text-gray-900">{{ userInfo.email || '...' }}</p>
                     </div>
                 </div>
             </div>
@@ -56,9 +50,7 @@
                     <div>
                         <label class="block text-sm font-medium text-gray-600 mb-1">전화번호</label>
                         <div v-if="!editMode">
-                            <p class="text-lg text-gray-900">
-                                {{ userInfo.phoneNumber || '로딩 중...' }}
-                            </p>
+                            <p class="text-lg text-gray-900">{{ userInfo.phoneNumber || '...' }}</p>
                         </div>
                         <div v-else>
                             <input
@@ -77,17 +69,8 @@
                         <p class="text-lg text-gray-900">
                             {{
                                 userInfo.createAt
-                                    ? (() => {
-                                          try {
-                                              const date = new Date(userInfo.createAt)
-                                              return isNaN(date.getTime())
-                                                  ? '날짜 정보 없음'
-                                                  : date.toLocaleDateString('ko-KR')
-                                          } catch (err) {
-                                              return '날짜 정보 없음'
-                                          }
-                                      })()
-                                    : '로딩 중...'
+                                    ? new Date(userInfo.createAt).toLocaleDateString('ko-KR')
+                                    : '...'
                             }}
                         </p>
                     </div>
@@ -107,22 +90,18 @@
                                     v-for="keyword in userInfo.keywords"
                                     :key="keyword.keywordId || keyword"
                                     class="bg-gray-100 text-gray-800 px-3 py-1 rounded-full text-sm"
+                                    >{{ keyword.name || keyword }}</span
                                 >
-                                    {{ keyword.name || keyword }}
-                                </span>
                             </div>
                             <div v-else class="text-gray-500 text-sm">
                                 설정된 관심 키워드가 없습니다.
                             </div>
                         </div>
                         <div v-else class="space-y-3">
-                            <div class="flex items-center justify-between">
-                                <span class="text-sm text-gray-600"
-                                    >{{ editForm.selectedKeywordIds.length }}/3 선택됨</span
-                                >
-                            </div>
                             <p class="text-sm text-gray-600">
-                                관심 있는 키워드를 3개 선택해주세요.
+                                관심 있는 키워드를 3개 선택해주세요. ({{
+                                    editForm.selectedKeywordIds.length
+                                }}/3)
                             </p>
                             <div class="flex flex-wrap gap-2">
                                 <button
@@ -154,8 +133,6 @@
                         </div>
                     </div>
                 </div>
-
-                <!-- 뱃지 섹션 -->
                 <div class="flex items-start space-x-4">
                     <div class="w-4 h-4 bg-yellow-400 rounded-full mt-1"></div>
                     <div class="w-full">
@@ -203,14 +180,8 @@ import { updateAccountInfo, updateMyKeywords, getMyKeywords } from '@/api/mypage
 import BadgeDisplay from '@/components/common/BadgeDisplay.vue'
 
 const props = defineProps({
-    userInfo: {
-        type: Object,
-        required: true,
-    },
-    loading: {
-        type: Boolean,
-        default: false,
-    },
+    userInfo: { type: Object, required: true },
+    loading: { type: Boolean, default: false },
 })
 
 const emit = defineEmits(['update:userInfo', 'update-completed'])
@@ -221,32 +192,29 @@ const editForm = reactive({
     username: '',
     nickname: '',
     phoneNumber: '',
-    keywords: [],
     selectedKeywordIds: [],
 })
 
-// 사용 가능한 키워드 로드
+const modalState = reactive({
+    show: false,
+    type: 'success',
+    title: '',
+    message: '',
+})
+
 const loadAvailableKeywords = async () => {
     try {
-        const keywords = await getMyKeywords()
-        availableKeywords.value = keywords
+        availableKeywords.value = await getMyKeywords()
     } catch (err) {
         console.error('키워드 로드 실패:', err)
-        // Mock 데이터로 대체
         availableKeywords.value = [
             { keywordId: 1, name: '기술' },
             { keywordId: 2, name: '환경' },
             { keywordId: 3, name: '문화' },
-            { keywordId: 4, name: '교육' },
-            { keywordId: 5, name: '건강' },
-            { keywordId: 6, name: '여행' },
-            { keywordId: 7, name: '음식' },
-            { keywordId: 8, name: '스포츠' },
         ]
     }
 }
 
-// 사용자 정보가 변경될 때 수정 폼 초기화
 watch(
     () => props.userInfo,
     (newUserInfo) => {
@@ -254,19 +222,9 @@ watch(
             editForm.username = newUserInfo.username || ''
             editForm.nickname = newUserInfo.nickname || ''
             editForm.phoneNumber = newUserInfo.phoneNumber || ''
-            editForm.keywords = [...(newUserInfo.keywords || [])]
-            // 키워드 ID 추출 로직 개선
             editForm.selectedKeywordIds = (newUserInfo.keywords || [])
-                .map((k) => {
-                    if (typeof k === 'object' && k.keywordId) {
-                        return k.keywordId
-                    } else if (typeof k === 'number') {
-                        return k
-                    } else {
-                        return null
-                    }
-                })
-                .filter((id) => id !== null)
+                .map((k) => k.keywordId)
+                .filter((id) => id)
         }
     },
     { immediate: true },
@@ -278,123 +236,60 @@ const toggleEditMode = () => {
         editForm.username = props.userInfo.username
         editForm.nickname = props.userInfo.nickname
         editForm.phoneNumber = props.userInfo.phoneNumber
-        editForm.keywords = [...(props.userInfo.keywords || [])]
-        // 키워드 ID 추출 로직 개선
         editForm.selectedKeywordIds = (props.userInfo.keywords || [])
-            .map((k) => {
-                if (typeof k === 'object' && k.keywordId) {
-                    return k.keywordId
-                } else if (typeof k === 'number') {
-                    return k
-                } else {
-                    return null
-                }
-            })
-            .filter((id) => id !== null)
-    } else {
-        // 수정 모드 진입 시 현재 선택된 키워드들로 초기화
-        console.log('수정 모드 진입 - 기존 키워드:', props.userInfo.keywords)
-        editForm.selectedKeywordIds = (props.userInfo.keywords || [])
-            .map((k) => {
-                if (typeof k === 'object' && k.keywordId) {
-                    return k.keywordId
-                } else if (typeof k === 'number') {
-                    return k
-                } else {
-                    return null
-                }
-            })
-            .filter((id) => id !== null)
-        console.log('수정 모드 진입 - 선택된 키워드 ID:', editForm.selectedKeywordIds)
+            .map((k) => k.keywordId)
+            .filter((id) => id)
     }
     editMode.value = !editMode.value
 }
 
 const toggleKeyword = (keywordId) => {
-    console.log(
-        '키워드 토글 - keywordId:',
-        keywordId,
-        '현재 선택된 키워드:',
-        editForm.selectedKeywordIds,
-    )
-    if (editForm.selectedKeywordIds.includes(keywordId)) {
-        editForm.selectedKeywordIds = editForm.selectedKeywordIds.filter((id) => id !== keywordId)
-        console.log('키워드 해제됨 - 새로운 선택된 키워드:', editForm.selectedKeywordIds)
-    } else {
-        if (editForm.selectedKeywordIds.length < 3) {
-            editForm.selectedKeywordIds.push(keywordId)
-            console.log('키워드 선택됨 - 새로운 선택된 키워드:', editForm.selectedKeywordIds)
-        } else {
-            console.log('최대 3개까지만 선택 가능')
-        }
+    const index = editForm.selectedKeywordIds.indexOf(keywordId)
+    if (index > -1) {
+        editForm.selectedKeywordIds.splice(index, 1)
+    } else if (editForm.selectedKeywordIds.length < 3) {
+        editForm.selectedKeywordIds.push(keywordId)
     }
 }
 
 const updateUserInfo = async () => {
     try {
-        // 키워드가 변경된 경우 별도로 업데이트
-        const currentKeywordIds = (props.userInfo.keywords || [])
-            .map((k) => {
-                if (typeof k === 'object' && k.keywordId) {
-                    return k.keywordId
-                } else if (typeof k === 'number') {
-                    return k
-                } else {
-                    return null
-                }
-            })
-            .filter((id) => id !== null)
-
-        if (
-            JSON.stringify(editForm.selectedKeywordIds.sort()) !==
-            JSON.stringify(currentKeywordIds.sort())
-        ) {
-            await updateMyKeywords(editForm.selectedKeywordIds, availableKeywords.value)
-        }
-
-        // 기본 정보 업데이트
         await updateAccountInfo({
             username: editForm.username,
             nickname: editForm.nickname,
             phoneNumber: editForm.phoneNumber,
         })
 
-        // 성공 시 부모 컴포넌트에 업데이트된 정보 전달
+        await updateMyKeywords(editForm.selectedKeywordIds, availableKeywords.value)
+
         const updatedUserInfo = {
             ...props.userInfo,
             username: editForm.username,
             nickname: editForm.nickname,
             phoneNumber: editForm.phoneNumber,
-            keywords: editForm.selectedKeywordIds.map((id) => {
-                const keyword = availableKeywords.value.find((k) => k.keywordId === id)
-                return keyword || { keywordId: id, name: `키워드 ${id}` }
-            }),
+            keywords: editForm.selectedKeywordIds.map((id) =>
+                availableKeywords.value.find((k) => k.keywordId === id),
+            ),
         }
 
-        // 부모 컴포넌트에 업데이트된 정보 전달
         emit('update:userInfo', updatedUserInfo)
-
-        // 업데이트 완료 알림
         emit('update-completed')
-
-        // 수정 모드 종료
         editMode.value = false
 
-        // 성공 메시지 표시
-        alert('개인정보가 성공적으로 수정되었습니다.')
+        modalState.show = true
+        modalState.type = 'success'
+        modalState.title = '수정 완료'
+        modalState.message = '개인정보가 성공적으로 수정되었습니다.'
     } catch (err) {
         console.error('개인정보 수정 실패:', err)
-        if (err.response?.status === 401) {
-            alert('인증이 만료되었습니다. 다시 로그인해주세요.')
-        } else {
-            alert(err.response?.data?.error || '개인정보 수정에 실패했습니다.')
-        }
+        modalState.show = true
+        modalState.type = 'error'
+        modalState.title = '수정 실패'
+        modalState.message = err.response?.data?.error || '개인정보 수정에 실패했습니다.'
     }
 }
 
-onMounted(() => {
-    loadAvailableKeywords()
-})
+onMounted(loadAvailableKeywords)
 </script>
 
 <style scoped>
