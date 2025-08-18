@@ -108,7 +108,7 @@
 
 <script setup>
 import { useAuthStore } from '@/stores/auth'
-import { ref, computed } from 'vue'
+import { ref, computed, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import axios from 'axios'
 
@@ -123,8 +123,20 @@ const loginError = ref('')
 const router = useRouter()
 const authStore = useAuthStore()
 
+// email 또는 password 값이 변경될 때 loginError를 초기화합니다.
+// 이를 통해 사용자가 로그인 실패 후 다시 입력을 시도할 때 버튼이 활성화됩니다.
+watch([email, password], () => {
+    loginError.value = ''
+})
+
 const isFormValid = computed(() => {
-    return email.value && password.value && !emailError.value && !passwordError.value
+    return (
+        email.value &&
+        password.value &&
+        !emailError.value &&
+        !passwordError.value &&
+        !loginError.value
+    )
 })
 
 const validateEmail = () => {
