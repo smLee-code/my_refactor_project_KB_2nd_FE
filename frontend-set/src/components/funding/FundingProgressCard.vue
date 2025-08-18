@@ -2,7 +2,7 @@
     <section class="mb-8">
         <div class="bg-white rounded-xl shadow-lg p-8 border border-gray-100">
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-6">
-                <div class="text-center">
+                <div v-if="fundType !== 'Challenge'" class="text-center">
                     <div class="text-xl sm:text-2xl font-bold text-gray-900 mb-1">
                         {{ formatCurrency(targetAmount) }}
                     </div>
@@ -14,7 +14,7 @@
                     </div>
                     <div class="text-sm text-gray-600">{{ getCurrentAmountLabel() }}</div>
                 </div>
-                <div class="text-center">
+                <div v-if="fundType !== 'Challenge' && fundType !== 'Donation'" class="text-center">
                     <div class="text-2xl font-bold text-green-600 mb-1">{{ interestRate }}%</div>
                     <div class="text-sm text-gray-600">이자율</div>
                 </div>
@@ -33,7 +33,7 @@
                 <div class="w-full bg-gray-200 rounded-full h-4 shadow-inner">
                     <div
                         class="bg-gradient-to-r from-yellow-400 to-yellow-500 h-4 rounded-full shadow-sm transition-all duration-500"
-                        :style="{ width: progressPercentage + '%' }"
+                        :style="{ width: getActualProgress() + '%' }"
                     ></div>
                 </div>
             </div>
@@ -102,6 +102,8 @@
 </template>
 
 <script setup>
+import { calculateFundingProgress } from '@/utils/fundingUtils'
+
 // Props 정의
 // @param {number} targetAmount - 목표 금액
 // @param {number} currentAmount - 현재 모금액
@@ -153,6 +155,14 @@ const props = defineProps({
     joined: {
         type: Boolean,
         default: false,
+    },
+    launchAt: {
+        type: [Array, String, Date],
+        default: null,
+    },
+    endAt: {
+        type: [Array, String, Date],
+        default: null,
     },
 })
 
@@ -210,17 +220,39 @@ const getProgressLabel = () => {
 }
 
 const getProgressValue = () => {
+    const progress = getActualProgress()
     switch (props.fundType) {
         case 'Savings':
-            return `${props.progressPercentage}% 달성`
+            return `${progress}% 달성`
         case 'Loan':
-            return `${props.progressPercentage}% 진행`
+            return `${progress}% 진행`
         case 'Donation':
         case 'Challenge':
-            return `${props.progressPercentage}% 달성`
+            return `${progress}% 달성`
         default:
-            return `${props.progressPercentage}%`
+            return `${progress}%`
     }
+}
+
+// 실제 진행률 계산 (기부 펀딩은 목표 대비 현재 금액으로 계산, 챌린지는 날짜 기반)
+const getActualProgress = () => {
+    // 기부형: 목표 금액 대비 현재 금액으로 계산
+    if (props.fundType === 'Donation' && props.targetAmount > 0) {
+        const calculatedProgress = (props.currentAmount / props.targetAmount) * 100
+        return Math.min(100, Math.round(calculatedProgress * 10) / 10) // 소수점 1자리, 최대 100%
+    }
+    
+    // 챌린지형: 날짜 기반 진행률 계산 (리스트와 동일)
+    if (props.fundType === 'Challenge' && props.launchAt && props.endAt) {
+        const fundData = {
+            launchAt: props.launchAt,
+            endAt: props.endAt
+        }
+        return Math.round(calculateFundingProgress(fundData) * 10) / 10 // 소수점 1자리
+    }
+    
+    // 저축형, 대출형: 백엔드에서 받은 진행률 사용
+    return props.progressPercentage
 }
 </script>
 

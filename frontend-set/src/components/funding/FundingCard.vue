@@ -27,9 +27,9 @@
                 <div class="mb-2">
                     <div class="flex justify-between text-sm text-gray-600 mb-1">
                         <span>진행률</span>
-                        <span>{{ progress }}%</span>
+                        <span>{{ getActualProgress() }}%</span>
                     </div>
-                    <ProgressBar :percent="progress" />
+                    <ProgressBar :percent="getActualProgress()" />
                 </div>
             </div>
         </div>
@@ -93,6 +93,14 @@ const props = defineProps({
         type: Number,
         default: 0, // 백엔드에서 퍼센트 없을 경우 대비
     },
+    targetAmount: {
+        type: Number,
+        default: 0,
+    },
+    currentAmount: {
+        type: Number,
+        default: 0,
+    },
 })
 
 const router = useRouter()
@@ -116,4 +124,15 @@ const categoryClass = computed(() => {
                   : 'bg-gray-400',
     ]
 })
+
+// 실제 진행률 계산 (기부 펀딩은 목표 대비 현재 금액으로 계산)
+const getActualProgress = () => {
+    // 기부형일 때 목표 금액과 현재 금액으로 계산
+    if (props.category === '기부형' && props.targetAmount > 0) {
+        const calculatedProgress = (props.currentAmount / props.targetAmount) * 100
+        return Math.min(100, Math.round(calculatedProgress * 10) / 10) // 소수점 1자리, 최대 100%
+    }
+    // 다른 펀딩 타입은 기존 progress 사용
+    return props.progress
+}
 </script>

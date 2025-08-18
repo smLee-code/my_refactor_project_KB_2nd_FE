@@ -43,6 +43,8 @@
                 :interest-rate="fundingData.interestRate"
                 :fund-type="fundingData.fundType"
                 :joined="fundingData.joined"
+                :launch-at="fundingData.launchAt"
+                :end-at="fundingData.endAt"
                 @participate="handleParticipate"
             />
 
@@ -515,6 +517,8 @@ const fetchFundingDetail = async () => {
                 endDate: formatDateArray(data.endAt),
                 startDate: formatDateArray(data.launchAt),
                 endDateForCertification: formatDateArray(data.endAt),
+                launchAt: data.launchAt,
+                endAt: data.endAt,
                 fundType: data.fundType || '',
                 name: data.name,
                 detail: data.detail,
