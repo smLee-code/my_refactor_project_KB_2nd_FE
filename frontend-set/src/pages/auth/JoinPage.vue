@@ -235,6 +235,11 @@
                 </div>
             </form>
         </div>
+        <div class="w-full min-h-screen py-8 px-4">
+            <ToastNotification :show="toast.show" :message="toast.message" :type="toast.type" />
+
+            <div class="w-full max-w-3xl mx-auto ..."></div>
+        </div>
     </div>
 </template>
 <script lang="ts" setup>
