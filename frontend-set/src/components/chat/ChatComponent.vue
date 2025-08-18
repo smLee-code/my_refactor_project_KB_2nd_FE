@@ -115,16 +115,16 @@ const loadHistory = async () => {
             console.log('✅ msg:', msg)
             const chatResponse = msg
 
-            const now = new Date(msg.timestamp) // Assuming msg.timestamp is available from backend
-            const hours = String(now.getHours()).padStart(2, '0')
-            const minutes = String(now.getMinutes()).padStart(2, '0')
-            const currentTime = `${hours}:${minutes}`
+            const [year, month, day, hour, minute] = msg.timestamp
+            const pad = (n) => n.toString().padStart(2, '0')
+            const currentTime = `${year}.${pad(month)}.${pad(day)} ${pad(hour)}:${pad(minute)}`
+
             return {
                 id: chatResponse.id,
                 content: chatResponse.content,
                 isSelf: chatResponse.userId === authStore.loadUserId(),
                 author: chatResponse.nickname, // UI 표시용
-                time: chatResponse.timestamp, // UI 표시용
+                time: currentTime, // UI 표시용
             }
         })
         console.log('불러온 메시지:', messages.value)
