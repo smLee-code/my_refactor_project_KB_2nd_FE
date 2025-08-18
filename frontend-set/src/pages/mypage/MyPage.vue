@@ -401,7 +401,7 @@ const loadParticipatingFundings = async () => {
                 joinDate: `참여일: ${new Date().toLocaleDateString('ko-KR')}`,
                 amount: 0,
                 type: 'challenge',
-                fundId: challenge.userChallengeId, // userChallengeId를 사용해보기
+                fundId: challenge.fundId, // userChallengeId를 사용해보기
                 status: challenge.challengeStatus || '진행중',
                 thumbnail: challengeImage,
             }
