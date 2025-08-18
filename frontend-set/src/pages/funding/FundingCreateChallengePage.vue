@@ -306,7 +306,7 @@ const formData = ref({
     endDate: '',
     challengeStartDate: '',
     challengeEndDate: '',
-    financialInstitution: '우리은행', // 임시값
+    financialInstitution: '국민은행', // 임시값
     keywordIds: [],
 })
 
