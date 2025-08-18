@@ -3,7 +3,7 @@
     <div class="min-h-screen bg-gray-50">
         <!-- 헤더 섹션 -->
         <div class="bg-white border-b border-gray-200">
-            <div class="max-w-[1200px] mx-auto px-5">
+            <div class="max-w-[1024px] mx-auto px-4 sm:px-6 lg:px-8">
                 <div class="flex items-center justify-between py-4">
                     <div class="flex items-center space-x-4">
                         <button class="p-2 hover:bg-gray-100 rounded-lg cursor-pointer">
@@ -28,7 +28,7 @@
             </div>
         </div>
         <!-- 메인 컨텐츠 -->
-        <div class="max-w-[1200px] mx-auto px-5 py-8">
+        <div class="max-w-[1024px] mx-auto px-4 sm:px-6 lg:px-8 py-6 lg:py-8">
             <form class="space-y-8">
                 <!-- 챌린지 프로젝트명 -->
                 <div>
@@ -257,7 +257,7 @@
         </div>
         <!-- 하단 네비게이션 -->
         <div class="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 z-50">
-            <div class="max-w-[1200px] mx-auto px-5 py-4">
+            <div class="max-w-[1024px] mx-auto px-4 sm:px-6 lg:px-8 py-4">
                 <div class="flex items-center justify-between">
                     <button
                         type="button"

@@ -1,6 +1,6 @@
 <template>
     <div class="min-h-screen bg-gray-50 p-8">
-        <div class="container mx-auto">
+        <div class="max-w-[1024px] mx-auto px-4 sm:px-6 lg:px-8 py-6 lg:py-8">
             <h1 class="text-3xl font-bold text-gray-900 mb-2">챌린지 참여자 관리</h1>
             <p class="text-gray-600 mb-8"></p>
 

@@ -2,7 +2,7 @@
 <template>
     <div class="min-h-screen bg-gray-50">
         <!-- 메인 콘텐츠 -->
-        <div class="max-w-6xl mx-auto px-8 py-8">
+        <div class="max-w-[1024px] mx-auto px-4 sm:px-6 lg:px-8 py-6 lg:py-8">
             <!-- 페이지 타이틀 -->
             <div class="mb-8">
                 <h1 class="text-3xl font-bold text-gray-900">마이페이지</h1>

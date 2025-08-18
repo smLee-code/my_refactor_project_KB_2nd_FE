@@ -1,5 +1,5 @@
 <template>
-    <div class="container mx-auto p-4 md:p-8">
+    <div class="max-w-[1024px] mx-auto p-4 md:p-8">
         <h1 class="text-3xl font-bold text-gray-900 mb-2">대출 신청 관리</h1>
         <p class="text-gray-600 mb-8">대출 상품에 대한 사용자 신청 내역을 관리합니다.</p>
 

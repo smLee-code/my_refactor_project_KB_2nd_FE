@@ -1,7 +1,7 @@
 <!-- The exported code uses Tailwind CSS. Install Tailwind CSS in your dev environment to ensure all styles work. -->
 <template>
     <div class="min-h-screen bg-gray-50 w-full">
-        <div class="container mx-auto px-4 sm:px-6 lg:px-32 py-8">
+        <div class="max-w-[1024px] mx-auto px-4 sm:px-6 lg:px-8 py-6 lg:py-8">
             <!-- 마감 임박 펀딩 섹션 -->
             <section class="mb-12">
                 <h2 class="text-2xl font-bold text-gray-900 mb-8 drop-shadow-sm">마감 임박 펀딩</h2>

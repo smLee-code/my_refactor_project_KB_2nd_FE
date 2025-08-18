@@ -1,6 +1,6 @@
 <template>
     <div class="min-h-screen bg-gray-50 w-full">
-        <div class="container mx-auto px-4 sm:px-6 lg:px-32 py-8">
+        <div class="max-w-[1024px] mx-auto px-4 sm:px-6 lg:px-8 py-6 lg:py-8">
             <div v-if="isLoading" class="flex justify-center items-center py-20">
                 <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-yellow-400"></div>
                 <span class="ml-3 text-gray-600">펀딩 정보를 불러오는 중...</span>

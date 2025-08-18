@@ -3,7 +3,7 @@
     <div class="min-h-screen bg-gray-50">
         <!-- Main Content -->
         <main class="min-h-screen">
-            <div class="max-w-[1200px] mx-auto px-5">
+            <div class="max-w-[1024px] mx-auto px-4 sm:px-6 lg:px-8">
                 <!-- Header -->
                 <header class="py-8 border-b border-gray-200">
                     <div class="flex items-center">
@@ -185,7 +185,7 @@
                 </section>
                 <!-- Bottom Buttons -->
                 <div class="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 p-6">
-                    <div class="max-w-[1200px] mx-auto px-5">
+                    <div class="max-w-[1024px] mx-auto px-4 sm:px-6 lg:px-8">
                         <div class="flex justify-between">
                             <button
                                 @click="handleCancelClick"

@@ -2,7 +2,7 @@
 <template>
     <div class="min-h-screen bg-gray-50 w-full">
         <!-- 메인 콘텐츠 영역 -->
-        <div class="container mx-auto px-4 sm:px-6 lg:px-32 py-8">
+        <div class="max-w-[1024px] mx-auto px-4 sm:px-6 lg:px-8 py-6 lg:py-8">
             <!-- 뒤로가기 버튼 -->
             <div class="mb-6">
                 <a
@@ -17,7 +17,9 @@
             <!-- 펀딩 참여 헤더 -->
             <div class="mb-8">
                 <h1 class="text-3xl font-bold text-gray-900 mb-2">{{ fundingTitle }} 참여하기</h1>
-                <p class="text-lg text-gray-600">{{ fundingType === 'Challenge' ? '챌린지' : '기부' }} 프로젝트</p>
+                <p class="text-lg text-gray-600">
+                    {{ fundingType === 'Challenge' ? '챌린지' : '기부' }} 프로젝트
+                </p>
             </div>
 
             <!-- 챌린지 보증금 안내 (챌린지일 경우에만 표시) -->
@@ -28,7 +30,9 @@
                         <h3 class="text-xl font-bold text-gray-900">챌린지 보증금</h3>
                     </div>
                     <div class="bg-blue-50 border-2 border-blue-400 rounded-lg p-6 text-center">
-                        <div class="text-3xl font-bold text-gray-900 mb-2">{{ formatCurrency(3000) }}</div>
+                        <div class="text-3xl font-bold text-gray-900 mb-2">
+                            {{ formatCurrency(3000) }}
+                        </div>
                         <div class="text-gray-600">보증금</div>
                         <div class="mt-4 text-sm text-gray-500">
                             챌린지 완주 시 보증금은 전액 환급됩니다.
@@ -67,7 +71,9 @@
                                 <i class="fas fa-times-circle text-xl"></i>
                             </button>
                         </div>
-                        <p class="mt-2 text-sm text-gray-600">최소 기부 금액: {{ formatCurrency(minAmount) }}</p>
+                        <p class="mt-2 text-sm text-gray-600">
+                            최소 기부 금액: {{ formatCurrency(minAmount) }}
+                        </p>
                         <div class="mt-4 grid grid-cols-2 sm:grid-cols-4 gap-2">
                             <button
                                 type="button"
@@ -108,7 +114,6 @@
                 </div>
             </section>
 
-
             <!-- 결제 수단 선택 -->
             <section class="mb-8">
                 <div class="bg-white rounded-xl shadow-lg p-6 border border-gray-100">
@@ -120,15 +125,14 @@
                         <button
                             @click="selectedPaymentMethod = 'kakaopay'"
                             :class="{
-                                'ring-2 ring-yellow-400 bg-yellow-50': selectedPaymentMethod === 'kakaopay',
-                                'bg-white': selectedPaymentMethod !== 'kakaopay'
+                                'ring-2 ring-yellow-400 bg-yellow-50':
+                                    selectedPaymentMethod === 'kakaopay',
+                                'bg-white': selectedPaymentMethod !== 'kakaopay',
                             }"
                             class="p-4 border rounded-lg cursor-pointer hover:bg-gray-50 transition-all"
                         >
                             <div class="flex items-center justify-center mb-2">
-                                <img src="/images/kakaopay.png" 
-                                     alt="카카오페이" 
-                                     class="h-8">
+                                <img src="/images/kakaopay.png" alt="카카오페이" class="h-8" />
                             </div>
                             <p class="text-sm font-medium">카카오페이</p>
                         </button>
@@ -136,7 +140,7 @@
                             @click="selectedPaymentMethod = 'kcp'"
                             :class="{
                                 'ring-2 ring-blue-400 bg-blue-50': selectedPaymentMethod === 'kcp',
-                                'bg-white': selectedPaymentMethod !== 'kcp'
+                                'bg-white': selectedPaymentMethod !== 'kcp',
                             }"
                             class="p-4 border rounded-lg cursor-pointer hover:bg-gray-50 transition-all"
                         >
@@ -158,7 +162,9 @@
                     </div>
                     <div class="bg-gray-50 rounded-lg p-4">
                         <div class="flex justify-between items-center mb-3">
-                            <span class="text-gray-700">{{ fundingType === 'challenge' ? '참가비' : '기부 금액' }}</span>
+                            <span class="text-gray-700">{{
+                                fundingType === 'challenge' ? '참가비' : '기부 금액'
+                            }}</span>
                             <span class="font-bold text-gray-900">{{
                                 formatCurrency(selectedAmount)
                             }}</span>
@@ -207,7 +213,10 @@
                                 동의합니다
                             </span>
                         </label>
-                        <label v-if="fundingType === 'donation'" class="flex items-start space-x-3 cursor-pointer">
+                        <label
+                            v-if="fundingType === 'donation'"
+                            class="flex items-start space-x-3 cursor-pointer"
+                        >
                             <input
                                 v-model="agreements.anonymous"
                                 type="checkbox"
@@ -238,13 +247,21 @@
             </section>
         </div>
     </div>
-    
+
     <!-- 성공 팝업 -->
     <SuccessPopup
         v-model="showSuccessPopup"
         title="가입이 완료되었습니다! 🎉"
-        :message="fundingType === 'Challenge' ? '챌린지 참여가 성공적으로 완료되었습니다.' : '기부가 성공적으로 완료되었습니다.'"
-        :subMessage="fundingType === 'Challenge' ? '챌린지를 완주하면 보증금이 환급됩니다!' : '따뜻한 마음을 나눠주셔서 감사합니다.'"
+        :message="
+            fundingType === 'Challenge'
+                ? '챌린지 참여가 성공적으로 완료되었습니다.'
+                : '기부가 성공적으로 완료되었습니다.'
+        "
+        :subMessage="
+            fundingType === 'Challenge'
+                ? '챌린지를 완주하면 보증금이 환급됩니다!'
+                : '따뜻한 마음을 나눠주셔서 감사합니다.'
+        "
         @confirm="handlePopupConfirm"
     />
 </template>
@@ -282,16 +299,16 @@ const showSuccessPopup = ref(false)
 const fetchFundingInfo = async () => {
     try {
         console.log(`🔍 펀딩 ID ${fundingId} 정보 조회 중...`)
-        
+
         const response = await api.get(`/fund/${fundingId}`)
         fundingData.value = response.data
-        
+
         console.log('펀딩 상세 정보:', response.data)
-        
+
         if (response.data) {
             fundingTitle.value = response.data.fundName || `펀딩 ${fundingId}`
             fundingType.value = response.data.fundType || 'Donation'
-            
+
             // 챌린지는 보증금 3000원 고정
             if (response.data.fundType === 'Challenge') {
                 fixedAmount.value = 3000
@@ -302,7 +319,6 @@ const fetchFundingInfo = async () => {
                 selectedAmount.value = 0
             }
         }
-        
     } catch (error) {
         console.error('펀딩 정보 조회 실패:', error)
         // 실패시 기본값 설정
@@ -382,18 +398,14 @@ const getPaymentMethodName = (method: string) => {
 
 // 결제 가능 여부
 const canProceedPayment = computed(() => {
-    return (
-        selectedAmount.value > 0 &&
-        agreements.value.terms &&
-        agreements.value.privacy
-    )
+    return selectedAmount.value > 0 && agreements.value.terms && agreements.value.privacy
 })
 
 // IMP 초기화
 onMounted(() => {
     // 펀딩 정보 먼저 조회
     fetchFundingInfo()
-    
+
     // IMP 초기화
     nextTick(() => {
         setTimeout(() => {
@@ -403,13 +415,13 @@ onMounted(() => {
 })
 
 const initIMP = () => {
-    console.log("🔍 DOM 로드 후 window.IMP:", window.IMP)
-    
+    console.log('🔍 DOM 로드 후 window.IMP:', window.IMP)
+
     if (window.IMP) {
-        window.IMP.init("imp06216030")
-        console.log("IMP 초기화 완료")
+        window.IMP.init('imp06216030')
+        console.log('IMP 초기화 완료')
     } else {
-        console.error("IMP 스크립트가 로드되지 않았습니다")
+        console.error('IMP 스크립트가 로드되지 않았습니다')
         loadIMPScript()
     }
 }
@@ -417,32 +429,32 @@ const initIMP = () => {
 const loadIMPScript = () => {
     const existingScript = document.querySelector('script[src*="iamport.js"]')
     if (existingScript) {
-        console.log("IMP 스크립트가 이미 존재합니다. 재시도 중...")
+        console.log('IMP 스크립트가 이미 존재합니다. 재시도 중...')
         let retryCount = 0
         const checkIMP = setInterval(() => {
             if (window.IMP) {
                 clearInterval(checkIMP)
-                window.IMP.init("imp06216030")
-                console.log("IMP 초기화 완료 (재시도)")
+                window.IMP.init('imp06216030')
+                console.log('IMP 초기화 완료 (재시도)')
             } else if (retryCount++ > 10) {
                 clearInterval(checkIMP)
-                console.error("IMP 로드 실패")
+                console.error('IMP 로드 실패')
             }
         }, 200)
         return
     }
-    
+
     const script = document.createElement('script')
     script.src = 'https://cdn.iamport.kr/v1/iamport.js'
     script.onload = () => {
-        console.log("동적 IMP 스크립트 로드 완료")
+        console.log('동적 IMP 스크립트 로드 완료')
         if (window.IMP) {
-            window.IMP.init("imp06216030")
-            console.log("IMP 초기화 완료")
+            window.IMP.init('imp06216030')
+            console.log('IMP 초기화 완료')
         }
     }
     script.onerror = () => {
-        console.error("동적 IMP 스크립트 로드 실패")
+        console.error('동적 IMP 스크립트 로드 실패')
     }
     document.head.appendChild(script)
 }
@@ -450,10 +462,10 @@ const loadIMPScript = () => {
 // 결제 처리
 const processPayment = async () => {
     if (!canProceedPayment.value) return
-    
+
     const IMP = window.IMP
     if (!IMP) {
-        alert("결제 모듈이 아직 로드되지 않았습니다.")
+        alert('결제 모듈이 아직 로드되지 않았습니다.')
         return
     }
 
@@ -462,10 +474,11 @@ const processPayment = async () => {
     if (!orderData) return
 
     // 선택된 결제 수단에 따라 PG 설정
-    const pgConfig = selectedPaymentMethod.value === 'kakaopay' 
-        ? { pg: "kakaopay", pay_method: "card" }
-        : { pg: "kcp.AO09C", pay_method: "card" }
-    
+    const pgConfig =
+        selectedPaymentMethod.value === 'kakaopay'
+            ? { pg: 'kakaopay', pay_method: 'card' }
+            : { pg: 'kcp.AO09C', pay_method: 'card' }
+
     // 결제 실행
     IMP.request_pay(
         {
@@ -473,24 +486,24 @@ const processPayment = async () => {
             merchant_uid: orderData.merchant_uid,
             name: `${fundingTitle.value} ${fundingType.value === 'Challenge' ? '보증금' : '기부'}`,
             amount: orderData.amount,
-            buyer_email: "user@example.com",
-            buyer_name: "참여자",
-            buyer_tel: "010-0000-0000",
-            buyer_addr: "주소",
-            buyer_postcode: "00000",
-            m_redirect_url: window.location.href
+            buyer_email: 'user@example.com',
+            buyer_name: '참여자',
+            buyer_tel: '010-0000-0000',
+            buyer_addr: '주소',
+            buyer_postcode: '00000',
+            m_redirect_url: window.location.href,
         },
         async (rsp: any) => {
             if (rsp.success) {
                 // 백엔드로 결제 정보 전송
                 await sendPaymentToBackend({
                     imp_uid: rsp.imp_uid,
-                    merchant_uid: rsp.merchant_uid
+                    merchant_uid: rsp.merchant_uid,
                 })
             } else {
-                alert("결제 실패: " + rsp.error_msg)
+                alert('결제 실패: ' + rsp.error_msg)
             }
-        }
+        },
     )
 }
 
@@ -500,23 +513,23 @@ const createOrder = async () => {
     console.log('selectedAmount:', selectedAmount.value)
     console.log('customAmount:', customAmount.value)
     console.log('fundingId:', fundingId, 'type:', typeof fundingId)
-    
+
     try {
         const requestData = {
             fundId: Number(fundingId),
             amount: selectedAmount.value,
-            metadata: { 
+            metadata: {
                 anonymous: agreements.value.anonymous,
-                fundingType: fundingType.value
-            }
+                fundingType: fundingType.value,
+            },
         }
-        
+
         console.log('서버로 전송할 데이터:', requestData)
-        
+
         const response = await api.post('/payments/create', requestData)
-        
+
         console.log('서버 응답:', response.data)
-        
+
         return response.data // { merchant_uid, amount }
     } catch (error) {
         console.error('주문 생성 오류:', error)
@@ -529,7 +542,7 @@ const createOrder = async () => {
 const sendPaymentToBackend = async (paymentData: any) => {
     try {
         const response = await api.post('/payments/complete', paymentData)
-        
+
         if (response.data.success) {
             // 성공 팝업 표시
             showSuccessPopup.value = true
@@ -547,7 +560,7 @@ const handlePopupConfirm = () => {
     // 참여 완료 상태를 query parameter로 전달
     router.push({
         path: `/funding/detail/${fundingId}`,
-        query: { joined: 'true' }
+        query: { joined: 'true' },
     })
 }
 </script>
