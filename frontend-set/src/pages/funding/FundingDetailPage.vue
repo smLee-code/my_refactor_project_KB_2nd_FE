@@ -260,6 +260,7 @@
                 </div>
             </div>
         </div>
+        <Footer />
     </div>
 </template>
 
@@ -278,6 +279,7 @@ import ChallengeFundingDetailSection from '@/components/funding/ChallengeFunding
 import SourceProjectSection from '@/components/funding/SourceProjectSection.vue'
 import CommentSection from '@/components/funding/CommentSection.vue'
 import { calculateFundingProgress, getFundTypeKorean } from '@/utils/fundingUtils'
+import Footer from '@/components/layout/MainFooter.vue'
 
 const route = useRoute()
 const router = useRouter()

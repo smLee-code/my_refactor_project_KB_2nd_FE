@@ -73,7 +73,7 @@ import ProjectVote from '@/components/project/detail/ProjectVote.vue'
 import CreateFundingButton from '@/components/project/detail/CreateFundingButton.vue'
 import '@/assets/styles/projectDetail.css'
 import ChatComponent from '@/components/chat/ChatComponent.vue'
-import Footer from '@/components/layout/Footer.vue'
+import Footer from '@/components/layout/MainFooter.vue'
 import RecommendRelated from '@/components/project/detail/RecommendRelated.vue'
 import DetailHeader from '@/components/project/detail/DetailHeader.vue'
 

@@ -61,7 +61,7 @@ import TabMenu from '@/components/common/TabMenu.vue'
 import CategoryFilter from '@/components/common/CategoryFilter.vue'
 import SortSelect from '@/components/common/SortSelect.vue'
 import ProjectCard from '@/components/project/list/ProjectCard.vue'
-import Footer from '@/components/layout/Footer.vue'
+import Footer from '@/components/layout/MainFooter.vue'
 import Pagination from '@/components/common/Pagination.vue'
 
 // style import

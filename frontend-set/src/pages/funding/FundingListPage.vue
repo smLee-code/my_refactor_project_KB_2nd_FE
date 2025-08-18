@@ -54,27 +54,7 @@
             <Pagination v-model="currentPage" :totalPages="totalPages" />
         </div>
         <!-- 푸터 -->
-        <footer class="bg-gradient-to-r from-gray-100 to-gray-200 py-8 shadow-inner mt-16">
-            <div class="container mx-auto px-4 sm:px-6 lg:px-32">
-                <div class="flex justify-center space-x-8">
-                    <a
-                        href="#"
-                        class="text-gray-600 hover:text-gray-900 cursor-pointer transition-colors hover:drop-shadow-sm"
-                        >Terms and Conditions</a
-                    >
-                    <a
-                        href="#"
-                        class="text-gray-600 hover:text-gray-900 cursor-pointer transition-colors hover:drop-shadow-sm"
-                        >Privacy Policy</a
-                    >
-                    <a
-                        href="#"
-                        class="text-gray-600 hover:text-gray-900 cursor-pointer transition-colors hover:drop-shadow-sm"
-                        >Contact Us</a
-                    >
-                </div>
-            </div>
-        </footer>
+        <Footer />
     </div>
 </template>
 <script setup>
@@ -89,6 +69,7 @@ import Pagination from '@/components/common/Pagination.vue'
 import { onMounted } from 'vue'
 import axios from 'axios'
 import { calculateFundingProgress, getFundTypeKorean, getDaysLeft } from '@/utils/fundingUtils'
+import Footer from '@/components/layout/MainFooter.vue'
 
 const fundingList = ref([])
 const launchFunds = ref([])
@@ -240,13 +221,17 @@ onMounted(async () => {
     try {
         console.log('🔍 펀딩 목록 API 호출 시작...')
         const [launchRes, endRes] = await Promise.all([
-            axios.get(`${import.meta.env.VITE_API_URL}/api/fund/list`, { params: { progress: 'Launch' } }),
-            axios.get(`${import.meta.env.VITE_API_URL}/api/fund/list`, { params: { progress: 'End' } }),
+            axios.get(`${import.meta.env.VITE_API_URL}/api/fund/list`, {
+                params: { progress: 'Launch' },
+            }),
+            axios.get(`${import.meta.env.VITE_API_URL}/api/fund/list`, {
+                params: { progress: 'End' },
+            }),
         ])
 
         console.log('✅ API 응답 데이터:', {
             launch: launchRes.data,
-            end: endRes.data
+            end: endRes.data,
         })
 
         launchFunds.value = launchRes.data
