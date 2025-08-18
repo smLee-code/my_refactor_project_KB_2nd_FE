@@ -9,16 +9,11 @@
             <FundingHeaderSection
                 v-if="!isLoading && fundingData"
                 :funding-image="
-                    (() => {
-                        const imageUrl =
-                            fundingData.imageUrls && fundingData.imageUrls.length > 0
-                                ? fundingData.imageUrls[0].imageUrl
-                                : '/public/images/logo.png'
-                        console.log('전달되는 이미지 URL:', imageUrl)
-                        console.log('fundingData.imageUrls:', fundingData.imageUrls)
-                        return imageUrl
-                    })()
+                    fundingData.imageUrls && fundingData.imageUrls.length > 0
+                        ? fundingData.imageUrls[0].imageUrl
+                        : '/public/images/logo.png'
                 "
+                :image-urls="fundingData.imageUrls"
                 :funding-name="fundingData.name"
                 :funding-detail="fundingData.detail"
                 :fund-type="fundingData.fundType"
