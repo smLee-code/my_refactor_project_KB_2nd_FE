@@ -1,4 +1,3 @@
-<!-- The exported code uses Tailwind CSS. Install Tailwind CSS in your dev environment to ensure all styles work. -->
 <template>
     <div class="w-full min-h-screen py-8 px-4">
         <div
@@ -242,6 +241,7 @@
 import { useRouter } from 'vue-router'
 import { ref, computed, onMounted, watchEffect } from 'vue'
 import axios from 'axios'
+import ToastNotification from '@/components/common/ToastNotification.vue'
 
 const router = useRouter()
 
@@ -284,6 +284,20 @@ const isLoading = ref(false)
 const showPassword = ref(false)
 const showPasswordConfirm = ref(false)
 const isVerificationSent = ref(false)
+
+const toast = ref({
+    show: false,
+    message: '',
+    type: 'success',
+})
+
+// ◀ 3. 토스트를 띄우는 헬퍼 함수 추가
+const showToast = (message, type = 'success', duration = 2000) => {
+    toast.value = { show: true, message, type }
+    setTimeout(() => {
+        toast.value.show = false
+    }, duration)
+}
 
 // 여기에 조건 상세히 추가
 const isFormValid = computed(() => {
@@ -384,6 +398,7 @@ const sendVerification = async () => {
         console.log(res.data.message)
         errors.value.email = ''
         isVerificationSent.value = true
+        showToast('인증번호가 발송되었습니다', 'success', 1000)
     } catch (err) {
         if (err.response) {
             console.error('이메일 인증 오류: ', err)
@@ -402,8 +417,10 @@ const verifyCode = async () => {
         )
         console.log(res.data.message)
         isVerificationSent.value = false
+        showToast('인증이 완료되었습니다', 'success', 2000)
     } catch (err) {
         console.error('❌이메일 인증 실패', err)
+        showToast('인증에 실패했습니다', 'error', 2000)
     }
 }
 
