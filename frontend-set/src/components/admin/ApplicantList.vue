@@ -15,12 +15,12 @@
                     >
                         신청 금액
                     </th>
-                    <th
+                    <!-- <th
                         scope="col"
                         class="px-6 py-3 text-left text-xs font-bold text-gray-600 uppercase tracking-wider"
                     >
                         신청일
-                    </th>
+                    </th> -->
                     <th
                         scope="col"
                         class="px-6 py-3 text-center text-xs font-bold text-gray-600 uppercase tracking-wider"
@@ -37,7 +37,7 @@
             </thead>
             <tbody class="bg-white divide-y divide-gray-200">
                 <tr v-if="applicants.length === 0">
-                    <td colspan="5" class="px-6 py-12 text-center text-gray-500">
+                    <td colspan="4" class="px-6 py-12 text-center text-gray-500">
                         <i class="fas fa-exclamation-circle text-2xl mb-2"></i>
                         <p>해당하는 신청 내역이 없습니다.</p>
                     </td>
@@ -60,9 +60,9 @@
                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-800">
                         {{ applicant.loanAmount.toLocaleString() }}원
                     </td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                    <!-- <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
                         {{ formatDate(applicant.appliedAt) }}
-                    </td>
+                    </td> -->
                     <td class="px-6 py-4 whitespace-nowrap text-center text-sm font-medium">
                         <span class="px-3 py-1 rounded-full" :class="statusClass(applicant.status)">
                             {{ statusText(applicant.status) }}
@@ -126,7 +126,7 @@ const statusText = (status) => {
         APPROVED: '승인완료',
         REJECTED: '반려',
         PAID: '지급완료',
-        DONE: '지급완료', 
+        DONE: '지급완료',
     }
     return map[status] || status
 }
@@ -137,7 +137,7 @@ const statusClass = (status) => {
         APPROVED: 'bg-blue-100 text-blue-800',
         REJECTED: 'bg-red-100 text-red-800',
         PAID: 'bg-green-100 text-green-800',
-        DONE: 'bg-green-100 text-green-800', 
+        DONE: 'bg-green-100 text-green-800',
     }
     return map[status] || 'bg-gray-100 text-gray-800'
 }

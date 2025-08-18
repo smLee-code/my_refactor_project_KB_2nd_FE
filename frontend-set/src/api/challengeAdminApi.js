@@ -29,11 +29,17 @@ export const manuallyApproveLog = (logId, token) => {
 
 // 인증 기록 수동 반려
 export const manuallyRejectLog = (logId, token) => {
-    return axios.patch(
+    return api.patch(
         `/admin/challenge/logs/${logId}/reject`,
         {},
         {
             headers: { Authorization: `Bearer ${token}` },
         },
     )
+}
+
+export const getChallengeInfo = (userChallengeId, token) => {
+    return api.get(`/challenge/info/${userChallengeId}`, {
+        headers: { Authorization: `Bearer ${token}` },
+    })
 }
