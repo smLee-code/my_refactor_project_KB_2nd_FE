@@ -21,7 +21,7 @@
                     <span :class="categoryClass">{{ category }}</span>
                     <div class="flex items-center bg-blue-50 px-2 py-1 rounded-full ml-auto">
                         <i class="fas fa-user-group text-blue-500 mr-1"></i>
-                        <span>{{ likes }}</span>
+                        <span>{{ participants || likes }}</span>
                     </div>
                 </div>
                 <div class="mb-2">
@@ -44,6 +44,7 @@
 // - daysLeft: 남은 일수
 // - category: 카테고리명
 // - likes: 좋아요 수
+// - participants: 참여 인원 수
 // - progress: 진행률(숫자)
 // - link: 상세 페이지 링크(선택)
 import ProgressBar from '@/components/common/ProgressBar.vue'
@@ -81,6 +82,10 @@ const props = defineProps({
         required: true,
     },
     likes: {
+        type: Number,
+        default: 0,
+    },
+    participants: {
         type: Number,
         default: 0,
     },

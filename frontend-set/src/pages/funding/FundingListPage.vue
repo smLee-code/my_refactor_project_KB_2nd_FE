@@ -47,6 +47,7 @@
                     :daysLeft="getDaysLeft(funding.endAt)"
                     :category="getFundTypeKorean(funding.fundType)"
                     :likes="funding.retryVotesCount || 0"
+                    :participants="funding.participantCount || 0"
                     :progress="calculateFundingProgress(funding)"
                 />
             </div>
@@ -154,9 +155,9 @@ const urgentFundings = computed(() => {
                 const progressDiff = (b.progress || 0) - (a.progress || 0)
                 if (progressDiff !== 0) return progressDiff
 
-                // 2. 참여자(투표수)가 많은 순 (인기 있는 것 우선)
-                const votesDiff = (b.retryVotesCount || 0) - (a.retryVotesCount || 0)
-                if (votesDiff !== 0) return votesDiff
+                // 2. 참여자 수가 많은 순 (인기 있는 것 우선)
+                const participantsDiff = (b.participantCount || 0) - (a.participantCount || 0)
+                if (participantsDiff !== 0) return participantsDiff
 
                 // 3. 펀딩 ID 순서 (먼저 등록된 것 우선)
                 return a.fundId - b.fundId
@@ -170,7 +171,7 @@ const urgentFundings = computed(() => {
             image: fund.thumbnailImage?.imageUrl || '/default.jpg',
             title: fund.name,
             timeLeft: getDaysLeft(fund.endAt),
-            participants: fund.retryVotesCount || 0,
+            participants: fund.participantCount || 0,
             progress: calculateFundingProgress(fund),
         }))
 })
@@ -248,9 +249,34 @@ onMounted(async () => {
             launch: launchRes.data,
             end: endRes.data
         })
+        
+        // 각 펀딩의 상세 정보에서 participantCount 가져오기
+        const fetchParticipantCounts = async (funds) => {
+            return await Promise.all(
+                funds.map(async (fund) => {
+                    try {
+                        const detailRes = await axios.get(`${import.meta.env.VITE_API_URL}/api/fund/${fund.fundId}`)
+                        return {
+                            ...fund,
+                            participantCount: detailRes.data.participantCount || 0
+                        }
+                    } catch (error) {
+                        console.warn(`펀딩 ${fund.fundId} 상세 정보 조회 실패:`, error)
+                        return {
+                            ...fund,
+                            participantCount: 0
+                        }
+                    }
+                })
+            )
+        }
 
-        launchFunds.value = launchRes.data
-        endFunds.value = endRes.data
+        // participantCount 정보 추가
+        const launchFundsWithCounts = await fetchParticipantCounts(launchRes.data || [])
+        const endFundsWithCounts = await fetchParticipantCounts(endRes.data || [])
+
+        launchFunds.value = launchFundsWithCounts
+        endFunds.value = endFundsWithCounts
 
         // 임시 likedFunds (ex: 투표 수 10 이상만)
         likedFunds.value = [...launchRes.data, ...endRes.data].filter(
