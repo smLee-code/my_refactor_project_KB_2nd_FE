@@ -1,6 +1,6 @@
 <template>
     <Card>
-        <div class="mt-1 bg-white rounded-xl shadow-sm max-w-7xl mx-auto">
+        <div class="mt-1 bg-white rounded-xl shadow-sm max-w-[1024px] mx-auto">
             <table class="w-full">
                 <thead>
                     <tr class="bg-gray-50">

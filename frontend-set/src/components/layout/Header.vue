@@ -1,6 +1,9 @@
 <template>
-    <header :class="['shadow-card sticky top-0 z-50 w-full', !isFinanceUser ? 'bg-kb-ui-11' : '']" :style="isFinanceUser ? 'background-color: rgb(254, 252, 232)' : ''">
-        <div class="max-w-[1200px] mx-auto px-5 lg:px-10">
+    <header
+        :class="['shadow-card sticky top-0 z-50 w-full', !isFinanceUser ? 'bg-kb-ui-11' : '']"
+        :style="isFinanceUser ? 'background-color: rgb(254, 252, 232)' : ''"
+    >
+        <div class="max-w-[1024px] mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex items-center justify-between h-16">
                 <!-- 로고 -->
                 <div class="flex items-center cursor-pointer" @click="navigateToHome">
@@ -89,7 +92,10 @@
                                     @click="toggleUserMenu"
                                     class="p-2 text-gray-600 hover:text-gray-900 cursor-pointer transition-colors flex items-center gap-2"
                                 >
-                                    <i v-if="isFinanceUser" class="fas fa-building text-lg text-yellow-600"></i>
+                                    <i
+                                        v-if="isFinanceUser"
+                                        class="fas fa-building text-lg text-yellow-600"
+                                    ></i>
                                     <i class="fas fa-user text-lg"></i>
                                 </button>
                                 <div

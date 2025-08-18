@@ -1,9 +1,20 @@
 <template>
     <section class="mb-8">
         <div class="bg-white rounded-xl shadow-lg p-6 border border-gray-100">
-            <div class="flex items-center mb-4">
-                <i class="fas fa-project-diagram text-blue-500 text-xl mr-3"></i>
-                <h3 class="text-xl font-bold text-gray-900">출처 프로젝트</h3>
+            <div class="flex items-center justify-between mb-4">
+                <div class="flex items-center">
+                    <i class="fas fa-project-diagram text-blue-500 text-xl mr-3"></i>
+                    <h3 class="text-xl font-bold text-gray-900">출처 프로젝트</h3>
+                </div>
+                <!-- 출처 프로젝트 상세보기 버튼 -->
+                <button
+                    v-if="projectData"
+                    @click="$emit('view-project-detail', projectId)"
+                    class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg transition-colors duration-200 flex items-center space-x-2"
+                >
+                    <i class="fas fa-external-link-alt text-sm"></i>
+                    <span>상세보기</span>
+                </button>
             </div>
 
             <!-- 로딩 상태 -->
@@ -69,6 +80,9 @@ const props = defineProps({
         required: true,
     },
 })
+
+// Emits 정의
+const emit = defineEmits(['view-project-detail'])
 
 // 상태 관리
 const projectData = ref(null)

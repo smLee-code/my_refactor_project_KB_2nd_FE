@@ -2,7 +2,7 @@
 <template>
     <div class="min-h-screen bg-white w-full">
         <!-- 메인 콘텐츠 영역 -->
-        <div class="container mx-auto px-6 lg:px-20 py-8">
+        <div class="max-w-[1024px] mx-auto px-4 sm:px-6 lg:px-8 py-6 lg:py-8">
             <!-- Tab 메뉴 -->
             <TabMenu :tabs="tabOptions" v-model="activeTab" />
 
@@ -61,7 +61,7 @@ import TabMenu from '@/components/common/TabMenu.vue'
 import CategoryFilter from '@/components/common/CategoryFilter.vue'
 import SortSelect from '@/components/common/SortSelect.vue'
 import ProjectCard from '@/components/project/list/ProjectCard.vue'
-import Footer from '@/components/layout/Footer.vue'
+import Footer from '@/components/layout/MainFooter.vue'
 import Pagination from '@/components/common/Pagination.vue'
 
 // style import

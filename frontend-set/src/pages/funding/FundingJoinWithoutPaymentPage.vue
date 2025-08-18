@@ -2,7 +2,7 @@
 <template>
     <div class="min-h-screen bg-gray-50 w-full">
         <!-- 메인 콘텐츠 영역 -->
-        <div class="container mx-auto px-4 sm:px-6 lg:px-32 py-8">
+        <div class="max-w-[1024px] mx-auto px-4 sm:px-6 lg:px-8 py-6 lg:py-8">
             <!-- 뒤로가기 버튼 -->
             <div class="mb-6">
                 <a
@@ -211,13 +211,21 @@
             </section>
         </div>
     </div>
-    
+
     <!-- 성공 팝업 -->
     <SuccessPopup
         v-model="showSuccessPopup"
         title="신청이 완료되었습니다! 🎉"
-        :message="fundingType === 'loan' ? '대출 신청이 성공적으로 완료되었습니다.' : '저축 가입이 성공적으로 완료되었습니다.'"
-        :subMessage="fundingType === 'loan' ? '심사 결과는 영업일 기준 2-3일 내 안내됩니다.' : '함께 꾸준히 저축해요!'"
+        :message="
+            fundingType === 'loan'
+                ? '대출 신청이 성공적으로 완료되었습니다.'
+                : '저축 가입이 성공적으로 완료되었습니다.'
+        "
+        :subMessage="
+            fundingType === 'loan'
+                ? '심사 결과는 영업일 기준 2-3일 내 안내됩니다.'
+                : '함께 꾸준히 저축해요!'
+        "
         @confirm="handlePopupConfirm"
     />
 </template>
@@ -295,7 +303,7 @@ onMounted(() => {
 const handlePopupConfirm = () => {
     router.push({
         path: `/funding/detail/${fundingId}`,
-        query: { joined: 'true' }
+        query: { joined: 'true' },
     })
 }
 
@@ -368,33 +376,27 @@ const submitApplication = async () => {
 
     try {
         let response
-        
+
         if (fundingType.value === 'loan') {
             // 대출 신청
             const requestData = {
-                loanAmount: parseInt(applicantInfo.value.requestedAmount.replace(/,/g, '') || '0')
+                loanAmount: parseInt(applicantInfo.value.requestedAmount.replace(/,/g, '') || '0'),
             }
             console.log('대출 신청 요청 데이터:', requestData)
-            
-            response = await api.post(
-                `/user-loan/${fundingId}`,
-                requestData
-            )
+
+            response = await api.post(`/user-loan/${fundingId}`, requestData)
         } else {
             // 저축 가입
             const requestData = {
-                savingAmount: parseInt(applicantInfo.value.monthlyDeposit.replace(/,/g, '') || '0')
+                savingAmount: parseInt(applicantInfo.value.monthlyDeposit.replace(/,/g, '') || '0'),
             }
             console.log('저축 가입 요청 데이터:', requestData)
-            
-            response = await api.post(
-                `/user-saving/${fundingId}`,
-                requestData
-            )
+
+            response = await api.post(`/user-saving/${fundingId}`, requestData)
         }
 
         console.log('응답 데이터:', response.data)
-        
+
         // response.data.success가 없거나 response.status가 200-299면 성공으로 처리
         if (response.data.success || (response.status >= 200 && response.status < 300)) {
             // 성공 팝업 표시

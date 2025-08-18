@@ -2,7 +2,7 @@
 <template>
     <div class="min-h-screen" style="background-color: var(--kb-ui-10)">
         <!-- 메인 콘텐츠 -->
-        <div class="max-w-[1200px] mx-auto px-5 py-8">
+        <div class="max-w-[1024px] mx-auto px-4 sm:px-6 lg:px-8 py-6 lg:py-8">
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
                 <!-- 좌측 콘텐츠 영역 -->
                 <div class="lg:col-span-2 space-y-6">
@@ -73,7 +73,7 @@ import ProjectVote from '@/components/project/detail/ProjectVote.vue'
 import CreateFundingButton from '@/components/project/detail/CreateFundingButton.vue'
 import '@/assets/styles/projectDetail.css'
 import ChatComponent from '@/components/chat/ChatComponent.vue'
-import Footer from '@/components/layout/Footer.vue'
+import Footer from '@/components/layout/MainFooter.vue'
 import RecommendRelated from '@/components/project/detail/RecommendRelated.vue'
 import DetailHeader from '@/components/project/detail/DetailHeader.vue'
 

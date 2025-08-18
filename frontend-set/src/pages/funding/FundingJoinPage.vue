@@ -2,7 +2,7 @@
 <template>
     <div class="min-h-screen bg-gray-50 w-full">
         <!-- 메인 콘텐츠 영역 -->
-        <div class="container mx-auto px-4 sm:px-6 lg:px-32 py-8">
+        <div class="max-w-[1024px] mx-auto px-4 sm:px-6 lg:px-8 py-6 lg:py-8">
             <!-- 뒤로가기 버튼 -->
             <div class="mb-6">
                 <a
@@ -161,15 +161,14 @@
                         <button
                             @click="selectedPaymentMethod = 'kakaopay'"
                             :class="{
-                                'ring-2 ring-yellow-400 bg-yellow-50': selectedPaymentMethod === 'kakaopay',
-                                'bg-white': selectedPaymentMethod !== 'kakaopay'
+                                'ring-2 ring-yellow-400 bg-yellow-50':
+                                    selectedPaymentMethod === 'kakaopay',
+                                'bg-white': selectedPaymentMethod !== 'kakaopay',
                             }"
                             class="p-4 border rounded-lg cursor-pointer hover:bg-gray-50 transition-all"
                         >
                             <div class="flex items-center justify-center mb-2">
-                                <img src="/images/kakaopay.png" 
-                                     alt="카카오페이" 
-                                     class="h-8">
+                                <img src="/images/kakaopay.png" alt="카카오페이" class="h-8" />
                             </div>
                             <p class="text-sm font-medium">카카오페이</p>
                         </button>
@@ -177,7 +176,7 @@
                             @click="selectedPaymentMethod = 'kcp'"
                             :class="{
                                 'ring-2 ring-blue-400 bg-blue-50': selectedPaymentMethod === 'kcp',
-                                'bg-white': selectedPaymentMethod !== 'kcp'
+                                'bg-white': selectedPaymentMethod !== 'kcp',
                             }"
                             class="p-4 border rounded-lg cursor-pointer hover:bg-gray-50 transition-all"
                         >
@@ -295,7 +294,7 @@
             </section>
         </div>
     </div>
-    
+
     <!-- 성공 팝업 -->
     <SuccessPopup
         v-model="showSuccessPopup"
@@ -370,11 +369,7 @@ const getPaymentMethodName = (method: string) => {
     return methods[method] || '선택 안함'
 }
 const canProceedPayment = computed(() => {
-    return (
-        selectedAmount.value > 0 &&
-        agreements.value.terms &&
-        agreements.value.privacy
-    )
+    return selectedAmount.value > 0 && agreements.value.terms && agreements.value.privacy
 })
 // 결제 관련 변수
 const route = useRoute()
@@ -394,13 +389,13 @@ onMounted(() => {
 })
 
 const initIMP = () => {
-    console.log("🔍 DOM 로드 후 window.IMP:", window.IMP)
-    
+    console.log('🔍 DOM 로드 후 window.IMP:', window.IMP)
+
     if (window.IMP) {
-        window.IMP.init("imp06216030")
-        console.log("IMP 초기화 완료")
+        window.IMP.init('imp06216030')
+        console.log('IMP 초기화 완료')
     } else {
-        console.error("IMP 스크립트가 로드되지 않았습니다")
+        console.error('IMP 스크립트가 로드되지 않았습니다')
         loadIMPScript()
     }
 }
@@ -408,32 +403,32 @@ const initIMP = () => {
 const loadIMPScript = () => {
     const existingScript = document.querySelector('script[src*="iamport.js"]')
     if (existingScript) {
-        console.log("IMP 스크립트가 이미 존재합니다. 재시도 중...")
+        console.log('IMP 스크립트가 이미 존재합니다. 재시도 중...')
         let retryCount = 0
         const checkIMP = setInterval(() => {
             if (window.IMP) {
                 clearInterval(checkIMP)
-                window.IMP.init("imp06216030")
-                console.log("IMP 초기화 완료 (재시도)")
+                window.IMP.init('imp06216030')
+                console.log('IMP 초기화 완료 (재시도)')
             } else if (retryCount++ > 10) {
                 clearInterval(checkIMP)
-                console.error("IMP 로드 실패")
+                console.error('IMP 로드 실패')
             }
         }, 200)
         return
     }
-    
+
     const script = document.createElement('script')
     script.src = 'https://cdn.iamport.kr/v1/iamport.js'
     script.onload = () => {
-        console.log("동적 IMP 스크립트 로드 완료")
+        console.log('동적 IMP 스크립트 로드 완료')
         if (window.IMP) {
-            window.IMP.init("imp06216030")
-            console.log("IMP 초기화 완료")
+            window.IMP.init('imp06216030')
+            console.log('IMP 초기화 완료')
         }
     }
     script.onerror = () => {
-        console.error("동적 IMP 스크립트 로드 실패")
+        console.error('동적 IMP 스크립트 로드 실패')
     }
     document.head.appendChild(script)
 }
@@ -441,10 +436,10 @@ const loadIMPScript = () => {
 // 결제 처리
 const processPayment = async () => {
     if (!canProceedPayment.value) return
-    
+
     const IMP = window.IMP
     if (!IMP) {
-        alert("결제 모듈이 아직 로드되지 않았습니다.")
+        alert('결제 모듈이 아직 로드되지 않았습니다.')
         return
     }
 
@@ -453,35 +448,36 @@ const processPayment = async () => {
     if (!orderData) return
 
     // 선택된 결제 수단에 따라 PG 설정
-    const pgConfig = selectedPaymentMethod.value === 'kakaopay' 
-        ? { pg: "kakaopay", pay_method: "card" }
-        : { pg: "kcp.AO09C", pay_method: "card" }
-    
+    const pgConfig =
+        selectedPaymentMethod.value === 'kakaopay'
+            ? { pg: 'kakaopay', pay_method: 'card' }
+            : { pg: 'kcp.AO09C', pay_method: 'card' }
+
     // 결제 실행
     IMP.request_pay(
         {
             ...pgConfig,
             merchant_uid: orderData.merchant_uid,
-            name: "펀딩 참여",
+            name: '펀딩 참여',
             amount: orderData.amount,
-            buyer_email: participantInfo.value.email || "user@example.com",
-            buyer_name: participantInfo.value.name || "참여자",
-            buyer_tel: participantInfo.value.phone || "010-0000-0000",
-            buyer_addr: participantInfo.value.address || "주소",
-            buyer_postcode: "00000",
-            m_redirect_url: window.location.href
+            buyer_email: participantInfo.value.email || 'user@example.com',
+            buyer_name: participantInfo.value.name || '참여자',
+            buyer_tel: participantInfo.value.phone || '010-0000-0000',
+            buyer_addr: participantInfo.value.address || '주소',
+            buyer_postcode: '00000',
+            m_redirect_url: window.location.href,
         },
         async (rsp) => {
             if (rsp.success) {
                 // 백엔드로 결제 정보 전송
                 await sendPaymentToBackend({
                     imp_uid: rsp.imp_uid,
-                    merchant_uid: rsp.merchant_uid
+                    merchant_uid: rsp.merchant_uid,
                 })
             } else {
-                alert("결제 실패: " + rsp.error_msg)
+                alert('결제 실패: ' + rsp.error_msg)
             }
-        }
+        },
     )
 }
 
@@ -491,14 +487,14 @@ const createOrder = async () => {
         alert('1,000원 이상의 금액을 입력해주세요.')
         return null
     }
-    
+
     try {
         const requestData = {
             fundId: fundingId,
             amount: selectedAmount.value,
-            metadata: { anonymous: agreements.value.anonymous }
+            metadata: { anonymous: agreements.value.anonymous },
         }
-        
+
         const response = await api.post('/payments/create', requestData)
         return response.data // { merchant_uid, amount }
     } catch (error) {
@@ -512,7 +508,7 @@ const createOrder = async () => {
 const sendPaymentToBackend = async (paymentData) => {
     try {
         const response = await api.post('/payments/complete', paymentData)
-        
+
         if (response.data.success) {
             // 성공 팝업 표시
             showSuccessPopup.value = true
@@ -530,7 +526,7 @@ const handlePopupConfirm = () => {
     // 참여 완료 상태를 query parameter로 전달
     router.push({
         path: `/funding/detail/${fundingId}`,
-        query: { joined: 'true' }
+        query: { joined: 'true' },
     })
 }
 </script>

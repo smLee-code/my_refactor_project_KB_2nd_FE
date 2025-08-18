@@ -1,6 +1,6 @@
 <template>
     <div class="min-h-screen bg-gray-50 w-full">
-        <div class="container mx-auto px-4 sm:px-6 lg:px-32 py-8">
+        <div class="max-w-[1024px] mx-auto px-4 sm:px-6 lg:px-8 py-6 lg:py-8">
             <div v-if="isLoading" class="flex justify-center items-center py-20">
                 <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-yellow-400"></div>
                 <span class="ml-3 text-gray-600">펀딩 정보를 불러오는 중...</span>
@@ -88,6 +88,7 @@
             <SourceProjectSection
                 v-if="!isLoading && fundingData && fundingData.projectId"
                 :project-id="fundingData.projectId"
+                @view-project-detail="goToProjectDetail"
             />
 
             <SavingsFundingDetailSection
@@ -167,12 +168,9 @@
                         <div class="p-4">
                             <h4 class="font-bold text-gray-900 mb-2">{{ fund.name }}</h4>
                             <p class="text-sm text-gray-600 mb-3">{{ fund.detail }}</p>
-                            <div class="flex items-center justify-between text-sm">
-                                <span class="text-gray-500"
-                                    >{{ calculateDaysLeft(fund.endAt) }}일 남음</span
-                                >
+                            <div class="flex items-center justify-end text-sm">
                                 <span class="text-blue-600 font-medium">{{
-                                    getFundTypeKorean(fund.progress)
+                                    getFundTypeKorean(fund.projectType)
                                 }}</span>
                             </div>
                             <div class="mt-2 text-xs text-gray-500">
@@ -258,6 +256,7 @@
                 </div>
             </div>
         </div>
+        <Footer />
     </div>
 </template>
 
@@ -276,6 +275,7 @@ import ChallengeFundingDetailSection from '@/components/funding/ChallengeFunding
 import SourceProjectSection from '@/components/funding/SourceProjectSection.vue'
 import CommentSection from '@/components/funding/CommentSection.vue'
 import { calculateFundingProgress, getFundTypeKorean } from '@/utils/fundingUtils'
+import Footer from '@/components/layout/MainFooter.vue'
 
 const route = useRoute()
 const router = useRouter()
@@ -668,6 +668,11 @@ const fetchRecommendedFunds = async () => {
     } finally {
         isRecommendLoading.value = false
     }
+}
+
+// 프로젝트 상세 페이지로 이동
+const goToProjectDetail = (projectId) => {
+    router.push(`/project/detail/${projectId}`)
 }
 
 // 펀딩 상세 페이지로 이동
