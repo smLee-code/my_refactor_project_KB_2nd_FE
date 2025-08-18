@@ -14,7 +14,13 @@
                     </div>
                     <div class="text-sm text-gray-600">{{ getCurrentAmountLabel() }}</div>
                 </div>
-                <div v-if="fundType !== 'Challenge' && fundType !== 'Donation'" class="text-center">
+                <div v-if="fundType === 'Loan'" class="text-center">
+                    <div class="text-2xl font-bold text-green-600 mb-1">
+                        {{ minInterestRate }}~{{ maxInterestRate }}%
+                    </div>
+                    <div class="text-sm text-gray-600">금리</div>
+                </div>
+                <div v-else-if="fundType === 'Savings'" class="text-center">
                     <div class="text-2xl font-bold text-green-600 mb-1">{{ interestRate }}%</div>
                     <div class="text-sm text-gray-600">이자율</div>
                 </div>
@@ -148,6 +154,14 @@ const props = defineProps({
         type: Number,
         default: 0,
     },
+    minInterestRate: {
+        type: Number,
+        default: 0,
+    },
+    maxInterestRate: {
+        type: Number,
+        default: 0,
+    },
     fundType: {
         type: String,
         default: 'Savings',
@@ -236,7 +250,7 @@ const getProgressValue = () => {
 
 // 실제 진행률 계산
 const getActualProgress = () => {
-    console.log(`[FundingProgressCard] fundType: ${props.fundType}, launchAt:`, props.launchAt, ', endAt:', props.endAt)
+    console.log(`[FundingProgressCard] fundType: ${props.fundType}, interestRate: ${props.interestRate}, launchAt:`, props.launchAt, ', endAt:', props.endAt)
     
     // 기부형: 목표 금액 대비 현재 금액으로 계산
     if (props.fundType === 'Donation' && props.targetAmount > 0) {

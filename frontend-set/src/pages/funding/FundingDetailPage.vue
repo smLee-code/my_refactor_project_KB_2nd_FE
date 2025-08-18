@@ -41,6 +41,8 @@
                 :end-date="fundingData.endDate"
                 :user-role="authStore.userRole"
                 :interest-rate="fundingData.interestRate"
+                :min-interest-rate="fundingData.minInterestRate"
+                :max-interest-rate="fundingData.maxInterestRate"
                 :fund-type="fundingData.fundType"
                 :joined="fundingData.joined"
                 :launch-at="fundingData.launchAt"
@@ -376,7 +378,10 @@ const fetchFundingDetail = async () => {
         const response = await api.get(`/fund/${fundingId}`)
         const data = response.data
 
+        console.log('전체 API 응답:', response)
         console.log('펀딩 상세 정보:', data)
+        console.log('data 타입:', typeof data)
+        console.log('data의 키들:', data ? Object.keys(data) : 'data is null/undefined')
         console.log('joined 값:', data.joined)
         console.log('펀딩 타입:', data.fundType)
 
@@ -509,16 +514,16 @@ const fetchFundingDetail = async () => {
             console.log('fundType:', data.fundType)
             console.log('launchAt:', data.launchAt)
             console.log('endAt:', data.endAt)
-            console.log('targetAmount:', data.targetAmount)
-            console.log('currentAmount:', data.currentAmount)
-            console.log('progressPercentage (from API):', data.progressPercentage)
+            console.log('loanLimit:', data.loanLimit)
+            console.log('minInterestRate:', data.minInterestRate)
+            console.log('maxInterestRate:', data.maxInterestRate)
             console.log('===========================')
             
             // 펀딩 데이터 설정
             fundingData.value = {
                 id: data.fundId,
                 projectId: data.projectId,
-                targetAmount: data.targetAmount || 50000000,
+                targetAmount: data.fundType === 'Loan' ? (data.loanLimit || 50000000) : (data.targetAmount || 50000000),
                 currentAmount: data.currentAmount || 0,
                 progress: data.progress || '진행중', // progress 필드 추가
                 progressPercentage: getProgressPercentage(data),
@@ -534,6 +539,9 @@ const fetchFundingDetail = async () => {
                 detail: data.detail,
                 financialInstitution: data.financialInstitution,
                 interestRate: data.interestRate || 0,
+                minInterestRate: data.minInterestRate || 0,
+                maxInterestRate: data.maxInterestRate || 0,
+                loanLimit: data.loanLimit || 0,
                 periodDays: calculatePeriodDays(data.periodDays, data.launchAt, data.endAt),
                 productCondition: data.productCondition,
                 successCondition: data.successCondition,
