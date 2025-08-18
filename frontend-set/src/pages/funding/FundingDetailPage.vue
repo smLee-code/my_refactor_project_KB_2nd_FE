@@ -169,12 +169,9 @@
                         <div class="p-4">
                             <h4 class="font-bold text-gray-900 mb-2">{{ fund.name }}</h4>
                             <p class="text-sm text-gray-600 mb-3">{{ fund.detail }}</p>
-                            <div class="flex items-center justify-between text-sm">
-                                <span class="text-gray-500"
-                                    >{{ calculateDaysLeft(fund.endAt) }}일 남음</span
-                                >
+                            <div class="flex items-center justify-end text-sm">
                                 <span class="text-blue-600 font-medium">{{
-                                    getFundTypeKorean(fund.progress)
+                                    getFundTypeKorean(fund.projectType)
                                 }}</span>
                             </div>
                             <div class="mt-2 text-xs text-gray-500">

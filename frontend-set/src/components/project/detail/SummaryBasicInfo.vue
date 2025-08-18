@@ -8,10 +8,10 @@
                     getTypeLabel(detail.basicInfo.projectType)
                 }}</span>
             </div>
-            <div class="flex justify-between">
+            <!-- <div class="flex justify-between">
                 <span class="text-gray-600">지역</span>
                 <span class="text-gray-900 font-medium">서울</span>
-            </div>
+            </div> -->
             <div class="flex justify-between">
                 <span class="text-gray-600">진행 상태</span>
                 <span class="text-green-600 font-medium">{{
