@@ -115,6 +115,7 @@
                 :progress="fundingData.progress"
                 :joined="fundingData.joined"
                 :keywords="fundingData.keywords"
+                :verify-standard="fundingData.verifyStandard"
             />
 
             <ChallengeUploadSection

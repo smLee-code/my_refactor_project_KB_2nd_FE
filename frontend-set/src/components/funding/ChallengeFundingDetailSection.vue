@@ -83,13 +83,10 @@
                     <h3 class="text-xl font-bold text-gray-900">챌린지 상세 설명</h3>
                 </div>
                 <div class="prose max-w-none">
-                    <p class="text-gray-700 leading-relaxed mb-4">
-                        {{ challengeDetail }}
-                    </p>
                     <div class="bg-yellow-50 p-4 rounded-lg">
                         <h4 class="font-bold text-yellow-900 mb-2">챌린지 참여 방법</h4>
                         <ul class="list-disc list-inside text-yellow-800 space-y-1">
-                            <li>매일 인증샷을 업로드하여 챌린지를 진행합니다</li>
+                            <li>인증 방법 : {{ verifyStandard }}</li>
                             <li>{{ challengePeriodDays }}일 동안 꾸준히 참여하세요</li>
                             <li>모든 조건을 달성하면 {{ challengeReward }}를 받을 수 있습니다</li>
                             <li>인증 실패 시 실패 사유를 확인할 수 있습니다.</li>
@@ -149,6 +146,10 @@ const props = defineProps({
     keywords: {
         type: Array,
         default: () => [],
+    },
+    verifyStandard: {
+        type: String,
+        default: '',
     },
 })
 
