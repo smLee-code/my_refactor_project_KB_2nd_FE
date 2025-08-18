@@ -370,7 +370,7 @@ const sendVerification = async () => {
 
         console.log('✅ isDuplicated:', isDuplicated)
 
-        if (isDuplicated) {
+        if (!isDuplicated) {
             errors.value.email = '이미 존재하는 이메일입니다'
             return
         }
