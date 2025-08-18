@@ -7,6 +7,20 @@
                 <i class="fas fa-camera text-yellow-500 text-xl mr-3"></i>
                 <h3 class="text-xl font-bold text-gray-900">인증샷 업로드</h3>
             </div>
+            <div
+                class="bg-gradient-to-r from-yellow-50 to-orange-50 border-l-4 border-yellow-400 p-4 rounded-lg mb-6"
+            >
+                <div class="flex items-center">
+                    <!-- <i class="fas fa-exclamation-triangle text-yellow-500 text-lg mr-3"></i> -->
+                    <div>
+                        <h3 class="text-m font text-gray-900 mb-1">인증샷 조건</h3>
+                        <span
+                            class="text-gray-900 font-bold text-lg bg-white px-3 py-1 rounded-md shadow-sm border border-red-200"
+                            >{{ verifyStandard }}</span
+                        >
+                    </div>
+                </div>
+            </div>
 
             <!-- 인증샷 캘린더 뷰 -->
             <div class="mb-6">
@@ -208,8 +222,8 @@
                     <!-- 이미지 정보 -->
                     <div v-if="modalResult" class="p-4 bg-gray-50 border-t">
                         <div class="text-sm text-gray-700">
-                            <div class="font-medium mb-2">검증 결과:</div>
-                            <div class="text-gray-600">{{ modalResult }}</div>
+                            <div class="font-bold text-lg mb-2">검증 결과</div>
+                            <div class="text-gray-600 text-lg">{{ modalResult }}</div>
                         </div>
                     </div>
                 </div>
@@ -251,6 +265,10 @@ const props = defineProps({
         type: Number,
         required: false,
         default: null,
+    },
+    verifyStandard: {
+        type: String,
+        required: true,
     },
 })
 

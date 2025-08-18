@@ -121,6 +121,7 @@
                 v-if="fundingData && fundingType === 'Challenge' && fundingData.joined"
                 :funding-id="fundingData.id"
                 :user-challenge-id="fundingData.userChallengeId"
+                :verify-standard="fundingData.verifyStandard"
                 :certification-data="certificationData"
                 :start-date="fundingData.startDate"
                 :end-date="fundingData.endDateForCertification"
@@ -309,6 +310,7 @@ const fundingData = ref({
     challengePeriodDays: 0,
     challengeReward: '',
     challengeRewardCondition: '',
+    verifyStandard: '',
 })
 const isLiked = ref(false)
 const isLoading = ref(true)
@@ -528,6 +530,7 @@ const fetchFundingDetail = async () => {
                 challengePeriodDays: data.challengePeriodDays,
                 challengeReward: data.challengeReward,
                 challengeRewardCondition: data.challengeRewardCondition,
+                verifyStandard: data.verifyStandard,
             }
 
             // 펀딩 타입 설정
@@ -563,6 +566,7 @@ const fetchFundingDetail = async () => {
             challengePeriodDays: 0,
             challengeReward: '',
             challengeRewardCondition: '',
+            verifyStandard: '',
         }
     } finally {
         isLoading.value = false
