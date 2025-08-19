@@ -157,20 +157,11 @@ const handleLogout = () => {
     router.push('/')
 }
 
-// mock data
-const notifications = ref([
-    { id: 1, message: '새로운 펀딩이 등록되었습니다.' },
-    { id: 2, message: '회원님의 펀딩이 마감되었습니다.' },
-])
-
 const toggleUserMenu = () => {
     showUserMenu.value = !showUserMenu.value
     if (showUserMenu.value) showNotificationDropdown.value = false
 }
-const toggleNotificationDropdown = () => {
-    showNotificationDropdown.value = !showNotificationDropdown.value
-    if (showNotificationDropdown.value) showUserMenu.value = false
-}
+
 const navigateToHome = () => {
     router.push('/')
 }

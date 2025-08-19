@@ -89,6 +89,3 @@ canvas {
     object-fit: contain; /* 내용이 잘리지 않게 */
 }
 </style>
-
-<!-- 그래프 아이콘 -->
-<!-- fas fa-chart-line -->

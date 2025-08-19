@@ -8,10 +8,6 @@
                     getTypeLabel(detail.basicInfo.projectType)
                 }}</span>
             </div>
-            <!-- <div class="flex justify-between">
-                <span class="text-gray-600">지역</span>
-                <span class="text-gray-900 font-medium">서울</span>
-            </div> -->
             <div class="flex justify-between">
                 <span class="text-gray-600">진행 상태</span>
                 <span class="text-green-600 font-medium">{{
@@ -22,10 +18,6 @@
                 <span class="text-gray-600">좋아요</span>
                 <span class="text-gray-900 font-medium">{{ voteCount }}회</span>
             </div>
-            <!-- <div class="flex justify-between">
-        <span class="text-gray-600">조회수</span>
-        <span class="text-gray-900 font-medium">1,247회</span>
-      </div> -->
         </div>
     </div>
 </template>

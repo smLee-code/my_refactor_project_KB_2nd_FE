@@ -48,11 +48,6 @@ import DetailSavings from './DetailSavings.vue'
 
 import { getProjectFullDetail } from '@/api/projectApi'
 
-// const props = defineProps({
-//   project: Object,
-// })
-
-const authStore = useAuthStore()
 const props = defineProps(['project'])
 const route = useRoute()
 const projectId = ref(route.params.id)
@@ -102,11 +97,7 @@ const getTypeLabel = (type) => {
 const fetchProjectData = async (projectId) => {
     console.log('fetchProjectData 호출!')
     try {
-        // const res = await axios.get(`/project/list/detail/${id}/full`)
-        // projectData.value = res.data
-
         projectData.value = await getProjectFullDetail(projectId)
-        console.log('✅ 프로젝트 정보 로드:', projectData.value)
     } catch (e) {
         console.error('❌ 프로젝트 정보 불러오기 실패:', e)
     }

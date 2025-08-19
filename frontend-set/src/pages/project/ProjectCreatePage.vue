@@ -1,4 +1,3 @@
-<!-- The exported code uses Tailwind CSS. Install Tailwind CSS in your dev environment to ensure all styles work. -->
 <template>
     <div class="min-h-screen bg-gray-50">
         <!-- Main Content -->
@@ -252,16 +251,13 @@
 <script setup>
 import { ref, computed, watch, onMounted } from 'vue'
 import { useAuthStore } from '@/stores/auth'
-import { useRouter, useRoute } from 'vue-router'
+import { useRouter } from 'vue-router'
 import axios from 'axios'
 
 import SavingsProjectInput from './components/SavingsProjectInput.vue'
 import LoanProjectInput from './components/LoanProjectInput.vue'
 import DonationProjectInput from './components/DonationProjectInput.vue'
 import ChallengeProjectInput from './components/ChallengeProjectInput.vue'
-
-import projectList from '@/router/project.js'
-
 const authStore = useAuthStore()
 
 const router = useRouter()
@@ -275,15 +271,13 @@ const childRef = ref(null)
 const childForm = ref({})
 const isChildFormValid = ref(false)
 
-const totalForm = ref({})
-
 const form = ref({
     title: '',
     promotion: '',
     projectType: '',
     deadline: '',
     keywordIds: [],
-    images: [], // 이미지 배열로 변경
+    images: [],
 })
 
 const imagePreviews = ref([])
@@ -419,7 +413,6 @@ const isFormValid = computed(() => {
         form.value.promotion.trim() !== '' &&
         form.value.projectType !== '' &&
         form.value.deadline !== '' &&
-        // form.value.image !== null &&
         isChildFormValid.value
     )
 })
@@ -429,8 +422,7 @@ const hasFormData = computed(() => {
         form.value.title.trim() !== '' ||
         form.value.promotion.trim() !== '' ||
         form.value.projectType !== '' ||
-        form.value.deadline !== '' // ||
-        // form.value.image !== null
+        form.value.deadline !== ''
     )
 })
 
@@ -457,7 +449,6 @@ const handleBackClick = () => {
     if (hasFormData.value) {
         showWarningModal.value = true
     } else {
-        // Navigate back
         window.history.back()
     }
 }
@@ -466,14 +457,12 @@ const handleCancelClick = () => {
     if (hasFormData.value) {
         showWarningModal.value = true
     } else {
-        // Navigate back
         window.history.back()
     }
 }
 
 const confirmCancel = () => {
     showWarningModal.value = false
-    // Navigate back
     window.history.back()
 }
 
@@ -488,10 +477,6 @@ const createProject = async () => {
 
     const totalForm = { ...formWithoutImages, ...childForm.value }
 
-    console.log('✅form 확인:', form.value)
-    console.log('✅formWithoutImages 확인:', formWithoutImages)
-    console.log('✅totalForm 확인:', totalForm)
-
     isLoading.value = true
     try {
         // FormData 생성
@@ -502,18 +487,6 @@ const createProject = async () => {
         })
 
         formData.append('projectInfo', jsonBlob)
-
-        // // 자식 폼 데이터 추가 (펀딩 타입별 정보)
-        // Object.keys(childForm.value).forEach((key) => {
-        //     formData.append(key, childForm.value[key])
-        // })
-
-        // 이미지 파일들 추가
-        // if (form.value.images && form.value.images.length > 0) {
-        //     form.value.images.forEach((file) => {
-        //         formData.append('images[]', file)
-        //     })
-        // }
 
         // ✅ 수정
         form.value.images.forEach((file) => {
