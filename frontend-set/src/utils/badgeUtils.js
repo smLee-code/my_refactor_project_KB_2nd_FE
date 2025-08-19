@@ -68,7 +68,7 @@ export const getBadgeColorClass = (badgeName) => {
     }
 
     // 기본 색상 (파란색 계열)
-    return badgeColorMap[badgeName] || 'bg-gradient-to-r from-blue-400 to-blue-600'
+    return badgeColorMap[badgeName] || 'bg-gradient-to-r from-yellow-100 to-yellow-200'
 }
 
 // 뱃지 설명을 더 친근하게 변환
