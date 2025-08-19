@@ -406,7 +406,7 @@ const submitFunding = async () => {
             challengeStartDate: formData.value.challengeStartDate,
             challengeEndDate: formData.value.challengeEndDate,
             financialInstitution: '우리은행', // 임시값 고정
-            keywordIds: [14, 15],
+            keywordIds: formData.value.keywordIds || [],
         }
 
         // JSON 데이터를 Blob으로 변환하여 FormData에 추가 (UTF-8 인코딩 명시)
@@ -449,6 +449,11 @@ onMounted(async () => {
             if (projectData.basicInfo) {
                 formData.value.name = projectData.basicInfo.title || ''
                 formData.value.detail = projectData.basicInfo.promotion || ''
+                
+                // 프로젝트의 키워드 ID 배열 가져오기
+                if (projectData.basicInfo.keywords && Array.isArray(projectData.basicInfo.keywords)) {
+                    formData.value.keywordIds = projectData.basicInfo.keywords.map(keyword => keyword.keywordId)
+                }
             }
 
             // 챌린지형 특정 정보 매핑
