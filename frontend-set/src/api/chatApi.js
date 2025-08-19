@@ -1,5 +1,10 @@
 import api from '@/api'
 
+/**
+ *
+ * @param {*} projectId
+ * @returns
+ */
 export const getChatHistory = async (projectId) => {
     try {
         const res = await api.get(`/chat/history/${projectId}`, {

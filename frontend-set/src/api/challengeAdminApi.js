@@ -1,14 +1,25 @@
 import axios from 'axios'
 import api from '.'
 
-// 챌린지 참여자 목록 조회
+/**
+ * 챌린지 참여자 목록 조회
+ * @param {*} fundId
+ * @param {*} token
+ * @returns
+ */
 export const getChallengeParticipants = (fundId, token) => {
     return api.get(`/admin/challenge/${fundId}/participants`, {
         headers: { Authorization: `Bearer ${token}` },
     })
 }
 
-// 특정 참여자의 인증 기록 조회 (+상태 필터링)
+/**
+ * 특정 참여자의 인증 기록 조회 (+상태 필터링)
+ * @param {*} userChallengeId
+ * @param {*} status
+ * @param {*} token
+ * @returns
+ */
 export const getParticipantLogs = (userChallengeId, status, token) => {
     return api.get(`/admin/challenge/logs/${userChallengeId}`, {
         params: { status: status === 'ALL' ? null : status },
@@ -16,7 +27,12 @@ export const getParticipantLogs = (userChallengeId, status, token) => {
     })
 }
 
-// 인증 기록 수동 승인
+/**
+ * 인증 기록 수동 승인
+ * @param {*} logId
+ * @param {*} token
+ * @returns
+ */
 export const manuallyApproveLog = (logId, token) => {
     return api.patch(
         `/admin/challenge/logs/${logId}/approve`,
@@ -27,7 +43,12 @@ export const manuallyApproveLog = (logId, token) => {
     )
 }
 
-// 인증 기록 수동 반려
+/**
+ * 인증 기록 수동 반려
+ * @param {*} logId
+ * @param {*} token
+ * @returns
+ */
 export const manuallyRejectLog = (logId, token) => {
     return api.patch(
         `/admin/challenge/logs/${logId}/reject`,

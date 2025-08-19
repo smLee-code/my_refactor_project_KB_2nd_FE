@@ -1,6 +1,10 @@
 import api from '@/api'
 
-// 펀딩 생성 (대출)
+/**
+ * 펀딩 생성 (대출)
+ * @param {*} formData
+ * @returns
+ */
 export const createLoanFunding = async (formData) => {
     try {
         const response = await api.post('/fund/create/loan', formData, {
@@ -15,7 +19,11 @@ export const createLoanFunding = async (formData) => {
     }
 }
 
-// 펀딩 생성 (저축)
+/**
+ * 펀딩 생성 (저축)
+ * @param {*} formData
+ * @returns
+ */
 export const createSavingsFunding = async (formData) => {
     try {
         const response = await api.post('/fund/create/savings', formData, {
@@ -30,7 +38,11 @@ export const createSavingsFunding = async (formData) => {
     }
 }
 
-// 펀딩 생성 (기부)
+/**
+ * 펀딩 생성 (기부)
+ * @param {*} formData
+ * @returns
+ */
 export const createDonationFunding = async (formData) => {
     try {
         const response = await api.post('/fund/create/donation', formData, {
@@ -45,7 +57,11 @@ export const createDonationFunding = async (formData) => {
     }
 }
 
-// 펀딩 생성 (챌린지)
+/**
+ * 펀딩 생성 (챌린지)
+ * @param {*} formData
+ * @returns
+ */
 export const createChallengeFunding = async (formData) => {
     try {
         const response = await api.post('/fund/create/challenge', formData, {
@@ -60,9 +76,11 @@ export const createChallengeFunding = async (formData) => {
     }
 }
 
-// ===== User Challenge API =====
-
-// 챌린지 가입 신청
+/**
+ * 챌린지 가입 신청
+ * @param {*} id
+ * @returns
+ */
 export const applyChallenge = async (id) => {
     try {
         const response = await api.post(`/user-challenge/${id}`, {})
@@ -73,7 +91,11 @@ export const applyChallenge = async (id) => {
     }
 }
 
-// 챌린지 참여 취소
+/**
+ * 챌린지 참여 취소
+ * @param {*} id
+ * @returns
+ */
 export const deleteChallenge = async (id) => {
     try {
         const response = await api.delete(`/user-challenge/${id}`, {
@@ -88,7 +110,10 @@ export const deleteChallenge = async (id) => {
     }
 }
 
-// 키워드 기반 펀딩 추천
+/**
+ * 키워드 기반 펀딩 추천
+ * @returns
+ */
 export const getRecommendedFundings = async () => {
     try {
         const response = await api.get('/fund/list/keyword', {
@@ -104,7 +129,12 @@ export const getRecommendedFundings = async () => {
     }
 }
 
-// 챌린지 인증 (인증샷 업로드)
+/**
+ * 챌린지 인증 (인증샷 업로드)
+ * @param {*} id
+ * @param {*} formData
+ * @returns
+ */
 export const verifyChallenge = async (id, formData) => {
     try {
         console.log('verifyChallenge API 호출 시작:', {
@@ -140,7 +170,11 @@ export const verifyChallenge = async (id, formData) => {
     }
 }
 
-// 챌린지 상세 정보 조회
+/**
+ * 챌린지 상세 정보 조회
+ * @param {*} userChallengeId
+ * @returns
+ */
 export const getChallengeDetail = async (userChallengeId) => {
     try {
         const response = await api.get(`user-challenge/${userChallengeId}`, {
@@ -155,7 +189,10 @@ export const getChallengeDetail = async (userChallengeId) => {
     }
 }
 
-// 내 모든 챌린지 조회
+/**
+ * 내 모든 챌린지 조회
+ * @returns
+ */
 export const getAllMyChallenges = async () => {
     try {
         const response = await api.get(`/user-challenge/user/all/v2`, {
@@ -170,7 +207,11 @@ export const getAllMyChallenges = async () => {
     }
 }
 
-// 챌린지 로그 조회 (인증샷 이력)
+/**
+ * 챌린지 로그 조회 (인증샷 이력)
+ * @param {*} userChallengeId
+ * @returns
+ */
 export const getChallengeLogs = async (userChallengeId) => {
     try {
         const response = await api.get(`/challenge-logs/${userChallengeId}/all`, {

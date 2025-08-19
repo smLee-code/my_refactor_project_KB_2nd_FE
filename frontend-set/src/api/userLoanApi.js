@@ -1,7 +1,11 @@
-import axios from 'axios'
 import api from '.'
 
-// 대출 승인 (관리자용)
+/**
+ * 대출 승인 (관리자용)
+ * @param {*} userLoanId
+ * @param {*} token
+ * @returns
+ */
 export const approveLoan = (userLoanId, token) => {
     const requestBody = {
         type: 'APPROVED',
@@ -14,7 +18,12 @@ export const approveLoan = (userLoanId, token) => {
     })
 }
 
-// 대출 반려 (관리자용)
+/**
+ * 대출 반려 (관리자용)
+ * @param {*} userLoanId
+ * @param {*} token
+ * @returns
+ */
 export const rejectLoan = (userLoanId, token) => {
     const requestBody = {
         type: 'REJECTED',
@@ -27,7 +36,12 @@ export const rejectLoan = (userLoanId, token) => {
     })
 }
 
-// 대출 지급 (관리자용)
+/**
+ * 대출 지급 (관리자용)
+ * @param {*} userLoanId
+ * @param {*} token
+ * @returns
+ */
 export const processLoanPayment = (userLoanId, token) => {
     const requestBody = {
         type: 'DONE',

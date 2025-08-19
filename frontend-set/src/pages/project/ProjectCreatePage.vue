@@ -258,16 +258,13 @@ import SavingsProjectInput from './components/SavingsProjectInput.vue'
 import LoanProjectInput from './components/LoanProjectInput.vue'
 import DonationProjectInput from './components/DonationProjectInput.vue'
 import ChallengeProjectInput from './components/ChallengeProjectInput.vue'
-const authStore = useAuthStore()
 
+const authStore = useAuthStore()
 const router = useRouter()
 
 const categoryAndKeywords = ref([])
-
 const selectedKeywordIds = ref([])
-
 const childRef = ref(null)
-
 const childForm = ref({})
 const isChildFormValid = ref(false)
 
