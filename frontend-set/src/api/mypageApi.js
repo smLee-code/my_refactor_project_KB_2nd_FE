@@ -29,7 +29,7 @@ export const getMyKeywords = async () => {
  * 관심 키워드 수정
  * @param {Array<number>} keywordIds - 키워드 아이디 목록
  * @param {Array<Object>} availableKeywords - 가능한 관심 키워드 목록 ???
- * @returns {Promise<???>} HTTP 상태값
+ * @returns {Promise<string | { error: string }>} 서버 응답 데이터
  */
 export const updateMyKeywords = async (keywordIds, availableKeywords) => {
     const keywordNames = keywordIds.map((id) => {
@@ -43,7 +43,7 @@ export const updateMyKeywords = async (keywordIds, availableKeywords) => {
 /**
  * 개인정보 수정
  * @param {Object} accountInfo - 계정 정보
- * @returns {Promise<???>} HTTP 상태값
+ * @returns {Promise<string | { error: string }>} 서버 응답 데이터
  */
 export const updateAccountInfo = async (accountInfo) => {
     const response = await api.put(`${BASE_URL}/account`, accountInfo)
@@ -66,7 +66,7 @@ export const getMyVotes = async (token) => {
 
 /**
  * 작성한 프로젝트 조회
- * @returns {Promise<???>} HTTP 상태값
+ * @returns {Promise<string | { error: string }>} 서버 응답 데이터
  */
 export const getMyProjects = async () => {
     const response = await api.get(`${BASE_URL}/projects`)
