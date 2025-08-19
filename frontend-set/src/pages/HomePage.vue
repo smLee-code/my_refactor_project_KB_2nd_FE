@@ -101,7 +101,6 @@ import FundingUrgentCard from '@/components/funding/FundingUrgentCard.vue'
 import Footer from '@/components/layout/MainFooter.vue'
 import axios from 'axios'
 import { useAuthStore } from '@/stores/auth'
-import { getRecommendedFundings } from '@/api/fundingApi'
 import { getProjects, getRecommendedProjects } from '@/api/projectApi'
 import { calculateFundingProgress, getFundTypeKorean, getDaysLeft } from '@/utils/fundingUtils'
 

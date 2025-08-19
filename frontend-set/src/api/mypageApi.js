@@ -141,7 +141,7 @@ export const getMyAllSavings = async (token) => {
 
 /**
  * 참여 중인 대출 조회
- * @param {string} token
+ * @param {string} token - 인증 토큰
  * @returns {Promise<Object>} 참여중인 대출 데이터
  */
 export const getMyAllLoans = async (token) => {
@@ -159,7 +159,7 @@ export const getMyAllLoans = async (token) => {
 
 /**
  * 참여 중인 기부 조회
- * @param {string} token
+ * @param {string} token - 인증 토큰
  * @returns {Promise<Object>} 참여중인 기부 데이터
  */
 export const getMyAllDonations = async (token) => {
@@ -177,7 +177,7 @@ export const getMyAllDonations = async (token) => {
 
 /**
  * 참여 중인 챌린지 조회
- * @param {string} token
+ * @param {string} token - 인증 토큰
  * @returns {Promise<Object>} 참여중인 챌린지 데이터
  */
 export const getMyAllChallenges = async (token) => {
