@@ -16,9 +16,9 @@
             </div>
             <!-- 펀딩 참여 헤더 -->
             <div class="mb-8">
-                <h1 class="text-3xl font-bold text-gray-900 mb-2">{{ fundingTitle }} 참여하기</h1>
+                <h1 class="text-3xl font-bold text-gray-900 mb-2">{{ fundingTitle }}</h1>
                 <p class="text-lg text-gray-600">
-                    {{ fundingType === 'Challenge' ? '챌린지' : '기부' }} 프로젝트
+                    {{ fundingType === 'Challenge' ? '챌린지' : '기부' }} 참여하기
                 </p>
             </div>
 
@@ -306,7 +306,7 @@ const fetchFundingInfo = async () => {
         console.log('펀딩 상세 정보:', response.data)
 
         if (response.data) {
-            fundingTitle.value = response.data.fundName || `펀딩 ${fundingId}`
+            fundingTitle.value = response.data.name || response.data.fundName || `펀딩`
             fundingType.value = response.data.fundType || 'Donation'
 
             // 챌린지는 보증금 3000원 고정
@@ -322,7 +322,7 @@ const fetchFundingInfo = async () => {
     } catch (error) {
         console.error('펀딩 정보 조회 실패:', error)
         // 실패시 기본값 설정
-        fundingTitle.value = `펀딩 ${fundingId}`
+        fundingTitle.value = `펀딩`
         fundingType.value = 'Donation'
         minAmount.value = 1000
         maxAmount.value = 1000000

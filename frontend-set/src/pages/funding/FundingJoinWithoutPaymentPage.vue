@@ -17,10 +17,10 @@
             <!-- 펀딩 참여 헤더 -->
             <div class="mb-8">
                 <h1 class="text-3xl font-bold text-gray-900 mb-2">
-                    {{ fundingTitle || '로딩중...' }} 신청하기
+                    {{ fundingTitle || '로딩중...' }}
                 </h1>
                 <p v-if="fundingType" class="text-lg text-gray-600">
-                    {{ fundingType === 'loan' ? '대출' : '저축' }} 상품
+                    {{ fundingType === 'loan' ? '대출' : '저축' }} 신청하기
                 </p>
             </div>
 
