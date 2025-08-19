@@ -49,6 +49,9 @@
                             :liked-fundings="likedFundings"
                             @toggle-like="handleProjectToggleLike"
                         />
+
+                        <MyDonationsSection :donations="myDonations" class="mt-12 mb-12" />
+
                         <ParticipatingFundingsSection
                             :participating-fundings="participatingFundings"
                             @update:participating-fundings="participatingFundings = $event"
@@ -81,6 +84,7 @@ import TabNavigation from '@/components/mypage/TabNavigation.vue'
 import UserInfoCard from '@/components/mypage/UserInfoCard.vue'
 import LikedProjectsSection from '@/components/mypage/LikedProjectsSection.vue'
 import ParticipatingFundingsSection from '@/components/mypage/ParticipatingFundingsSection.vue'
+import MyDonationsSection from '@/components/mypage/MyDonationsSection.vue'
 
 const authStore = useAuthStore()
 const token = authStore.loadToken()
@@ -303,9 +307,9 @@ const loadLikedProjects = async () => {
 }
 
 // 참여 중인 펀딩 로드
+// 참여 중인 펀딩 로드 함수 수정
 const loadParticipatingFundings = async () => {
     try {
-        // 타입별로 API 호출
         const [savings, loans, donations, challenges] = await Promise.all([
             getMyAllSavings(token),
             getMyAllLoans(token),
@@ -313,120 +317,55 @@ const loadParticipatingFundings = async () => {
             getMyAllChallenges(token),
         ])
 
-        // 각 타입별 데이터를 통합
-        const allFundings = []
+        const otherFundings = [] // 기부를 제외한 나머지 펀딩
+        const processedDonations = [] // 기부 전용 데이터
 
-        // 저축 데이터 추가
-        console.log('저축 데이터 원본:', savings)
-        savings.forEach((saving) => {
-            console.log('저축 데이터 처리 중:', saving)
-            const savingImage =
-                saving.images && saving.images.length > 0
-                    ? saving.images[0].imageUrl
-                    : `https://readdy.ai/api/search-image?query=savings%20product&width=150&height=150&seq=saving${saving.userSavingId}`
+        // 저축, 대출, 챌린지 데이터 처리 (otherFundings에 추가)
+        savings.forEach((item) => otherFundings.push({ type: 'saving', ...item }))
+        loans.forEach((item) => otherFundings.push({ type: 'loan', ...item }))
+        challenges.forEach((item) => otherFundings.push({ type: 'challenge', ...item }))
 
-            allFundings.push({
-                id: saving.userSavingId,
-                title: saving.savingName || '저축 상품',
-                joinDate: `참여일: ${new Date().toLocaleDateString('ko-KR')}`,
-                amount: saving.savingAmount || 0,
-                type: 'saving',
-                fundId: saving.productId,
-                status: '진행중',
-                thumbnail: savingImage,
-            })
-        })
-
-        // 대출 데이터 추가
-        console.log('대출 데이터 원본:', loans)
-        loans.forEach((loan) => {
-            console.log('대출 데이터 처리 중:', loan)
-            const loanImage =
-                loan.images && loan.images.length > 0
-                    ? loan.images[0].imageUrl
-                    : `https://readdy.ai/api/search-image?query=loan%20product&width=150&height=150&seq=loan${loan.userLoanId}`
-
-            allFundings.push({
-                id: loan.userLoanId,
-                title: loan.loanName || '대출 상품',
-                joinDate: `참여일: ${new Date().toLocaleDateString('ko-KR')}`,
-                amount: loan.loanAmount || 0,
-                type: 'loan',
-                fundId: loan.productId,
-                status: '진행중',
-                thumbnail: loanImage,
-            })
-        })
-
-        // 기부 데이터 추가
-        console.log('기부 데이터 원본:', donations)
+        // ◀ 3. 기부 데이터는 별도로 처리하여 processedDonations에 추가
         donations.forEach((donation) => {
-            console.log('기부 데이터 처리 중:', donation)
-            const donationImage =
-                donation.images && donation.images.length > 0
-                    ? donation.images[0].imageUrl
-                    : `https://readdy.ai/api/search-image?query=donation%20product&width=150&height=150&seq=donation${donation.userDonationId}`
-
-            allFundings.push({
+            processedDonations.push({
                 id: donation.userDonationId,
                 title: donation.donationName || '기부 상품',
-                joinDate: `참여일: ${new Date().toLocaleDateString('ko-KR')}`,
+                recipient: donation.recipient || '지정되지 않은 기부처',
                 amount: donation.donationAmount || 0,
                 type: 'donation',
-                fundId: donation.productId,
-                status: '진행중',
-                thumbnail: donationImage,
+                thumbnail:
+                    donation.images && donation.images.length > 0
+                        ? donation.images[0].imageUrl
+                        : `https://readdy.ai/api/search-image?query=donation,hope&width=150&height=150&seq=d${donation.userDonationId}`,
             })
         })
 
-        // 챌린지 데이터 추가
-        console.log('챌린지 데이터 원본:', challenges)
-        challenges.forEach((challenge) => {
-            console.log('챌린지 데이터 처리 중:', challenge)
-            console.log('챌린지 productId:', challenge.productId)
-            console.log('챌린지 userChallengeId:', challenge.userChallengeId)
+        // 템플릿에 맞게 데이터 변환 (기부 제외)
+        participatingFundings.value = otherFundings.map((f) => ({
+            id: f.userSavingId || f.userLoanId || f.userChallengeId,
+            title: f.savingName || f.loanName || f.challengeName || '펀딩 상품',
+            amount: f.savingAmount || f.loanAmount || 0,
+            type: f.type,
+            fundId: f.productId || f.fundId,
+            status: f.challengeStatus || '진행중',
+            thumbnail:
+                f.images && f.images.length > 0
+                    ? f.images[0].imageUrl
+                    : `https://readdy.ai/api/search-image?query=${f.type}&width=150&height=150&seq=${f.id}`,
+        }))
 
-            const challengeImage =
-                challenge.challengeImageUrl ||
-                `https://readdy.ai/api/search-image?query=challenge%20product&width=150&height=150&seq=challenge${challenge.userChallengeId}`
-
-            const challengeData = {
-                id: challenge.userChallengeId,
-                title: challenge.challengeName || '챌린지',
-                joinDate: `참여일: ${new Date().toLocaleDateString('ko-KR')}`,
-                amount: 0,
-                type: 'challenge',
-                fundId: challenge.fundId, // userChallengeId를 사용해보기
-                status: challenge.challengeStatus || '진행중',
-                thumbnail: challengeImage,
-            }
-
-            console.log('생성된 챌린지 데이터:', challengeData)
-            allFundings.push(challengeData)
-        })
-
-        participatingFundings.value = allFundings
-        console.log('참여중인 펀딩 데이터:', participatingFundings.value)
-        console.log('총 참여 펀딩 수:', allFundings.length)
-
-        // 각 타입별 개수 로깅
-        const typeCounts = allFundings.reduce((acc, funding) => {
-            acc[funding.type] = (acc[funding.type] || 0) + 1
-            return acc
-        }, {})
-        console.log('타입별 참여 펀딩 개수:', typeCounts)
+        myDonations.value = processedDonations // 분리된 기부 데이터를 myDonations에 할당
     } catch (err) {
         console.error('참여 중인 펀딩 로드 실패:', err)
-        console.error('에러 상세:', err.response?.data)
-        // API 실패 시 빈 배열로 설정
         participatingFundings.value = []
-        console.log('API 실패로 빈 배열 설정')
+        myDonations.value = []
     }
 }
 
 const likedProjects = ref([])
 const likedFundings = ref([])
 const participatingFundings = ref([])
+const myDonations = ref([])
 
 // 좋아요한 펀딩 로드
 const loadLikedFundings = async () => {
