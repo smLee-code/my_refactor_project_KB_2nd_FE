@@ -415,7 +415,7 @@ const submitFunding = async () => {
             launchDate: formData.value.launchDate,
             endDate: formData.value.endDate,
             financialInstitution: '신한은행', // 임시값 고정
-            keywordIds: [11, 12, 13],
+            keywordIds: formData.value.keywordIds || [],
         }
 
         // JSON 데이터를 Blob으로 변환하여 FormData에 추가 (UTF-8 인코딩 명시)
@@ -455,6 +455,11 @@ onMounted(async () => {
             // 프로젝트 정보를 펀딩 폼에 매핑
             formData.value.name = projectData.basicInfo.title || ''
             formData.value.detail = projectData.basicInfo.promotion || ''
+
+            // 프로젝트의 키워드 ID 배열 가져오기
+            if (projectData.basicInfo.keywords && Array.isArray(projectData.basicInfo.keywords)) {
+                formData.value.keywordIds = projectData.basicInfo.keywords.map(keyword => keyword.keywordId)
+            }
 
             // 대출형 특정 정보 매핑
             if (projectData.detailInfo) {

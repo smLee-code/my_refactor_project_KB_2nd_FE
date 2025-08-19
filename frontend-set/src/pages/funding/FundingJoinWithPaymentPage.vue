@@ -214,7 +214,7 @@
                             </span>
                         </label>
                         <label
-                            v-if="fundingType === 'donation'"
+                            v-if="fundingType === 'Donation'"
                             class="flex items-start space-x-3 cursor-pointer"
                         >
                             <input
