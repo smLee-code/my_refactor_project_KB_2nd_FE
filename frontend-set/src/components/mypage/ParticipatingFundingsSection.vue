@@ -76,10 +76,6 @@
 
                         <div class="flex items-center space-x-6 text-sm text-gray-600">
                             <div class="flex items-center space-x-2">
-                                <i class="fas fa-calendar text-gray-400"></i>
-                                <span>참여일: {{ participation.joinDate }}</span>
-                            </div>
-                            <div class="flex items-center space-x-2">
                                 <i class="fas fa-won-sign text-gray-400"></i>
                                 <span
                                     >참여 금액: {{ participation.amount.toLocaleString() }}원</span
