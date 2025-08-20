@@ -2,15 +2,29 @@
     <div class="mb-10">
         <h2 class="text-xl font-semibold text-gray-900 mb-6">참여 중인 펀딩 목록</h2>
 
+        <!-- 카테고리 필터 -->
+        <CategoryFilter
+            v-if="participatingFundings.length > 0"
+            :categories="['전체', '저축', '대출', '챌린지']"
+            v-model="selectedCategory"
+            class="mb-6"
+        />
+
         <!-- 참여 중인 펀딩이 없을 때 -->
         <div
-            v-if="participatingFundings.length === 0"
+            v-if="filteredFundings.length === 0"
             class="bg-white rounded-2xl shadow-lg p-8 border border-gray-100 text-center"
         >
             <div class="text-gray-400 mb-4">
                 <i class="fas fa-handshake text-4xl"></i>
             </div>
-            <p class="text-gray-600 mb-2">아직 참여 중인 펀딩이 없습니다.</p>
+            <p class="text-gray-600 mb-2">
+                {{
+                    selectedCategory === '전체'
+                        ? '아직 참여 중인 펀딩이 없습니다.'
+                        : `${selectedCategory} 펀딩이 없습니다.`
+                }}
+            </p>
             <p class="text-sm text-gray-500 mb-6">진행중인 펀딩에 참여해보세요!</p>
             <button
                 @click="goToFundingList"
@@ -23,7 +37,7 @@
         <!-- 참여 중인 펀딩 목록 -->
         <div v-else class="space-y-4">
             <div
-                v-for="participation in participatingFundings"
+                v-for="participation in filteredFundings"
                 :key="participation.id"
                 class="bg-white rounded-2xl shadow-lg p-6 border border-gray-100"
             >
@@ -76,10 +90,6 @@
 
                         <div class="flex items-center space-x-6 text-sm text-gray-600">
                             <div class="flex items-center space-x-2">
-                                <i class="fas fa-calendar text-gray-400"></i>
-                                <span>참여일: {{ participation.joinDate }}</span>
-                            </div>
-                            <div class="flex items-center space-x-2">
                                 <i class="fas fa-won-sign text-gray-400"></i>
                                 <span
                                     >참여 금액: {{ participation.amount.toLocaleString() }}원</span
@@ -96,6 +106,7 @@
 <script setup>
 import { ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
+import CategoryFilter from '@/components/common/CategoryFilter.vue'
 
 const router = useRouter()
 
@@ -107,6 +118,25 @@ const props = defineProps({
         type: Array,
         default: () => [],
     },
+})
+
+// 선택된 카테고리 상태
+const selectedCategory = ref('전체')
+
+// 필터링된 펀딩 목록 계산
+const filteredFundings = computed(() => {
+    if (selectedCategory.value === '전체') {
+        return props.participatingFundings
+    }
+
+    const categoryTypeMap = {
+        저축: 'saving',
+        대출: 'loan',
+        챌린지: 'challenge',
+    }
+
+    const targetType = categoryTypeMap[selectedCategory.value]
+    return props.participatingFundings.filter((funding) => funding.type === targetType)
 })
 
 // 데이터 디버깅을 위한 watch
