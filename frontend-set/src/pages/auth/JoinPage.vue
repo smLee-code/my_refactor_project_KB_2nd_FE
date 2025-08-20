@@ -244,7 +244,7 @@
 
 <script lang="ts" setup>
 import { useRouter } from 'vue-router'
-import { ref, computed, onMounted, watch } from 'vue' // watchEffect 대신 watch 사용
+import { ref, computed, onMounted, watch } from 'vue'
 import axios from 'axios'
 import ToastNotification from '@/components/common/ToastNotification.vue'
 
@@ -262,7 +262,7 @@ const form = ref({
     termsAccepted: false,
 })
 
-const keywords = ref<Array<{ keywordId: number; name: string }>>([]) // 타입 명시
+const keywords = ref<Array<{ keywordId: number; name: string }>>([])
 
 const toggleKeyword = (keywordId: number) => {
     if (form.value.selectedKeywordIds.includes(keywordId)) {
@@ -398,7 +398,6 @@ const sendVerification = async () => {
 
     try {
         await axios.get(`/member/duplicated/email?email=${form.value.email}`)
-        // 중복되지 않았을 때 (API가 에러를 던지지 않았을 때) 계속 진행
     } catch (err) {
         showToast('이미 사용 중인 이메일입니다.', 'error')
         console.error('이메일 중복:', err)
@@ -426,7 +425,7 @@ const verifyCode = async () => {
             `/mail/verify?email=${form.value.email}&code=${form.value.verificationCode}`,
         )
         isVerificationSent.value = false
-        isEmailVerified.value = true // 인증 성공 상태 업데이트
+        isEmailVerified.value = true
         showToast('이메일 인증이 완료되었습니다.', 'success')
     } catch (err) {
         isEmailVerified.value = false

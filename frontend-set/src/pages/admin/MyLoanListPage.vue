@@ -71,7 +71,6 @@ import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import { getMyCreatedLoans } from '@/api/fundApi' // 1번에서 만든 API 함수
 
-const router = useRouter()
 const authStore = useAuthStore()
 
 const myLoans = ref([])

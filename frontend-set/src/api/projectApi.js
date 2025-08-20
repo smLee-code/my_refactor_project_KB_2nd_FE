@@ -2,6 +2,10 @@ import api from '@/api'
 
 const BASE_URL = '/project'
 
+/**
+ * 모든 프로젝트 목록 조회
+ * @returns {Promise<Array>} 모든 프로젝트 목록
+ */
 export const getProjects = async () => {
     try {
         const res = await api.get('/project/list', {
@@ -34,6 +38,10 @@ export const getProjects = async () => {
     }
 }
 
+/**
+ * 관심 기반 추천 프로젝트 목록 조회
+ * @returns {Promise<Array>} 관심 기반 추천 프로젝트 목록
+ */
 export const getRecommendedProjects = async () => {
     try {
         const res = await api.get('/project/list/keyword', {
@@ -43,8 +51,6 @@ export const getRecommendedProjects = async () => {
         })
 
         const projectList = res.data
-
-        console.log('✅ getRecommendedProjects - projectList before:', projectList)
 
         for (const project of projectList) {
             if (project.images == undefined || project.images.length === 0) {
@@ -61,8 +67,6 @@ export const getRecommendedProjects = async () => {
             }
         }
 
-        console.log('✅ getRecommendedProjects - projectList after:', projectList)
-
         return projectList
     } catch (error) {
         console.error('관심 기반 프로젝트 리스트 조회 실패:', error)
@@ -70,15 +74,16 @@ export const getRecommendedProjects = async () => {
     }
 }
 
+/**
+ * 특정 프로젝트 상세 조회
+ * @param {number} projectId - 프로젝트 ID
+ * @returns {Promise<Object>} - 해당 프로젝트 상세 정보
+ */
 export const getProjectFullDetail = async (projectId) => {
-    console.log('✅ getProjectFullDetail 호출!')
-
     try {
         const res = await api.get(`/project/list/detail/${projectId}/full`)
 
         const project = res.data
-
-        console.log('✅ getProjectFullDetail - project:', project)
 
         const tempImage = {
             imageType: 'Project',
@@ -91,8 +96,6 @@ export const getProjectFullDetail = async (projectId) => {
             project.imageList = [tempImage]
         }
 
-        console.log('✅ getProjectFullDetail - projectList:', project)
-
         return project
     } catch (error) {
         console.error('프로젝트 Detail Full 조회 실패:', error)
@@ -100,9 +103,12 @@ export const getProjectFullDetail = async (projectId) => {
     }
 }
 
+/**
+ * 특정 프로젝트와 관련된 프로젝트 목록 조회
+ * @param {number} projectId - 프로젝트 ID
+ * @returns {Promise<Array>} - 관련 프로젝트 목록
+ */
 export const getRelatedProjects = async (projectId) => {
-    console.log('✅ getRelatedProjects 호출')
-
     try {
         const res = await api.get(`/project/related/${projectId}`)
 

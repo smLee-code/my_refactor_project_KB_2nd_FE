@@ -11,11 +11,7 @@
                 <div
                     class="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-6 space-y-4 sm:space-y-0"
                 >
-                    <SearchBox
-                        v-model="searchQuery"
-                        placeholder="검색어를 입력하세요"
-                        @search="handleSearch"
-                    />
+                    <SearchBox v-model="searchQuery" placeholder="검색어를 입력하세요" />
                     <SortSelect :options="sortOptions" v-model="selectedSort" />
                 </div>
                 <CategoryFilter :categories="categoriesFromProjects" v-model="selectedCategory" />
@@ -126,7 +122,6 @@ const categoriesFromProjects = computed(() => {
     return base.concat(translated)
 })
 
-/* ---------- 헬퍼들 ---------- */
 // 날짜 배열([yyyy, M, d, hh, mm, ss]) → Date
 const toDate = (v) => {
     if (!v) return null
@@ -148,17 +143,6 @@ const formatDate = (val) => {
     return `${y}-${m}-${d}`
 }
 
-// 이미지 우선순위: thumbnailImage > images(Project) > images[0] > 기본값
-const pickImageUrl = (item) => {
-    if (item.thumbnailImage) return item.thumbnailImage
-    if (Array.isArray(item.images) && item.images.length > 0) {
-        const projectImg = item.images.find((img) => img.imageType === 'Project')
-        return (projectImg?.imageUrl || item.images[0]?.imageUrl) ?? '/default-thumbnail.png'
-    }
-    return '/default-thumbnail.png'
-}
-
-/* ---------- 파생 데이터 ---------- */
 const filteredProjects = computed(() => {
     let filtered = projects.value.slice()
 
@@ -206,7 +190,6 @@ const paginatedProjects = computed(() => {
     return filteredProjects.value.slice(start, start + itemsPerPage)
 })
 
-/* ---------- 페이지 보정 ---------- */
 // 필터/검색/정렬/탭 변경 시 1페이지로 리셋
 watch([activeTab, searchQuery, selectedCategory, selectedSort], () => {
     currentPage.value = 1
@@ -219,7 +202,6 @@ watch([filteredProjects, totalPages], () => {
     }
 })
 
-/* ---------- 좋아요 토글 ---------- */
 const toggleLike = async (projectId) => {
     const project = projects.value.find((p) => p.id === projectId)
     if (!project) return
@@ -246,11 +228,6 @@ const toggleLike = async (projectId) => {
 /* ---------- 데이터 로딩 ---------- */
 onMounted(async () => {
     try {
-        // const res = await axios.get('/project/list', {
-        //     headers: {
-        //         Authorization: `Bearer ${authStore.loadToken()}`,
-        //     },
-        // }) // DB에서 받아온 응답
         const res = await getProjects()
 
         projects.value = res.map((item) => {
@@ -296,18 +273,9 @@ onMounted(async () => {
         console.error('❌ 프로젝트 불러오기 실패:', err)
     }
 })
-
-/* ---------- 이벤트 핸들러(검색 박스용) ---------- */
-const handleSearch = () => {
-    // SearchBox에서 엔터/버튼 클릭 시 호출되는 훅 (필요 시 추가 동작)
-}
 </script>
 
 <style scoped>
-/* .!rounded-button {
-    border-radius: 8px;
-} */
-
 @media (max-width: 768px) {
     .grid-cols-2 {
         grid-template-columns: 1fr;

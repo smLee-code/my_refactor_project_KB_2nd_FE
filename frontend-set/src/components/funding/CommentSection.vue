@@ -34,15 +34,6 @@
                                     formatDate(comment.createAt)
                                 }}</span>
                             </div>
-                            <!-- 본인 댓글인 경우 삭제 버튼 표시 (백엔드 수정 후 활성화 예정) -->
-                            <!-- <button
-                                 v-if="isMyComment(comment.userId)"
-                                 @click="deleteCommentHandler(comment.commentId)"
-                                 class="text-red-500 hover:text-red-700 text-sm"
-                                 :disabled="isDeleting"
-                             >
-                                 <i class="fas fa-trash"></i>
-                             </button> -->
                         </div>
                         <p class="text-sm text-gray-700">{{ comment.content }}</p>
                     </div>

@@ -16,10 +16,8 @@
 </template>
 
 <script setup>
-import { useRouter, useRoute } from 'vue-router'
-import { ref, watch } from 'vue'
+import { useRouter } from 'vue-router'
 import RelatedCard from './RelatedCard.vue'
-import axios from 'axios' // ✅ axios 추가
 
 const props = defineProps({
     projects: {
