@@ -105,7 +105,4 @@ const formatDate = (dateString) => {
 
     return `${year}.${month}.${day}`
 }
-
-console.log('✅ props:', props)
-console.log('✅ thumbnailImageUrl:', thumbnailImageUrl.value)
 </script>

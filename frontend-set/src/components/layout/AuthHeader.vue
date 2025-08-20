@@ -5,7 +5,6 @@
                 <!-- 로고 -->
                 <div class="flex items-center cursor-pointer" @click="navigateToHome">
                     <img src="/images/logo.png" alt="Fund:ing" class="h-10" />
-                    <!-- <h1 class="text-title-md font-bold text-kb-ui-01 drop-shadow-sm">Fund:ing</h1> -->
                 </div>
             </div>
         </div>

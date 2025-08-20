@@ -11,7 +11,6 @@
                 class="bg-gradient-to-r from-yellow-50 to-orange-50 border-l-4 border-yellow-400 p-4 rounded-lg mb-6"
             >
                 <div class="flex items-center">
-                    <!-- <i class="fas fa-exclamation-triangle text-yellow-500 text-lg mr-3"></i> -->
                     <div>
                         <h3 class="text-m font text-gray-900 mb-1">인증샷 조건</h3>
                         <span

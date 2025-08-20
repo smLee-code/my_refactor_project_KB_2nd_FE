@@ -33,11 +33,6 @@
                             >
                                 성공/실패
                             </th>
-                            <!-- <th
-                                class="px-6 py-3 text-left text-xs font-bold text-gray-600 uppercase"
-                            >
-                                참여일
-                            </th> -->
                             <th
                                 class="px-6 py-3 text-center text-xs font-bold text-gray-600 uppercase"
                             >
@@ -63,9 +58,6 @@
                                 /
                                 <span class="text-red-600 font-semibold">{{ p.failCount }}회</span>
                             </td>
-                            <!-- <td class="px-6 py-4 text-sm text-gray-600">
-                                {{ formatDate(p.joinAt) }}
-                            </td> -->
                             <td class="px-6 py-4 text-center">
                                 <router-link
                                     :to="`/admin/challenge/logs/${p.userChallengeId}`"
@@ -105,11 +97,6 @@ const fetchParticipants = async () => {
     } finally {
         isLoading.value = false
     }
-}
-
-const formatDate = (dateArray) => {
-    if (!dateArray) return 'N/A'
-    return new Date(dateArray).toLocaleDateString('ko-KR')
 }
 
 onMounted(fetchParticipants)

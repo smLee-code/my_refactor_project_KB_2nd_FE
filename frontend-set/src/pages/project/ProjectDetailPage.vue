@@ -62,8 +62,7 @@
 <script setup>
 import axios from 'axios'
 import { useRoute, useRouter, onBeforeRouteUpdate } from 'vue-router'
-import { ref, nextTick, onMounted, watch, computed } from 'vue'
-import { watchEffect } from 'vue'
+import { ref, onMounted, watch, computed } from 'vue'
 import { useAuthStore } from '@/stores/auth'
 
 import ProjectInfo from '@/components/project/detail/ProjectInfo.vue'
@@ -90,13 +89,13 @@ const voteCount = ref(0)
 const relatedProjects = ref([])
 const loading = ref(false)
 
-// ✅ 템플릿에서 쓰던 data alias (안전 기본값 포함)
+// 템플릿에서 쓰던 data alias (안전 기본값 포함)
 const data = computed(() => {
     return (
         projectData.value ?? {
             basicInfo: null,
             detailInfo: null,
-            imageList: [], // DetailHeader가 비어 있어도 안전
+            imageList: [],
         }
     )
 })
@@ -117,22 +116,10 @@ const fetchProjectData = async (projectId) => {
     loading.value = true
     projectData.value = null
 
-    console.log('✅✅✅if return 통과함')
-
     try {
-        // const res = await axios.get(`/project/list/detail/${projectId}/full`)
-        // projectData.value = res.data
-
         projectData.value = await getProjectFullDetail(projectId)
 
-        console.log('✅ projectData:', projectData.value)
-
-        // const relatedRes = await axios.get(`/project/related/${projectId}`)
-        // relatedProjects.value = relatedRes.data
-
         relatedProjects.value = await getRelatedProjects(projectId)
-
-        console.log('✅ relatedProjects:', relatedProjects.value)
 
         const isLikedRes = await axios.get(`/votes/${projectId}`, {
             headers: {

@@ -67,16 +67,11 @@
 import { ref, onMounted, reactive } from 'vue'
 import {
     getMyPageInfo,
-    getMyKeywords,
-    updateMyKeywords,
-    updateAccountInfo,
     getMyVotes,
-    getMyProjects,
     getMyAllSavings,
     getMyAllLoans,
     getMyAllDonations,
     getMyAllChallenges,
-    getLikedFundings,
     getMyAllVotedFunds,
     getProjectDetail,
     toggleProjectLike,

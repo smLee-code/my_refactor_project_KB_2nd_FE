@@ -1,4 +1,3 @@
-<!-- The exported code uses Tailwind CSS. Install Tailwind CSS in your dev environment to ensure all styles work. -->
 <template>
     <div class="min-h-screen bg-gray-50">
         <!-- 헤더 섹션 -->

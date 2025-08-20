@@ -1,4 +1,3 @@
-<!-- The exported code uses Tailwind CSS. Install Tailwind CSS in your dev environment to ensure all styles work. -->
 <template>
     <div class="min-h-screen bg-gray-50">
         <!-- 헤더 섹션 -->
@@ -337,9 +336,7 @@ const progressPercentage = computed(() => {
 
 // 금액 포맷팅 함수
 const formatNumber = (value) => {
-    // 숫자가 아닌 문자 제거
     const numbers = value.replace(/[^0-9]/g, '')
-    // 콤마 추가
     return numbers.replace(/\B(?=(\d{3})+(?!\d))/g, ',')
 }
 

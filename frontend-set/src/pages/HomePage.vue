@@ -101,7 +101,6 @@ import FundingUrgentCard from '@/components/funding/FundingUrgentCard.vue'
 import Footer from '@/components/layout/MainFooter.vue'
 import axios from 'axios'
 import { useAuthStore } from '@/stores/auth'
-import { getRecommendedFundings } from '@/api/fundingApi'
 import { getProjects, getRecommendedProjects } from '@/api/projectApi'
 import { calculateFundingProgress, getFundTypeKorean, getDaysLeft } from '@/utils/fundingUtils'
 
@@ -117,8 +116,6 @@ const goToProject = (id) => {
     router.push(`project/detail/${id}`)
 }
 
-// 기존 함수들을 유틸리티로 이동함
-
 // 기본 펀딩 로드 (추천이 없거나 로그인하지 않은 경우)
 const loadDefaultFundings = async () => {
     try {
@@ -127,8 +124,6 @@ const loadDefaultFundings = async () => {
         const fundings = res.data || []
 
         if (fundings.length > 0) {
-            console.log('펀딩 데이터 구조 확인:', fundings[0]) // 첫 번째 펀딩 데이터 확인
-
             // 펀딩 3개 표시
             popularFundings.value = fundings.slice(0, 3).map((fund) => {
                 const progress = calculateFundingProgress(fund)
@@ -175,14 +170,6 @@ onMounted(async () => {
     // 자동 슬라이드 시작
     startAutoSlide()
 
-    console.log('token123123:', token) // ✅ JWT 문자열 출력돼야 함
-
-    // console.log('토큰 상태:', {
-    //     token: authStore.loadToken(),
-    //     userRole: authStore.loadRole(),
-    //     isLoggedIn: authStore.isLoggedIn,
-    // })
-
     try {
         const res = await axios.get('/project/top')
         topProjects.value = res.data
@@ -192,36 +179,19 @@ onMounted(async () => {
     }
 
     try {
-        // const allRes = await axios.get('/project/list', {
-        //     headers: {
-        //         Authorization: `Bearer ${token}`,
-        //     },
-        // }) // 전체 프로젝트
         const allRes = await getProjects()
-
-        console.log('✅allRes:', allRes)
 
         const allProjects = allRes.sort(() => Math.random() - 0.5) // 랜덤 섞기
 
         if (authStore.isLoggedIn && token) {
-            // const recommendRes = await axios.get('/project/list/keyword', {
-            //     headers: {
-            //         Authorization: `Bearer ${token}`,
-            //     },
-            // })
             const recommendRes = await getRecommendedProjects()
-
-            console.log('✅ recommendRes:', recommendRes)
 
             const recommended =
                 recommendRes.map((item) => {
                     return {
                         ...item,
-                        // image: item.images[0]?.imageUrl,
                     }
                 }) || []
-
-            console.log('✅ recommended:', recommended)
 
             const recommendedIds = recommendRes.map((p) => p.projectId)
 
@@ -231,9 +201,6 @@ onMounted(async () => {
                 .slice(0, 4 - recommended.length)
 
             recommendedProjects.value = [...recommendRes, ...extra]
-            // console.log('추천 프로젝트:', recommendRes)
-
-            console.log('✅ recommendRes:', recommendRes)
         } else {
             // 로그인 안 했을 때는 그냥 랜덤 4개
             recommendedProjects.value = allProjects.slice(0, 4)
@@ -291,9 +258,6 @@ onMounted(async () => {
 })
 
 const toggleLike = async (projectId) => {
-    console.log('✅ recommendedProjects:', recommendedProjects.value)
-    console.log('✅ projectId:', projectId)
-
     const project = recommendedProjects.value.find((p) => p.projectId === projectId)
     if (!project) {
         console.log('not project return!')
@@ -314,8 +278,6 @@ const toggleLike = async (projectId) => {
         if (project.isLiked) project.likes--
         else project.likes++
         project.isLiked = !project.isLiked
-
-        console.log('✅ project:', project)
     } catch (err) {
         console.error('❌ 좋아요 토글 실패:', err)
     }
@@ -323,10 +285,6 @@ const toggleLike = async (projectId) => {
 
 const goToProjectList = () => {
     router.push('/project')
-}
-
-const goToFunding = (id) => {
-    router.push(`/funding/detail/${id}`)
 }
 
 const mainBanners = ref([

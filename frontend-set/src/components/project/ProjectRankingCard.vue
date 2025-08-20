@@ -26,18 +26,6 @@
     </div>
 </template>
 <script setup>
-// 인기 프로젝트 랭킹 카드
-// props:
-// - rank: 순위(숫자)
-// - title: 프로젝트명
-// - description: 설명
-// - likes: 좋아요 수
-// - participants: 참여자 수
-// - image: (옵션) 썸네일 이미지
-
-import project from '@/router/project'
-import { computed } from 'vue'
-
 defineProps({
     rank: Number,
     title: String,

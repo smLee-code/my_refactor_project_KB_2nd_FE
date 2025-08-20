@@ -12,7 +12,6 @@
                         :style="{ backgroundColor: item.color }"
                     ></span>
                     <span class="flex-1">{{ item.label }}</span>
-                    <!-- <span class="font-semibold"> {{ item.values[item.values.length - 1] }}% </span> -->
                 </li>
 
                 <li>단위(일주일)</li>
@@ -38,7 +37,6 @@ const chartCanvas = ref(null)
 
 onMounted(async () => {
     try {
-        // 📌 주차별 프로젝트 등록 추이 API 호출
         const res = await axios.get('/project/trend')
         const raw = res.data // 여기서 raw 할당
 
@@ -72,7 +70,7 @@ function drawChart() {
         ...chartData.value.reduce((acc, cur) => acc.concat(cur.values || []), []),
     )
 
-    // 📍 세로 기준선 (주차 구분, 5주)
+    // 세로 기준선 (주차 구분, 5주)
     const verticalLines = chartData.value[0]?.values.length - 1 || 4
     ctx.strokeStyle = '#e5e7eb'
     ctx.lineWidth = 1
@@ -84,7 +82,7 @@ function drawChart() {
         ctx.stroke()
     }
 
-    // 📍 가로 기준선
+    // 가로 기준선
     const horizontalLines = 5
     for (let i = 0; i <= horizontalLines; i++) {
         const y = padding + (i / horizontalLines) * chartHeight
@@ -94,7 +92,7 @@ function drawChart() {
         ctx.stroke()
     }
 
-    // 📍 데이터 라인 + 값 그리기
+    // 데이터 라인 + 값 그리기
     ctx.font = '12px Arial'
     ctx.textAlign = 'center'
     ctx.textBaseline = 'bottom'

@@ -316,6 +316,7 @@ declare global {
         IMP: any
     }
 }
+
 const selectedAmount = ref(0)
 const customAmount = ref('')
 const selectedPaymentMethod = ref('kakaopay')
@@ -326,38 +327,38 @@ const participantInfo = ref({
     address: '',
     message: '',
 })
+
 const setQuickAmount = (amount: number) => {
     const currentAmount = Number(customAmount.value) || 0
     customAmount.value = String(currentAmount + amount)
 }
+
 const resetAmount = () => {
     customAmount.value = ''
     selectedAmount.value = 0
 }
+
 const handleAmountSubmit = () => {
     const amount = Number(customAmount.value)
     if (amount >= 1000) {
         selectedAmount.value = amount
     }
 }
+
 const agreements = ref({
     terms: false,
     privacy: false,
     marketing: false,
     anonymous: false,
 })
-const selectAmount = (amount: number) => {
-    selectedAmount.value = amount
-}
-const selectPaymentMethod = (method: string) => {
-    selectedPaymentMethod.value = method
-}
+
 const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('ko-KR', {
         style: 'currency',
         currency: 'KRW',
     }).format(amount)
 }
+
 const getPaymentMethodName = (method: string) => {
     const methods: { [key: string]: string } = {
         card: '신용카드',
@@ -368,9 +369,11 @@ const getPaymentMethodName = (method: string) => {
     }
     return methods[method] || '선택 안함'
 }
+
 const canProceedPayment = computed(() => {
     return selectedAmount.value > 0 && agreements.value.terms && agreements.value.privacy
 })
+
 // 결제 관련 변수
 const route = useRoute()
 const router = useRouter()
@@ -534,20 +537,24 @@ const handlePopupConfirm = () => {
 .\!rounded-button {
     border-radius: 8px;
 }
+
 input[type='number']::-webkit-outer-spin-button,
 input[type='number']::-webkit-inner-spin-button {
     -webkit-appearance: none;
     margin: 0;
 }
+
 input[type='number'] {
     -moz-appearance: textfield;
 }
+
 @media (max-width: 640px) {
     .container {
         padding-left: 1rem;
         padding-right: 1rem;
     }
 }
+
 @media (max-width: 768px) {
     .text-3xl {
         font-size: 1.5rem;

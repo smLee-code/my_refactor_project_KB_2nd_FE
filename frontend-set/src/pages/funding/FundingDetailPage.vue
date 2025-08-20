@@ -364,8 +364,6 @@ const openSummaryModal = () => {
 const closeModal = () => {
     isModalOpen.value = false
 }
-// ===============================================
-// ===============================================
 
 // 펀딩 정보 조회
 const fetchFundingDetail = async () => {
@@ -513,12 +511,15 @@ const fetchFundingDetail = async () => {
             console.log('minInterestRate:', data.minInterestRate)
             console.log('maxInterestRate:', data.maxInterestRate)
             console.log('===========================')
-            
+
             // 펀딩 데이터 설정
             fundingData.value = {
                 id: data.fundId,
                 projectId: data.projectId,
-                targetAmount: data.fundType === 'Loan' ? (data.loanLimit || 50000000) : (data.targetAmount || 50000000),
+                targetAmount:
+                    data.fundType === 'Loan'
+                        ? data.loanLimit || 50000000
+                        : data.targetAmount || 50000000,
                 currentAmount: data.currentAmount || 0,
                 progress: data.progress || '진행중', // progress 필드 추가
                 progressPercentage: getProgressPercentage(data),

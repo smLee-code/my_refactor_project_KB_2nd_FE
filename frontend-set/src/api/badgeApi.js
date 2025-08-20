@@ -1,6 +1,10 @@
 import api from '@/api'
 
-// 사용자가 보유한 뱃지 목록 조회
+/**
+ * 사용자가 보유한 뱃지 목록 조회
+ * @param {string} token - 인증 토큰
+ * @returns {Promise<Array>} 유저가 보유한 뱃지 목록
+ */
 export const getUserBadges = async (token) => {
     try {
         const response = await api.get(`/badge/user`, {
@@ -15,7 +19,11 @@ export const getUserBadges = async (token) => {
     }
 }
 
-// 모든 뱃지 목록 조회 (관리자용)
+/**
+ * 모든 뱃지 목록 조회 (관리자용)
+ * @param {string} token - 인증 토큰
+ * @returns {Promise<Array>} 모든 뱃지 목록
+ */
 export const getAllBadges = async (token) => {
     try {
         const response = await api.get(`/badge`, {

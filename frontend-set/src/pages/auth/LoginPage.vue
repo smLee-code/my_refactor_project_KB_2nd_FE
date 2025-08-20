@@ -140,14 +140,9 @@ const isFormValid = computed(() => {
 })
 
 const validateEmail = () => {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
     if (!email.value) {
         emailError.value = '이메일을 입력해주세요'
-    }
-    // else if (!emailRegex.test(email.value)) {
-    //     emailError.value = '올바른 이메일 형식을 입력해주세요'
-    // }
-    else {
+    } else {
         emailError.value = ''
     }
 }
@@ -174,8 +169,6 @@ const handleLogin = async () => {
     loginError.value = ''
 
     try {
-        // 실제 로그인 로직은 여기에 구현
-        // await new Promise((resolve) => setTimeout(resolve, 1500))
         await axios
             .post('/member/login', {
                 email: email.value,

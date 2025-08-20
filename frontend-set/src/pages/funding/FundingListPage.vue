@@ -1,4 +1,3 @@
-<!-- The exported code uses Tailwind CSS. Install Tailwind CSS in your dev environment to ensure all styles work. -->
 <template>
     <div class="min-h-screen bg-gray-50 w-full">
         <div class="max-w-[1024px] mx-auto px-4 sm:px-6 lg:px-8 py-6 lg:py-8">
@@ -236,18 +235,20 @@ onMounted(async () => {
             launch: launchRes.data,
             end: endRes.data,
         })
-        
+
         // 각 펀딩의 상세 정보에서 participantCount, currentAmount, targetAmount 가져오기
         const fetchParticipantCounts = async (funds) => {
             return await Promise.all(
                 funds.map(async (fund) => {
                     try {
-                        const detailRes = await axios.get(`${import.meta.env.VITE_API_URL}/api/fund/${fund.fundId}`)
+                        const detailRes = await axios.get(
+                            `${import.meta.env.VITE_API_URL}/api/fund/${fund.fundId}`,
+                        )
                         return {
                             ...fund,
                             participantCount: detailRes.data.participantCount || 0,
                             currentAmount: detailRes.data.currentAmount || 0,
-                            targetAmount: detailRes.data.targetAmount || 0
+                            targetAmount: detailRes.data.targetAmount || 0,
                         }
                     } catch (error) {
                         console.warn(`펀딩 ${fund.fundId} 상세 정보 조회 실패:`, error)
@@ -255,10 +256,10 @@ onMounted(async () => {
                             ...fund,
                             participantCount: 0,
                             currentAmount: 0,
-                            targetAmount: 0
+                            targetAmount: 0,
                         }
                     }
-                })
+                }),
             )
         }
 
