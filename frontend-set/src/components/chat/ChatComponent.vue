@@ -109,7 +109,7 @@ const loadHistory = async () => {
 
 // ==== WebSocket ====
 const connectWebSocket = () => {
-    const wsUrl = 'wss://fund-ing.store/chat-app'
+    const wsUrl = (import.meta.env.VITE_API_URL || 'http://localhost:8080').replace('http', 'ws') + '/chat-app'
     stompClient.value = Stomp.client(wsUrl)
 
     stompClient.value.debug = (msg) => console.log('[STOMP]', msg)
